@@ -9,8 +9,10 @@ export default function HomeScreen() {
             <Calendar
                 // 달력 넘길 때 스와이프 가능
                 enableSwipeMonths
-                // 빈 칸(이전/다음달의 말일/초일) 숨김
-                hideExtraDays
+                // 고정 6주(6행)로 렌더링 — 달 바뀌어도 높이 일정
+                showSixWeeks
+                // 이전/다음 달 날짜도 칸을 채워서 보여줌 (빈칸 방지)
+                hideExtraDays={false}
                 // 날짜 클릭 핸들러 (필요 없으면 지워도 됨)
                 onDayPress={(day) => {
                     console.log('selected day', day);
