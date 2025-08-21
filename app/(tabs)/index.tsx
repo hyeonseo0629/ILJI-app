@@ -1,12 +1,13 @@
 // app/(tabs)/index.tsx
 import React, { useState, useRef, useMemo } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import SixWeekCalendar from '../components/SixWeekCalendar';
+import SixWeekCalendar from '@/components/calendar/SixWeekCalendar';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Header from "@/components/header/Header";
 
 export default function HomeScreen() {
-    const [currentDate, setCurrentDate] = useState(new Date('2026-02-01'));
+    const [currentDate, setCurrentDate] = useState(new Date());
     const bottomSheetRef = useRef<BottomSheet>(null);
 
     // variables
@@ -14,6 +15,7 @@ export default function HomeScreen() {
 
     return (
         <GestureHandlerRootView style={styles.container}>
+            <Header/>
             <View style={styles.container}>
                 <SixWeekCalendar
                     date={currentDate}
