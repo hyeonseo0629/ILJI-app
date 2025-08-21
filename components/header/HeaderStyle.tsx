@@ -3,17 +3,17 @@ import styled from 'styled-components/native';
 export const HContainer = styled.View`
     width: 100%;
     background-color: #ffffff;
-    border: 2px solid black;
+    elevation: 5;
+    z-index: 1;
 `
 
 export const HTop = styled.View`
+    padding: 10px;
     flex-direction: row;
-    border: 2px solid black;
+    justify-content: space-between;
 `
 
 export const HLogo = styled.Image.attrs((props) => ({
-    // .attrs()를 사용해 source prop의 기본값을 설정합니다.
-    // require()의 경로는 현재 파일(HeaderStyle.tsx) 기준입니다.
     source: require('../../assets/images/logo.png'),
 }))`
    width: 50px;
@@ -21,7 +21,10 @@ export const HLogo = styled.Image.attrs((props) => ({
  `;
 
 export const HIconWrap = styled.View`
-border: 2px solid black;
+    width: 30%;
+    margin: 10px;
+    flex-direction: row;
+    justify-content: space-between;
 `
 
 export const HIcon = styled.Text`
@@ -29,5 +32,14 @@ font-size: 20px;
 `
 
 export const HBottom = styled.View`
-    border: 2px solid black;
+    padding: 10px;
+    flex-direction: row;
+    justify-content: space-around;
+`
+
+export const HRecentDiary = styled.View`
+    width: 55px;
+    height: 55px;
+    border-radius: 50px;
+    background-color: lavender;
 `

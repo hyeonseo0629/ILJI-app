@@ -1,5 +1,11 @@
 import styled from 'styled-components/native';
 
+// Calendar Area
+export const CContainer = styled.View`
+    background-color: #ffffff;
+    width: 100%;
+    padding: 30px;
+`
 
 // Monthly Calendar Component
 export const MContainer = styled.View`
@@ -22,60 +28,41 @@ export const MHeader = styled.View`
     padding-horizontal: 15px;
 `;
 
-export const MNavButton = styled.TouchableOpacity`
-    padding: 10px;
-`;
-
-export const MNavButtonText = styled.Text`
-    font-size: 18px;
-    color: #007AFF;
-    font-weight: 500;
-`;
-
 export const MMonthText = styled.Text`
     font-size: 20px;
     font-weight: bold;
     color: #333;
 `;
 
-export const MDayNamesContainer = styled.View`
-    flex-direction: row;
-    justify-content: space-around;
-    margin-bottom: 10px;
-`;
-
-export const MDayNameText = styled.Text`
+export const MDayNameText = styled.Text.attrs({
+    allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
+})`
+    flex: 1;
     font-size: 12px;
     color: #8E8E93;
     font-weight: 500;
-    width: 40px;
     text-align: center;
-`;
-
-export const MGrid = styled.View`
 `;
 
 export const MWeek = styled.View`
     flex-direction: row;
-    justify-content: space-around;
 `;
 
 interface MDayContainerProps {
-  $isSelected?: boolean;
+    $isSelected?: boolean;
 }
 
 export const MDayContainer = styled.TouchableOpacity<MDayContainerProps>`
-    width: 40px;
-    height: 80px;
-    justify-content: center;
+    flex: 1;
+    height: 55px;
     align-items: center;
     background-color: ${(props) => (props.$isSelected ? '#EFEFEF' : 'transparent')};
     border-radius: 8px;
 `;
 
 export const MEmptyDayContainer = styled.View`
-    width: 40px;
-    height: 80px;
+    flex: 1;
+    height: 55px;
 `;
 
 interface MDayTextProps {
@@ -84,8 +71,11 @@ interface MDayTextProps {
     $isSelected?: boolean;
 }
 
-export const MDayText = styled.Text<MDayTextProps>`
-    font-size: 16px;
+export const MDayText = styled.Text.attrs({
+    allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
+})<MDayTextProps>`
+    font-size: 12px;
+    padding: 15px;
     color: ${(props) => {
         if (props.$isSelected) return '#FFFFFF';
         if (props.$isNotInMonth) return '#D1D1D6';
@@ -94,11 +84,15 @@ export const MDayText = styled.Text<MDayTextProps>`
     font-weight: ${(props) => (props.$isToday && !props.$isSelected ? 'bold' : 'normal')};
 `;
 
-export const MDayCircle = styled.View`
-    width: 32px;
-    height: 32px;
-    background-color: #007AFF;
-    border-radius: 16px;
-    justify-content: center;
-    align-items: center;
-`;
+export const MDayCircle = styled.Text.attrs({
+    allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
+})
+    `   width: 25px;
+        height: 25px;
+        background-color: mediumslateblue;
+        border-radius: 16px;
+        text-align: center;
+        line-height: 25px;
+        font-size: 10px;
+        overflow: hidden;
+    `;

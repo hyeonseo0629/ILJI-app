@@ -1,20 +1,13 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { View, Text, FlatList, Dimensions } from 'react-native';
 import {
-    eachDayOfInterval,
-    startOfMonth,
-    endOfMonth,
-    startOfWeek,
-    endOfWeek,
     format,
     add,
     sub,
-    isSameMonth,
-    isToday,
     isValid,
-    differenceInDays,
 } from 'date-fns';
 import * as S from './CalendarStyle';
+import MonthView from './MonthView';
 
 interface SixWeekCalendarProps {
     date: Date;
@@ -22,6 +15,10 @@ interface SixWeekCalendarProps {
 }
 
 const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange }) => {
+    const flatListRef = useRef<FlatList>(null);
+    const [months, setMonths] = useState([sub(date, { months: 1 }), date, add(date, { months: 1 })]);
+    const { width: screenWidth } = Dimensions.get('window');
+
     if (!isValid(date)) {
         return (
             <S.MLoadingContainer>
@@ -30,87 +27,48 @@ const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange })
         );
     }
 
-    const monthStart = startOfMonth(date);
-    const monthEnd = endOfMonth(date);
-    const weekStartsOn = 0; // 0 for Sunday
+    // date prop이 변경될 때마다 month 리스트를 재설정합니다.
+    useEffect(() => {
+        setMonths([sub(date, { months: 1 }), date, add(date, { months: 1 })]);
+        // 외부에서 날짜가 변경되었을 때 스크롤 위치를 중앙으로 즉시 이동
+        setTimeout(() => flatListRef.current?.scrollToIndex({ index: 1, animated: false }), 0);
+    }, [date]);
 
-    // 1. Find the start and end of the weeks the month naturally occupies.
-    const naturalStart = startOfWeek(monthStart, { weekStartsOn });
-    const naturalEnd = endOfWeek(monthEnd, { weekStartsOn });
-
-    // 2. Calculate the number of days in this natural view.
-    const naturalDays = differenceInDays(naturalEnd, naturalStart) + 1;
-
-    // 3. Calculate how many padding days are needed to reach 42.
-    const paddingDays = 42 - naturalDays;
-
-    // 4. Distribute the padding as evenly as possible.
-    const paddingBefore = Math.round(paddingDays / 2);
-
-    // 5. Determine the final start date of the 42-day grid.
-    const startDate = sub(naturalStart, { days: paddingBefore });
-    const endDate = add(startDate, { days: 41 });
-
-    const days = eachDayOfInterval({ start: startDate, end: endDate });
-
-    const weeks = [];
-    for (let i = 0; i < 6; i++) {
-        weeks.push(days.slice(i * 7, (i + 1) * 7));
-    }
-
-    const handlePrevMonth = () => {
-        onDateChange(sub(date, { months: 1 }));
+    const handleMomentumScrollEnd = (event: any) => {
+        const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
+        if (index === 1) return; // 중앙에 그대로 있으면 아무것도 안 함
+        
+        const newDate = months[index];
+        onDateChange(newDate);
     };
 
-    const handleNextMonth = () => {
-        onDateChange(add(date, { months: 1 }));
-    };
-
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return (
         <S.MContainer>
             <S.MHeader>
-                <S.MNavButton onPress={handlePrevMonth}>
-                    <S.MNavButtonText>{'<'}</S.MNavButtonText>
-                </S.MNavButton>
+                {/* 이전/다음 버튼은 이제 FlatList 스와이프로 대체됩니다. */}
                 <S.MMonthText>{format(date, 'MMMM yyyy')}</S.MMonthText>
-                <S.MNavButton onPress={handleNextMonth}>
-                    <S.MNavButtonText>{'>'}</S.MNavButtonText>
-                </S.MNavButton>
             </S.MHeader>
-
-            <S.MDayNamesContainer>
-                {dayNames.map(name => <S.MDayNameText key={name}>{name}</S.MDayNameText>)}
-            </S.MDayNamesContainer>
-
-            <S.MGrid>
-                {weeks.map((week, i) => (
-                    <S.MWeek key={i}>
-                        {week.map((day, j) => {
-                            if (!day) return <S.MEmptyDayContainer key={`empty-${j}`} />;
-                            const isCurrentMonth = isSameMonth(day, date);
-                            const isCurrentDay = isToday(day);
-                            // This component doesn't handle selection state yet.
-                            const isSelected = false;
-
-                            return (
-                                <S.MDayContainer key={day.toISOString()} $isSelected={isSelected}>
-                                    {isCurrentDay ? (
-                                        <S.MDayCircle>
-                                            <S.MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</S.MDayText>
-                                        </S.MDayCircle>
-                                    ) : (
-                                        <S.MDayText $isNotInMonth={!isCurrentMonth} $isToday={isCurrentDay} $isSelected={isSelected}>
-                                            {format(day, 'd')}
-                                        </S.MDayText>
-                                    )}
-                                </S.MDayContainer>
-                            );
-                        })}
-                    </S.MWeek>
-                ))}
-            </S.MGrid>
+            <FlatList
+                ref={flatListRef}
+                data={months}
+                renderItem={({ item }) => (
+                    <View style={{ width: screenWidth }}>
+                        <MonthView date={item} />
+                    </View>
+                )}
+                keyExtractor={(item) => item.toISOString()}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                initialScrollIndex={1} // 항상 중앙(현재 월)에서 시작
+                onMomentumScrollEnd={handleMomentumScrollEnd}
+                getItemLayout={(data, index) => ({
+                    length: screenWidth,
+                    offset: screenWidth * index,
+                    index,
+                })}
+            />
         </S.MContainer>
     );
 };
