@@ -116,15 +116,8 @@ const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange })
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#ffffff',
-        borderRadius: 10,
-        padding: 15,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        paddingVertical: 15,
         width: '100%',
-        maxWidth: 400,
     },
     loadingContainer: {
         justifyContent: 'center',
@@ -136,6 +129,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 20,
+        paddingHorizontal: 15,
     },
     navButton: {
         padding: 10,
@@ -169,7 +163,7 @@ const styles = StyleSheet.create({
     },
     dayContainer: {
         width: 40,
-        height: 40,
+        height: 80,
         justifyContent: 'center',
         alignItems: 'center',
     },
