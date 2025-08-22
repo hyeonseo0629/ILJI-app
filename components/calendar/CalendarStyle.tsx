@@ -54,8 +54,9 @@ interface MDayContainerProps {
 
 export const MDayContainer = styled.TouchableOpacity<MDayContainerProps>`
     flex: 1;
-    height: 55px;
+    height: 65px;
     align-items: center;
+    padding: 10px;
     background-color: ${(props) => (props.$isSelected ? '#EFEFEF' : 'transparent')};
     border-radius: 8px;
 `;
@@ -75,7 +76,7 @@ export const MDayText = styled.Text.attrs({
     allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
 })<MDayTextProps>`
     font-size: 12px;
-    padding: 15px;
+    text-align: center;
     color: ${(props) => {
         if (props.$isSelected) return '#FFFFFF';
         if (props.$isNotInMonth) return '#D1D1D6';

@@ -8,6 +8,7 @@ export const HContainer = styled.View`
 `
 
 export const HTop = styled.View`
+    margin-top: 45px;
     padding: 10px;
     flex-direction: row;
     justify-content: space-between;
@@ -32,7 +33,7 @@ font-size: 20px;
 `
 
 export const HBottom = styled.View`
-    padding: 10px;
+    padding: 15px;
     flex-direction: row;
     justify-content: space-around;
 `
