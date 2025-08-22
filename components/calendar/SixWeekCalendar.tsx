@@ -5,9 +5,11 @@ import {
     add,
     sub,
     isValid,
+    isSameDay,
 } from 'date-fns';
 import * as S from './CalendarStyle';
 import MonthView from './MonthView';
+import { WeekCalendar } from 'react-native-calendars';
 
 interface SixWeekCalendarProps {
     date: Date;
@@ -45,6 +47,14 @@ const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange })
         onDateChange(newDate);
     };
 
+    const handleDayPress = (day: { timestamp: number }) => {
+        const newDate = new Date(day.timestamp);
+        // 무한 루프를 방지하기 위해, 현재 선택된 날짜와 다른 날짜를 눌렀을 때만 상태를 변경합니다.
+        if (!isSameDay(newDate, date)) {
+            onDateChange(newDate);
+        }
+    };
+
 
     return (
         <S.MContainer>
@@ -62,26 +72,39 @@ const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange })
                     </S.MViewModeButton>
                 </S.MViewModeContainer>
             </S.MHeader>
-            <FlatList
-                ref={flatListRef}
-                data={months}
-                renderItem={({ item }) => (
-                    <View style={{ width: screenWidth }}>
-                        <MonthView date={item} />
-                    </View>
-                )}
-                keyExtractor={(item) => item.toISOString()}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                initialScrollIndex={1} // 항상 중앙(현재 월)에서 시작
-                onMomentumScrollEnd={handleMomentumScrollEnd}
-                getItemLayout={(data, index) => ({
-                    length: screenWidth,
-                    offset: screenWidth * index,
-                    index,
-                })}
-            />
+
+            {viewMode === 'Month' && (
+                <FlatList
+                    ref={flatListRef}
+                    data={months}
+                    renderItem={({ item }) => (
+                        <View style={{ width: screenWidth }}>
+                            <MonthView date={item} />
+                        </View>
+                    )}
+                    keyExtractor={(item) => item.toISOString()}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    initialScrollIndex={1}
+                    onMomentumScrollEnd={handleMomentumScrollEnd}
+                    getItemLayout={(data, index) => ({
+                        length: screenWidth,
+                        offset: screenWidth * index,
+                        index,
+                    })}
+                />
+            )}
+
+            {viewMode === 'Week' && (
+                <WeekCalendar
+                    current={format(date, 'yyyy-MM-dd')}
+                    onDayPress={handleDayPress}
+                    markedDates={{
+                        [format(date, 'yyyy-MM-dd')]: { selected: true, selectedColor: 'mediumslateblue' },
+                    }}
+                />
+            )}
         </S.MContainer>
     );
 };
