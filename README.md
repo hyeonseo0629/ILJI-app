@@ -53,3 +53,5 @@ Join our community of developers creating universal apps.
 ## install
 - npm install date-fns
 - npx expo install react-native-shadow-2 react-native-svg
+- npm install react-native-calendars
+- npm install lodash
