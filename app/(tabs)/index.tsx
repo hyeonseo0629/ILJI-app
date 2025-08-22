@@ -1,11 +1,11 @@
 // app/(tabs)/index.tsx
 import React, {useState, useRef, useMemo} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
-import SixWeekCalendar from '@/components/calendar/SixWeekCalendar';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Header from "@/components/header/Header";
 import {CContainer} from "@/components/calendar/CalendarStyle";
+import SixWeekCalendar from "@/components/calendar/SixWeekCalendar";
 
 export default function HomeScreen() {
     const [currentDate, setCurrentDate] = useState(new Date());

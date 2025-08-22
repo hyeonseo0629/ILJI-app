@@ -18,6 +18,8 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  calendar: 'calendar-today', // 'calendar' SF Symbol에 해당하는 Material Icon을 여기에 추가합니다.
+  'book.fill': 'book', // Diary 탭 아이콘을 위한 매핑 정보
 } as IconMapping;
 
 /**

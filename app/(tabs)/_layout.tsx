@@ -33,6 +33,15 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
         }}
       />
+      <Tabs.Screen
+        // 파일 이름(diary.tsx)과 동일하게 설정합니다.
+        name="diary"
+        options={{
+          title: 'Diary',
+          // 아이콘은 'book.fill'을 사용합니다.
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="book.fill" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
