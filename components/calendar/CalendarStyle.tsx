@@ -34,6 +34,27 @@ export const MMonthText = styled.Text`
     color: #333;
 `;
 
+// --- Day/Week/Month 버튼 스타일 ---
+export const MViewModeContainer = styled.View`
+    flex-direction: row;
+    align-items: center;
+    gap: 5px; /* 버튼 사이에 간격을 줍니다 */
+`;
+
+export const MViewModeButton = styled.Pressable<{ isActive: boolean }>`
+    padding: 8px 10px; /* 버튼의 크기를 조절합니다 */
+    border-radius: 20px; /* 동그란 모양을 만듭니다 */
+    background-color: ${({ isActive }) => (isActive ? '#EAEAFB' : 'transparent')}; /* 활성화 시 연보라색 배경 */
+`;
+
+export const MViewModeButtonText = styled.Text<{ isActive: boolean }>`
+    font-size: 14px;
+    font-weight: 600;
+    color: ${({ isActive }) => (isActive ? '#5856D6' : '#000000')}; /* 활성화 시 진한 보라색 텍스트 */
+`;
+// --- 버튼 스타일 끝 ---
+
+
 export const MDayNameText = styled.Text.attrs({
     allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
 })`

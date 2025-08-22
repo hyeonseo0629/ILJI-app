@@ -14,9 +14,12 @@ interface SixWeekCalendarProps {
     onDateChange: (newDate: Date) => void;
 }
 
+type ViewMode = 'Month' | 'Week' | 'Day';
+
 const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange }) => {
     const flatListRef = useRef<FlatList>(null);
     const [months, setMonths] = useState([sub(date, { months: 1 }), date, add(date, { months: 1 })]);
+    const [viewMode, setViewMode] = useState<ViewMode>('Month');
     const { width: screenWidth } = Dimensions.get('window');
 
     if (!isValid(date)) {
@@ -37,7 +40,7 @@ const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange })
     const handleMomentumScrollEnd = (event: any) => {
         const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
         if (index === 1) return; // 중앙에 그대로 있으면 아무것도 안 함
-        
+
         const newDate = months[index];
         onDateChange(newDate);
     };
@@ -46,8 +49,18 @@ const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange })
     return (
         <S.MContainer>
             <S.MHeader>
-                {/* 이전/다음 버튼은 이제 FlatList 스와이프로 대체됩니다. */}
                 <S.MMonthText>{format(date, 'MMMM yyyy')}</S.MMonthText>
+                <S.MViewModeContainer>
+                    <S.MViewModeButton onPress={() => setViewMode('Day')} isActive={viewMode === 'Day'}>
+                        <S.MViewModeButtonText isActive={viewMode === 'Day'}>Day</S.MViewModeButtonText>
+                    </S.MViewModeButton>
+                    <S.MViewModeButton onPress={() => setViewMode('Week')} isActive={viewMode === 'Week'}>
+                        <S.MViewModeButtonText isActive={viewMode === 'Week'}>Week</S.MViewModeButtonText>
+                    </S.MViewModeButton>
+                    <S.MViewModeButton onPress={() => setViewMode('Month')} isActive={viewMode === 'Month'}>
+                        <S.MViewModeButtonText isActive={viewMode === 'Month'}>Month</S.MViewModeButtonText>
+                    </S.MViewModeButton>
+                </S.MViewModeContainer>
             </S.MHeader>
             <FlatList
                 ref={flatListRef}
