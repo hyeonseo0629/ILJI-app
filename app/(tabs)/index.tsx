@@ -1,12 +1,14 @@
 // app/(tabs)/index.tsx
-import React, { useState, useRef, useMemo } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import SixWeekCalendar from '../components/SixWeekCalendar';
+import React, {useState, useRef, useMemo} from 'react';
+import {StyleSheet, View, Text} from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import Header from "@/components/header/Header";
+import {CContainer} from "@/components/calendar/CalendarStyle";
+import SixWeekCalendar from "@/components/calendar/SixWeekCalendar";
 
 export default function HomeScreen() {
-    const [currentDate, setCurrentDate] = useState(new Date('2026-02-01'));
+    const [currentDate, setCurrentDate] = useState(new Date());
     const bottomSheetRef = useRef<BottomSheet>(null);
 
     // variables
@@ -14,23 +16,24 @@ export default function HomeScreen() {
 
     return (
         <GestureHandlerRootView style={styles.container}>
-            <View style={styles.container}>
+            <Header/>
+            <CContainer>
                 <SixWeekCalendar
                     date={currentDate}
                     onDateChange={setCurrentDate}
                 />
-                <BottomSheet
-                    ref={bottomSheetRef}
-                    index={0}
-                    snapPoints={snapPoints}
-                    enablePanDownToClose={false}
-                    backgroundStyle={styles.bottomSheet}
-                >
-                    <View style={styles.contentContainer}>
-                        <Text>Awesome 🎉</Text>
-                    </View>
-                </BottomSheet>
-            </View>
+            </CContainer>
+            <BottomSheet
+                ref={bottomSheetRef}
+                index={0}
+                snapPoints={snapPoints}
+                enablePanDownToClose={false}
+                backgroundStyle={styles.bottomSheet}
+            >
+                <View style={styles.contentContainer}>
+                    <Text>Awesome 🎉</Text>
+                </View>
+            </BottomSheet>
         </GestureHandlerRootView>
     );
 }

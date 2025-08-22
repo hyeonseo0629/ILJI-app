@@ -1,8 +1,8 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import SixWeekCalendar from '../components/SixWeekCalendar';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import SixWeekCalendar from "@/components/calendar/SixWeekCalendar";
 
 // 컴포넌트 이름을 DiaryScreen으로 변경하여 명확하게 구분합니다.
 export default function DiaryScreen() {
