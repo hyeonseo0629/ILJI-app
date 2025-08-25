@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { View, Text, FlatList, Dimensions } from 'react-native';
+import { View, Text, FlatList, Dimensions, StyleSheet } from 'react-native';
 import {
     format,
     add,
@@ -9,7 +9,7 @@ import {
 } from 'date-fns';
 import * as S from './CalendarStyle';
 import MonthView from './MonthView';
-import { WeekCalendar } from 'react-native-calendars';
+import WeekView from './WeekView';
 
 interface SixWeekCalendarProps {
     date: Date;
@@ -20,9 +20,12 @@ type ViewMode = 'Month' | 'Week' | 'Day';
 
 const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange }) => {
     const flatListRef = useRef<FlatList>(null);
-    const [months, setMonths] = useState([sub(date, { months: 1 }), date, add(date, { months: 1 })]);
     const [viewMode, setViewMode] = useState<ViewMode>('Month');
     const { width: screenWidth } = Dimensions.get('window');
+
+    // `date` prop이 변경될 때만 `months` 배열을 새로 계산합니다.
+    // useState와 useEffect를 함께 사용하는 것보다 효율적이며, 불필요한 리렌더링을 방지합니다.
+    const months = useMemo(() => [sub(date, { months: 1 }), date, add(date, { months: 1 })], [date]);
 
     if (!isValid(date)) {
         return (
@@ -32,12 +35,12 @@ const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange })
         );
     }
 
-    // date prop이 변경될 때마다 month 리스트를 재설정합니다.
     useEffect(() => {
-        setMonths([sub(date, { months: 1 }), date, add(date, { months: 1 })]);
-        // 외부에서 날짜가 변경되었을 때 스크롤 위치를 중앙으로 즉시 이동
-        setTimeout(() => flatListRef.current?.scrollToIndex({ index: 1, animated: false }), 0);
-    }, [date]);
+        // Month 뷰에서 date가 변경될 때만 스크롤 위치를 중앙으로 이동시킵니다.
+        if (viewMode === 'Month') {
+            setTimeout(() => flatListRef.current?.scrollToIndex({ index: 1, animated: false }), 0);
+        }
+    }, [date, viewMode]);
 
     const handleMomentumScrollEnd = (event: any) => {
         const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
@@ -47,17 +50,9 @@ const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange })
         onDateChange(newDate);
     };
 
-    const handleDayPress = (day: { timestamp: number }) => {
-        const newDate = new Date(day.timestamp);
-        // 무한 루프를 방지하기 위해, 현재 선택된 날짜와 다른 날짜를 눌렀을 때만 상태를 변경합니다.
-        if (!isSameDay(newDate, date)) {
-            onDateChange(newDate);
-        }
-    };
-
 
     return (
-        <S.MContainer>
+        <S.MContainer style={viewMode !== 'Month' && styles.flexContainer}>
             <S.MHeader>
                 <S.MMonthText>{format(date, 'MMMM yyyy')}</S.MMonthText>
                 <S.MViewModeContainer>
@@ -97,16 +92,18 @@ const SixWeekCalendar: React.FC<SixWeekCalendarProps> = ({ date, onDateChange })
             )}
 
             {viewMode === 'Week' && (
-                <WeekCalendar
-                    current={format(date, 'yyyy-MM-dd')}
-                    onDayPress={handleDayPress}
-                    markedDates={{
-                        [format(date, 'yyyy-MM-dd')]: { selected: true, selectedColor: 'mediumslateblue' },
-                    }}
+                <WeekView
+                    date={date}
+                    onDateChange={onDateChange}
                 />
             )}
+
         </S.MContainer>
     );
 };
+
+const styles = StyleSheet.create({
+    flexContainer: { flex: 1 },
+});
 
 export default SixWeekCalendar;
