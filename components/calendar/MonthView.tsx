@@ -11,15 +11,19 @@ import {
     sub,
     isSameMonth,
     isToday,
+    isSameDay,
     differenceInDays,
 } from 'date-fns';
 import * as S from './CalendarStyle';
+import { CalendarEvent } from './types';
 
 interface MonthViewProps {
     date: Date;
+    events?: CalendarEvent[];
+    onDayPress?: (day: Date) => void;
 }
 
-const MonthView: React.FC<MonthViewProps> = ({ date }) => {
+const MonthView: React.FC<MonthViewProps> = ({ date, events= [], onDayPress }) => {
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const weeks = useMemo(() => {
         const monthStart = startOfMonth(date);
@@ -56,17 +60,22 @@ const MonthView: React.FC<MonthViewProps> = ({ date }) => {
                         if (!day) return <S.MEmptyDayContainer key={`empty-${j}`} />;
                         const isCurrentMonth = isSameMonth(day, date);
                         const isCurrentDay = isToday(day);
-                        const isSelected = false; // Selection logic can be added later
+                        const dayEvents = events.filter(event => isSameDay(event.date, day));
+
                         return (
-                            <S.MDayContainer key={day.toISOString()} $isSelected={isSelected}>
+                            <S.MDayContainer
+                                key={day.toISOString()}
+                                onPress={() => onDayPress?.(day)}
+                            >
                                 {isCurrentDay ? ( // '오늘' 날짜는 파란색 원으로 감쌉니다.
                                     <S.MDayCircle>
                                         {/* 원 안의 텍스트는 MDayText로 감싸고, 선택된 스타일(흰색)을 적용합니다. */}
                                         <S.MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</S.MDayText>
                                     </S.MDayCircle>
                                 ) : ( // 다른 날짜들은 텍스트만 표시합니다.
-                                    <S.MDayText $isNotInMonth={!isCurrentMonth} $isToday={isCurrentDay} $isSelected={isSelected}>{format(day, 'd')}</S.MDayText>
+                                    <S.MDayText $isNotInMonth={!isCurrentMonth} $isToday={isCurrentDay}>{format(day, 'd')}</S.MDayText>
                                 )}
+                                {dayEvents.length > 0 && <S.EventDot color={dayEvents[0].color} />}
                             </S.MDayContainer>
                         );
                     })}
