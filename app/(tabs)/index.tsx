@@ -1,11 +1,11 @@
 // app/(tabs)/index.tsx
 import React, {useState, useRef, useMemo} from 'react';
-import {StyleSheet, View, Text, Platform} from 'react-native';
+import {StyleSheet, View, Text, Platform, useWindowDimensions} from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Header from "@/components/header/Header";
 import {CContainer} from "@/components/calendar/CalendarStyle";
-import SixWeekCalendar from "@/components/calendar/SixWeekCalendar";
+import Calendar from "@/components/calendar/CalendarView";
 import {
     MainContainer,
     MainContentWrap,
@@ -14,10 +14,12 @@ import {
     MainToDoCategoryWarp
 } from "@/components/MainStyle";
 import {GoalContent, RoutineContent, ToDoContent} from "@/components/BottomSheet/ToDoCategory";
+import CalendarView from "@/components/calendar/CalendarView";
 
 export default function HomeScreen() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const bottomSheetRef = useRef<BottomSheet>(null);
+    const { height: screenHeight } = useWindowDimensions();
 
     const [activeTab, setActiveTab] = useState('To-Do');
 
@@ -52,14 +54,18 @@ export default function HomeScreen() {
 
 
     // variables
-    const snapPoints = useMemo(() => ['12%', '65%'], []);
+    const snapPoints = useMemo(
+        () => [100, screenHeight * 0.60], // 최소 높이는 90px, 최대 높이는 화면의 65%
+        [screenHeight]
+    );
 
     return (
-        <GestureHandlerRootView>
+        // GestureHandlerRootView는 앱의 최상단에서 전체 화면을 차지해야 합니다.
+        <GestureHandlerRootView style={{ flex: 1 }}>
             <MainContainer>
                 <Header/>
                 <CContainer>
-                    <SixWeekCalendar
+                    <CalendarView
                         date={currentDate}
                         onDateChange={setCurrentDate}
                     />
