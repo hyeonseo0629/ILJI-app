@@ -10,7 +10,7 @@ export default function HomeScreen() {
     const bottomSheetRef = useRef<BottomSheet>(null);
 
     // variables
-    const snapPoints = useMemo(() => ['12.5%', '50%'], []);
+    const snapPoints = useMemo(() => ['15%', '50%'], []);
 
     return (
         <GestureHandlerRootView style={styles.container}>
