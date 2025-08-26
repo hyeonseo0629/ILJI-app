@@ -25,7 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.ilji.android"
+      "package": "com.dakkuyaki.ilji"
     },
     "extra": {
       "GOOGLE_IOS_CLIENT_ID": "292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7.apps.googleusercontent.com",
@@ -53,6 +53,7 @@
           "backgroundColor": "#ffffff"
         }
       ],
+      "expo-secure-store",
       "expo-web-browser"
     ],
     "experiments": {

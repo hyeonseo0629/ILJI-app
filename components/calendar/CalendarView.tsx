@@ -107,13 +107,13 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
                 <S.ViewModeContainer>
                     <S.ViewModeButton $isActive={viewMode === 'month'}
                                       onPress={() => handleViewModeButtonPress('month')}>
-                        <S.ButtonText $isActive={viewMode === 'month'}>월</S.ButtonText>
+                        <S.ButtonText $isActive={viewMode === 'month'}>M</S.ButtonText>
                     </S.ViewModeButton>
                     <S.ViewModeButton $isActive={viewMode === 'week'} onPress={() => handleViewModeButtonPress('week')}>
-                        <S.ButtonText $isActive={viewMode === 'week'}>주</S.ButtonText>
+                        <S.ButtonText $isActive={viewMode === 'week'}>W</S.ButtonText>
                     </S.ViewModeButton>
                     <S.ViewModeButton $isActive={viewMode === 'day'} onPress={() => handleViewModeButtonPress('day')}>
-                        <S.ButtonText $isActive={viewMode === 'day'}>일</S.ButtonText>
+                        <S.ButtonText $isActive={viewMode === 'day'}>D</S.ButtonText>
                     </S.ViewModeButton>
                 </S.ViewModeContainer>
             </S.MHeader>
