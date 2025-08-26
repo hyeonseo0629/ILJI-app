@@ -56,3 +56,6 @@ Join our community of developers creating universal apps.
 - npm install react-native-calendars
 - npm install lodash
 - npm install react-native-vector-icons
+- npx expo install expo-dev-client
+- npx expo install expo-secure-store
+- npx expo install react-native-pager-view
