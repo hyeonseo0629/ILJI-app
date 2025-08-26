@@ -11,7 +11,7 @@ import {
     PTop,
     PUserID,
     PUserName, TopTabWrap, TopTab,
-} from "@/components/Diary/DiaryStyle";
+} from "@/components/diary/DiaryStyle";
 
 const DiaryView = () => {
     return (

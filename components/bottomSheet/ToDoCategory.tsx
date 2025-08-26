@@ -1,6 +1,6 @@
 import {Text} from "react-native";
 import React from "react";
-import {TCContainer, TCHandleIndicator} from "@/components/BottomSheet/ToDoCategoryStyle";
+import {TCContainer, TCHandleIndicator} from "@/components/bottomSheet/ToDoCategoryStyle";
 
 
 // -------------------------------------- //

@@ -60,7 +60,7 @@ const MonthView: React.FC<MonthViewProps> = ({ date, events= [], onDayPress }) =
                         if (!day) return <S.MEmptyDayContainer key={`empty-${j}`} />;
                         const isCurrentMonth = isSameMonth(day, date);
                         const isCurrentDay = isToday(day);
-                        const dayEvents = events.filter(event => isSameDay(event.date, day));
+                        const dayEvents = events.filter(event => isSameDay(event.start, day));
 
                         return (
                             <S.MDayContainer

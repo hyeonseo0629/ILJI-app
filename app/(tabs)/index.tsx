@@ -1,11 +1,9 @@
-// app/(tabs)/index.tsx
 import React, {useState, useRef, useMemo} from 'react';
-import {StyleSheet, View, Text, Platform, useWindowDimensions} from 'react-native';
+import {useWindowDimensions} from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Header from "@/components/header/Header";
 import {CContainer} from "@/components/calendar/CalendarStyle";
-import Calendar from "@/components/calendar/CalendarView";
 import {
     MainContainer,
     MainContentWrap,
@@ -13,7 +11,7 @@ import {
     MainTodoCategoryText,
     MainToDoCategoryWarp
 } from "@/components/MainStyle";
-import {GoalContent, RoutineContent, ToDoContent} from "@/components/BottomSheet/ToDoCategory";
+import {GoalContent, RoutineContent, ToDoContent} from "@/components/bottomSheet/ToDoCategory";
 import CalendarView from "@/components/calendar/CalendarView";
 
 export default function HomeScreen() {
