@@ -3,11 +3,12 @@ import styled from 'styled-components/native';
 export const HContainer = styled.View`
     width: 100%;
     background-color: #ffffff;
-    elevation: 5;
+    //elevation: 5;
     z-index: 1;
 `
 
 export const HTop = styled.View`
+    margin-top: 45px;
     padding: 10px;
     flex-direction: row;
     justify-content: space-between;
@@ -32,7 +33,7 @@ font-size: 20px;
 `
 
 export const HBottom = styled.View`
-    padding: 10px;
+    padding: 15px;
     flex-direction: row;
     justify-content: space-around;
 `
