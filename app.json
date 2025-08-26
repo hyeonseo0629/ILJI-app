@@ -2,21 +2,40 @@
   "expo": {
     "name": "ilji_app",
     "slug": "ilji_app",
+    "owner": "nostep_nolife",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "iljiapp",
+    "scheme": [
+      "iljiapp",
+      "com.googleusercontent.apps.292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7"
+    ],
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ilji.ios",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.ilji.android"
+    },
+    "extra": {
+      "GOOGLE_IOS_CLIENT_ID": "292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7.apps.googleusercontent.com",
+      "GOOGLE_ANDROID_CLIENT_ID": "292298493030-22j6paogp17vgtqg3p1at3o6vstlqju4.apps.googleusercontent.com",
+      "GOOGLE_WEB_CLIENT_ID": "292298493030-l45okif1kf6pjm7llngs94jvlv56hrus.apps.googleusercontent.com",
+      "API_BASE_URL": "http://127.0.0.1:8090",
+      "router": {},
+      "eas": {
+        "projectId": "bdcf405c-968d-4397-839b-f9f73495ebed"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -33,7 +52,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

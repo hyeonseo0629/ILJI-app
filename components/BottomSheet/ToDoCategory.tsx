@@ -1,6 +1,6 @@
 import {Text} from "react-native";
 import React from "react";
-import {TCContainer, TCHandleIndicator} from "@/components/BottomSheet/ToDoCategoryStyle";
+import {TCContainer} from "@/components/BottomSheet/ToDoCategoryStyle";
 
 
 // -------------------------------------- //
@@ -9,7 +9,6 @@ import {TCContainer, TCHandleIndicator} from "@/components/BottomSheet/ToDoCateg
 export const ToDoContent = () => {
     return (
         <TCContainer>
-            <TCHandleIndicator/>
             <Text> 첫번째 </Text>
         </TCContainer>
     );
@@ -17,7 +16,6 @@ export const ToDoContent = () => {
 export const RoutineContent = () => {
     return (
         <TCContainer>
-            <TCHandleIndicator/>
             <Text> 두번째 </Text>
         </TCContainer>
     );
@@ -25,7 +23,6 @@ export const RoutineContent = () => {
 export const GoalContent = () => {
     return (
         <TCContainer>
-            <TCHandleIndicator/>
             <Text> 세번째 </Text>
         </TCContainer>
     );

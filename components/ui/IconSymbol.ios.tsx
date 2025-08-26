@@ -1,5 +1,8 @@
 import { SymbolView, SymbolViewProps, SymbolWeight } from 'expo-symbols';
 import { StyleProp, ViewStyle } from 'react-native';
+import Animated from 'react-native-reanimated';
+
+const AnimatedSymbolView = Animated.createAnimatedComponent(SymbolView);
 
 export function IconSymbol({
   name,
@@ -15,7 +18,7 @@ export function IconSymbol({
   weight?: SymbolWeight;
 }) {
   return (
-    <SymbolView
+    <AnimatedSymbolView
       weight={weight}
       tintColor={color}
       resizeMode="scaleAspectFit"
