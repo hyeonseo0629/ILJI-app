@@ -3,7 +3,7 @@ import styled from 'styled-components/native';
 export const HContainer = styled.View`
     width: 100%;
     background-color: #ffffff;
-    elevation: 5;
+    //elevation: 5;
     z-index: 1;
 `
 

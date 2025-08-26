@@ -1,7 +1,7 @@
 // app/(tabs)/index.tsx
-import React, {useState, useRef, useMemo} from 'react';
-import {StyleSheet, View, Text, Platform} from 'react-native';
-import BottomSheet from '@gorhom/bottom-sheet';
+import React, {useState, useRef, useMemo, useCallback} from 'react';
+import {Pressable, StyleSheet, View, Text, Platform} from 'react-native';
+import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Header from "@/components/header/Header";
 import {CContainer} from "@/components/calendar/CalendarStyle";
@@ -18,44 +18,79 @@ import {GoalContent, RoutineContent, ToDoContent} from "@/components/BottomSheet
 export default function HomeScreen() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const bottomSheetRef = useRef<BottomSheet>(null);
-
     const [activeTab, setActiveTab] = useState('To-Do');
+    const [sheetIndex, setSheetIndex] = useState(0);
+    const tabPressedRef = useRef(false);
 
-    // 1. 탭 UI를 렌더링하는 커스텀 핸들 컴포넌트를 정의합니다.
+    const handleSheetChanges = useCallback((index: number) => {
+        setSheetIndex(index);
+    }, []);
+
+    const handleTabPress = (tabName: string) => {
+        tabPressedRef.current = true;
+        setActiveTab(tabName);
+        bottomSheetRef.current?.expand();
+    };
+
+    const handleSheetToggle = () => {
+        if (tabPressedRef.current) {
+            tabPressedRef.current = false;
+            return;
+        }
+        if (sheetIndex === 1) {
+            bottomSheetRef.current?.collapse();
+        } else {
+            bottomSheetRef.current?.expand();
+        }
+    };
+
     const TabHandle = () => (
-        <MainToDoCategoryWarp>
-            <MainToDoCategory
-                $isActive={activeTab === 'To-Do'}
-                activeColor="darksalmon" // 첫 번째 탭 색상
-                onPress={() => setActiveTab('To-Do')}
-            >
-                <MainTodoCategoryText $isActive={activeTab === 'To-Do'}>To-Do</MainTodoCategoryText>
-            </MainToDoCategory>
+        <Pressable onPress={handleSheetToggle}>
+            <MainToDoCategoryWarp>
+                <MainToDoCategory
+                    $isActive={activeTab === 'To-Do'}
+                    activeColor="darksalmon"
+                    onPress={() => handleTabPress('To-Do')}
+                >
+                    <MainTodoCategoryText $isActive={activeTab === 'To-Do'}>To-Do</MainTodoCategoryText>
+                </MainToDoCategory>
 
-            <MainToDoCategory
-                $isActive={activeTab === 'Routine'}
-                activeColor="khaki" // 두 번째 탭: 파스텔 노랑
-                onPress={() => setActiveTab('Routine')}
-            >
-                <MainTodoCategoryText $isActive={activeTab === 'Routine'}>Routine</MainTodoCategoryText>
-            </MainToDoCategory>
+                <MainToDoCategory
+                    $isActive={activeTab === 'Routine'}
+                    activeColor="khaki"
+                    onPress={() => handleTabPress('Routine')}
+                >
+                    <MainTodoCategoryText $isActive={activeTab === 'Routine'}>Routine</MainTodoCategoryText>
+                </MainToDoCategory>
 
-            <MainToDoCategory
-                $isActive={activeTab === 'Goal'}
-                activeColor="lightblue" // 세 번째 탭: 파스텔 파랑
-                onPress={() => setActiveTab('Goal')}
-            >
-                <MainTodoCategoryText $isActive={activeTab === 'Goal'}>Goal</MainTodoCategoryText>
-            </MainToDoCategory>
-        </MainToDoCategoryWarp>
+                <MainToDoCategory
+                    $isActive={activeTab === 'Goal'}
+                    activeColor="lightblue"
+                    onPress={() => handleTabPress('Goal')}
+                >
+                    <MainTodoCategoryText $isActive={activeTab === 'Goal'}>Goal</MainTodoCategoryText>
+                </MainToDoCategory>
+            </MainToDoCategoryWarp>
+        </Pressable>
     );
 
+    const snapPoints = useMemo(() => ['16%', '65%'], []);
 
-    // variables
-    const snapPoints = useMemo(() => ['12%', '65%'], []);
+    const renderBackdrop = useCallback(
+        (props: any) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={0}
+                appearsOnIndex={1}
+                pressBehavior="collapse"
+                opacity={0.10} // Adjust the opacity here for a lighter grey
+            />
+        ),
+        []
+    );
 
     return (
-        <GestureHandlerRootView>
+        <GestureHandlerRootView style={{flex: 1}}>
             <MainContainer>
                 <Header/>
                 <CContainer>
@@ -68,16 +103,18 @@ export default function HomeScreen() {
                     ref={bottomSheetRef}
                     index={0}
                     snapPoints={snapPoints}
-                    handleComponent={TabHandle} // 2. 기본 핸들 대신 우리가 만든 탭 핸들을 사용합니다.
+                    handleComponent={TabHandle}
+                    onChange={handleSheetChanges}
+                    backdropComponent={renderBackdrop}
+                    enablePanDownToClose={true}
                     backgroundStyle={{
                         backgroundColor: 'transparent',
                     }}
                 >
-                    {/* 3. 탭 UI가 핸들로 이동했으므로, 여기에는 콘텐츠만 남깁니다. */}
                     <MainContentWrap>
-                        {activeTab === 'To-Do' && <ToDoContent />}
-                        {activeTab === 'Routine' && <RoutineContent />}
-                        {activeTab === 'Goal' && <GoalContent />}
+                        {activeTab === 'To-Do' && <ToDoContent/>}
+                        {activeTab === 'Routine' && <RoutineContent/>}
+                        {activeTab === 'Goal' && <GoalContent/>}
                     </MainContentWrap>
                 </BottomSheet>
             </MainContainer>

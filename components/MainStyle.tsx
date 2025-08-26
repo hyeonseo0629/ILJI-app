@@ -19,7 +19,6 @@ export const MainToDoCategoryWarp = styled.View`
     flex-direction: row;
     /* 탭이 바텀시트의 헤더 역할을 하도록 스타일 조정 */
     padding: 16px 16px 0 16px; /* 상, 좌우, 하단 여백 */
-    background-color: #ffffff; /* 바텀시트 배경과 동일하게 설정 */
     border-bottom-width: 1px;
     border-bottom-color: #f0f0f0; /* 콘텐츠와 구분되는 연한 선 */
     /* 높이가 다른 탭들을 하단에 정렬하여 보기 좋게 만듭니다. */
