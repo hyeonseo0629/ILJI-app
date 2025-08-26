@@ -1,5 +1,4 @@
 import styled from "styled-components/native";
-import { Shadow } from "react-native-shadow-2";
 
 interface CategoryTabProps {
     $isActive?: boolean;
@@ -23,6 +22,7 @@ export const MainToDoCategoryWarp = styled.View`
     border-bottom-color: #f0f0f0; /* 콘텐츠와 구분되는 연한 선 */
     /* 높이가 다른 탭들을 하단에 정렬하여 보기 좋게 만듭니다. */
     align-items: flex-end;
+    color: mediumslateblue;
 `
 
 export const MainToDoCategory = styled.TouchableOpacity<CategoryTabProps>`
@@ -32,7 +32,6 @@ export const MainToDoCategory = styled.TouchableOpacity<CategoryTabProps>`
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     opacity: ${(props) => (props.$isActive ? '1' : '0.6')};
-    
 `
 
 export const MainTodoCategoryText = styled.Text<CategoryTabProps>`

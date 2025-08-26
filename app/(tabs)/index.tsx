@@ -1,11 +1,10 @@
 // app/(tabs)/index.tsx
 import React, {useState, useRef, useMemo, useCallback} from 'react';
-import {Pressable, StyleSheet, View, Text, Platform} from 'react-native';
+import {Pressable, useWindowDimensions} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Header from "@/components/header/Header";
 import {CContainer} from "@/components/calendar/CalendarStyle";
-import SixWeekCalendar from "@/components/calendar/SixWeekCalendar";
 import {
     MainContainer,
     MainContentWrap,
@@ -14,6 +13,7 @@ import {
     MainToDoCategoryWarp
 } from "@/components/MainStyle";
 import {GoalContent, RoutineContent, ToDoContent} from "@/components/BottomSheet/ToDoCategory";
+import CalendarView from "@/components/calendar/CalendarView";
 
 export default function HomeScreen() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -90,11 +90,12 @@ export default function HomeScreen() {
     );
 
     return (
+        // GestureHandlerRootView는 앱의 최상단에서 전체 화면을 차지해야 합니다.
         <GestureHandlerRootView style={{flex: 1}}>
             <MainContainer>
                 <Header/>
                 <CContainer>
-                    <SixWeekCalendar
+                    <CalendarView
                         date={currentDate}
                         onDateChange={setCurrentDate}
                     />
@@ -111,6 +112,7 @@ export default function HomeScreen() {
                         backgroundColor: 'transparent',
                     }}
                 >
+                    {/* 3. 탭 UI가 핸들로 이동했으므로, 여기에는 콘텐츠만 남깁니다. */}
                     <MainContentWrap>
                         {activeTab === 'To-Do' && <ToDoContent/>}
                         {activeTab === 'Routine' && <RoutineContent/>}

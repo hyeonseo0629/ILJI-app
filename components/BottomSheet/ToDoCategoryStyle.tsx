@@ -6,3 +6,11 @@ export const TCContainer = styled.View`
     height: 100%;
     align-items: center;
 `
+
+export const TCHandleIndicator = styled.View`
+    background-color: #ffffff;
+    width: 150px;
+    height: 5px;
+    margin: 20px;
+    background-color: lavender;
+`
