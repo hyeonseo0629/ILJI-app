@@ -1,5 +1,6 @@
 import React, {useState, useMemo, useRef, useEffect} from 'react';
-import {View, Text, FlatList, Dimensions, TouchableOpacity} from 'react-native';
+import {View, Text, FlatList, Dimensions} from 'react-native';
+import PagerView from 'react-native-pager-view';
 import {
     format,
     add,
@@ -20,29 +21,23 @@ interface SixWeekCalendarProps {
 }
 
 const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
-    const flatListRef = useRef<FlatList>(null);
-    const [months, setMonths] = useState([sub(date, {months: 1}), date, add(date, {months: 1})]);
+    // Refs for controlling pagers and lists
+    const pagerRef = useRef<PagerView>(null);
+    const monthFlatListRef = useRef<FlatList>(null);
+    const weekPagerRef = useRef<PagerView>(null);
+    const dayPagerRef = useRef<PagerView>(null);
+
+    // State for different views and selections
     const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
     const [selectedDate, setSelectedDate] = useState(date);
-    const {width: screenWidth} = Dimensions.get('window');
+    const [monthContainerHeight, setMonthContainerHeight] = useState(0);
 
-    if (!isValid(date)) {
-        return (
-            <S.MLoadingContainer>
-                <Text>Loading...</Text>
-            </S.MLoadingContainer>
-        );
-    }
+    // Data sources for vertical swiping in each view
+    const [months, setMonths] = useState([sub(date, {months: 1}), date, add(date, {months: 1})]);
+    const [weeks, setWeeks] = useState([sub(date, {weeks: 1}), date, add(date, {weeks: 1})]);
+    const [days, setDays] = useState([sub(date, {days: 1}), date, add(date, {days: 1})]);
 
-    // date prop이 변경될 때마다 month 리스트를 재설정합니다.
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useEffect(() => {
-        setMonths([sub(date, {months: 1}), date, add(date, {months: 1})]);
-        // 외부에서 날짜가 변경되었을 때 스크롤 위치를 중앙으로 즉시 이동
-        setTimeout(() => flatListRef.current?.scrollToIndex({index: 1, animated: false}), 0);
-    }, [date]);
-
-    // 샘플 이벤트 데이터. 나중에는 API 호출 등으로 데이터를 가져옵니다.
+    // Sample event data
     const [events, setEvents] = useState<CalendarEvent[]>([
         {
             id: '1',
@@ -57,29 +52,52 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
             color: 'royalblue',
             start: set(add(new Date(), {days: 2}), {hours: 14, minutes: 0, seconds: 0}),
             end: set(add(new Date(), {days: 2}), {hours: 15, minutes: 0, seconds: 0}),
-        },]);
+        },
+    ]);
 
-    const handleMomentumScrollEnd = (event: any) => {
-        const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
-        if (index === 1) return; // 중앙에 그대로 있으면 아무것도 안 함
+    // When the central date changes, update all data sources and reset inner pagers
+    useEffect(() => {
+        if (isValid(date)) {
+            setMonths([sub(date, {months: 1}), date, add(date, {months: 1})]);
+            setWeeks([sub(date, {weeks: 1}), date, add(date, {weeks: 1})]);
+            setDays([sub(date, {days: 1}), date, add(date, {days: 1})]);
 
-        const newDate = months[index];
-        onDateChange(newDate);
+            // Use setTimeout to ensure the UI has updated before scrolling
+            setTimeout(() => {
+                monthFlatListRef.current?.scrollToIndex({index: 1, animated: false});
+                weekPagerRef.current?.setPageWithoutAnimation(1);
+                dayPagerRef.current?.setPageWithoutAnimation(1);
+            }, 0);
+        }
+    }, [date]);
+
+    // Loading state for invalid dates
+    if (!isValid(date)) {
+        return (
+            <S.MLoadingContainer>
+                <Text>Loading...</Text>
+            </S.MLoadingContainer>
+        );
+    }
+
+    // Handlers
+    const handleMonthScrollEnd = (event: any) => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        const containerHeight = event.nativeEvent.layoutMeasurement.height;
+        const index = Math.round(offsetY / containerHeight);
+        if (index === 1) return;
+        onDateChange(months[index]);
     };
 
-    const handlePrev = () => {
-        const newDate = viewMode === 'week' ? sub(date, {weeks: 1}) : sub(date, {days: 1});
-        onDateChange(newDate);
-    };
-    const handleNext = () => {
-        const newDate = viewMode === 'week' ? add(date, {weeks: 1}) : add(date, {days: 1});
-        onDateChange(newDate);
-    };
-
-    // 날짜를 눌렀을 때, 선택된 날짜를 업데이트하고 일별 뷰로 전환합니다.
     const handleDayPress = (day: Date) => {
         setSelectedDate(day);
-        setViewMode('day');
+        pagerRef.current?.setPage(2); // Switch to Day View
+    };
+
+    const viewModes: ('month' | 'week' | 'day')[] = ['month', 'week', 'day'];
+    const handleViewModeButtonPress = (mode: 'month' | 'week' | 'day') => {
+        const pageIndex = viewModes.indexOf(mode);
+        pagerRef.current?.setPage(pageIndex);
     };
 
     return (
@@ -88,55 +106,110 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
                 <S.MMonthText>{format(date, 'MMMM yyyy')}</S.MMonthText>
                 <S.ViewModeContainer>
                     <S.ViewModeButton $isActive={viewMode === 'month'}
-                                      onPress={() => setViewMode('month')}>
-                        <S.ButtonText  $isActive={viewMode === 'month'}>월</S.ButtonText>
+                                      onPress={() => handleViewModeButtonPress('month')}>
+                        <S.ButtonText $isActive={viewMode === 'month'}>M</S.ButtonText>
                     </S.ViewModeButton>
-                    <S.ViewModeButton $isActive={viewMode === 'week'}
-                                      onPress={() => setViewMode('week')}>
-                        <S.ButtonText  $isActive={viewMode === 'week'}>주</S.ButtonText>
+                    <S.ViewModeButton $isActive={viewMode === 'week'} onPress={() => handleViewModeButtonPress('week')}>
+                        <S.ButtonText $isActive={viewMode === 'week'}>W</S.ButtonText>
                     </S.ViewModeButton>
-                    <S.ViewModeButton $isActive={viewMode === 'day'}
-                                      onPress={() => setViewMode('day')}>
-                        <S.ButtonText  $isActive={viewMode === 'day'}>일</S.ButtonText>
+                    <S.ViewModeButton $isActive={viewMode === 'day'} onPress={() => handleViewModeButtonPress('day')}>
+                        <S.ButtonText $isActive={viewMode === 'day'}>D</S.ButtonText>
                     </S.ViewModeButton>
                 </S.ViewModeContainer>
             </S.MHeader>
 
-            {viewMode === 'month' && (
-                <FlatList
-                    ref={flatListRef}
-                    data={months}
-                    renderItem={({item}) => (
-                        <View style={{width: screenWidth, paddingHorizontal: 15}}>
-                            <MonthView
-                                date={item}
-                                events={events}
-                                onDayPress={handleDayPress}
-                            />
-                        </View>
+            {/* Outer Pager for Month/Week/Day view switching (Horizontal) */}
+            <PagerView
+                ref={pagerRef}
+                style={{flex: 1}}
+                initialPage={0}
+                orientation="horizontal"
+                onPageSelected={(e) => {
+                    const newViewMode = viewModes[e.nativeEvent.position];
+                    setViewMode(newViewMode);
+                }}
+            >
+                {/* Page 1: Month View */}
+                <View
+                    key="1"
+                    style={{ flex: 1 }}
+                    onLayout={(e) => {
+                        if (monthContainerHeight === 0) {
+                            setMonthContainerHeight(e.nativeEvent.layout.height);
+                        }
+                    }}
+                >
+                    {monthContainerHeight > 0 && (
+                        <FlatList
+                            ref={monthFlatListRef}
+                            data={months}
+                            renderItem={({item}) => (
+                                <View style={{height: monthContainerHeight}}>
+                                    <MonthView date={item} events={events} onDayPress={handleDayPress}/>
+                                </View>
+                            )}
+                            keyExtractor={(item) => item.toISOString()}
+                            pagingEnabled
+                            showsVerticalScrollIndicator={false}
+                            initialScrollIndex={1}
+                            onMomentumScrollEnd={handleMonthScrollEnd}
+                            getItemLayout={(data, index) => ({length: monthContainerHeight, offset: monthContainerHeight * index, index})}
+                        />
                     )}
-                    keyExtractor={(item) => item.toISOString()}
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    initialScrollIndex={1} // 항상 중앙(현재 월)에서 시작
-                    onMomentumScrollEnd={handleMomentumScrollEnd}
-                    getItemLayout={(data, index) => ({
-                        length: screenWidth,
-                        offset: screenWidth * index,
+                </View>
 
-                        index,
-                    })}
-                />
-            )}
-            {viewMode === 'week' && <WeekView date={date} events={events} onEventPress={(e) => alert(e.title)}/>}
+                {/* Page 2: Week View */}
+                <View key="2">
+                    <PagerView
+                        ref={weekPagerRef}
+                        style={{flex: 1}}
+                        orientation="vertical"
+                        initialPage={1}
+                        onPageSelected={(e) => {
+                            if (e.nativeEvent.position !== 1) {
+                                onDateChange(weeks[e.nativeEvent.position]);
+                            }
+                        }}
+                    >
+                        {weeks.map((weekDate, index) => (
+                            <View key={index}>
+                                <WeekView
+                                    date={weekDate}
+                                    events={events}
+                                    onDayPress={handleDayPress}
+                                />
+                            </View>
+                        ))}
+                    </PagerView>
+                </View>
 
-            {viewMode === 'day' && (
-                <DayView
-                    date={selectedDate}
-                    events={events.filter(e => isSameDay(e.date, selectedDate))}
-                />
-            )}
+                {/* Page 3: Day View */}
+                <View key="3">
+                    <PagerView
+                        ref={dayPagerRef}
+                        style={{flex: 1}}
+                        orientation="vertical"
+                        initialPage={1}
+                        onPageSelected={(e) => {
+                            if (e.nativeEvent.position !== 1) {
+                                // For day view, swiping changes the main date
+                                onDateChange(days[e.nativeEvent.position]);
+                                // Also update selectedDate to keep them in sync
+                                setSelectedDate(days[e.nativeEvent.position]);
+                            }
+                        }}
+                    >
+                        {days.map((dayDate, index) => (
+                            <View key={index}>
+                                <DayView
+                                    date={dayDate}
+                                    events={events.filter(event => isSameDay(event.start, dayDate))}
+                                />
+                            </View>
+                        ))}
+                    </PagerView>
+                </View>
+            </PagerView>
         </S.MContainer>
     );
 };

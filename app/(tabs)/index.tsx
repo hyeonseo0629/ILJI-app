@@ -12,7 +12,7 @@ import {
     MainTodoCategoryText,
     MainToDoCategoryWarp
 } from "@/components/MainStyle";
-import {GoalContent, RoutineContent, ToDoContent} from "@/components/BottomSheet/ToDoCategory";
+import {GoalContent, RoutineContent, ToDoContent} from "@/components/bottomSheet/ToDoCategory";
 import CalendarView from "@/components/calendar/CalendarView";
 
 export default function HomeScreen() {
@@ -74,7 +74,7 @@ export default function HomeScreen() {
         </Pressable>
     );
 
-    const snapPoints = useMemo(() => ['16%', '65%'], []);
+    const snapPoints = useMemo(() => ['15%', '65%'], []);
 
     const renderBackdrop = useCallback(
         (props: any) => (
