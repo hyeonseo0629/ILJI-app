@@ -15,15 +15,15 @@ import {
     differenceInDays,
 } from 'date-fns';
 import * as S from './CalendarStyle';
-import { CalendarEvent } from './types';
+import { Schedule } from './types';
 
 interface MonthViewProps {
     date: Date;
-    events?: CalendarEvent[];
+    schedules?: (Schedule & { color: string })[];
     onDayPress?: (day: Date) => void;
 }
 
-const MonthView: React.FC<MonthViewProps> = ({ date, events= [], onDayPress }) => {
+const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], onDayPress }) => {
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const weeks = useMemo(() => {
         const monthStart = startOfMonth(date);
@@ -51,7 +51,7 @@ const MonthView: React.FC<MonthViewProps> = ({ date, events= [], onDayPress }) =
 
     return (
         <>
-            <S.MWeek>
+            <S.MWeek style={{height: 20}}>
                 {dayNames.map(name => <S.MDayNameText key={name}>{name}</S.MDayNameText>)}
             </S.MWeek>
             {weeks.map((week, i) => (
@@ -60,7 +60,7 @@ const MonthView: React.FC<MonthViewProps> = ({ date, events= [], onDayPress }) =
                         if (!day) return <S.MEmptyDayContainer key={`empty-${j}`} />;
                         const isCurrentMonth = isSameMonth(day, date);
                         const isCurrentDay = isToday(day);
-                        const dayEvents = events.filter(event => isSameDay(event.start, day));
+                        const daySchedules = schedules.filter(schedule => isSameDay(schedule.startTime, day));
 
                         return (
                             <S.MDayContainer
@@ -75,7 +75,14 @@ const MonthView: React.FC<MonthViewProps> = ({ date, events= [], onDayPress }) =
                                 ) : ( // 다른 날짜들은 텍스트만 표시합니다.
                                     <S.MDayText $isNotInMonth={!isCurrentMonth} $isToday={isCurrentDay}>{format(day, 'd')}</S.MDayText>
                                 )}
-                                {dayEvents.length > 0 && <S.EventDot color={dayEvents[0].color} />}
+                                {/* 해당 날짜의 모든 일정을 순회하며 표시합니다. */}
+                                {daySchedules.map(schedule => {
+                                    return (
+                                        <S.EventTitleText key={schedule.id} color={schedule.color}>
+                                            {schedule.title}
+                                        </S.EventTitleText>
+                                    );
+                                })}
                             </S.MDayContainer>
                         );
                     })}

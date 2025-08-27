@@ -1,5 +1,5 @@
-import React, {useState, useMemo, useRef, useEffect} from 'react';
-import {View, Text, FlatList, Dimensions} from 'react-native';
+import React, {useState, useRef, useEffect, useMemo} from 'react';
+import {View, Text, FlatList} from 'react-native';
 import PagerView from 'react-native-pager-view';
 import {
     format,
@@ -13,14 +13,17 @@ import * as S from './CalendarStyle';
 import MonthView from './MonthView';
 import WeekView from './WeekView';
 import DayView from './DayView';
-import {CalendarEvent} from './types';
+import { Schedule } from '@/components/calendar/types';
+import { Tag } from '@/components/ToDo/types';
 
 interface SixWeekCalendarProps {
     date: Date;
     onDateChange: (newDate: Date) => void;
+    schedules: Schedule[];
+    tags: Tag[];
 }
 
-const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
+const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, schedules = [], tags = []}) => {
     // Refs for controlling pagers and lists
     const pagerRef = useRef<PagerView>(null);
     const monthFlatListRef = useRef<FlatList>(null);
@@ -36,24 +39,6 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
     const [months, setMonths] = useState([sub(date, {months: 1}), date, add(date, {months: 1})]);
     const [weeks, setWeeks] = useState([sub(date, {weeks: 1}), date, add(date, {weeks: 1})]);
     const [days, setDays] = useState([sub(date, {days: 1}), date, add(date, {days: 1})]);
-
-    // Sample event data
-    const [events, setEvents] = useState<CalendarEvent[]>([
-        {
-            id: '1',
-            title: '팀 회의',
-            color: 'tomato',
-            start: set(new Date(), {hours: 10, minutes: 0, seconds: 0}),
-            end: set(new Date(), {hours: 11, minutes: 30, seconds: 0}),
-        },
-        {
-            id: '2',
-            title: '디자인 리뷰',
-            color: 'royalblue',
-            start: set(add(new Date(), {days: 2}), {hours: 14, minutes: 0, seconds: 0}),
-            end: set(add(new Date(), {days: 2}), {hours: 15, minutes: 0, seconds: 0}),
-        },
-    ]);
 
     // When the central date changes, update all data sources and reset inner pagers
     useEffect(() => {
@@ -145,7 +130,12 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
                             data={months}
                             renderItem={({item}) => (
                                 <View style={{height: monthContainerHeight}}>
-                                    <MonthView date={item} events={events} onDayPress={handleDayPress}/>
+                                    <MonthView
+                                        date={item}
+                                        schedules={schedules}
+                                        tags={tags}
+                                        onDayPress={handleDayPress}
+                                    />
                                 </View>
                             )}
                             keyExtractor={(item) => item.toISOString()}
@@ -175,7 +165,8 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
                             <View key={index}>
                                 <WeekView
                                     date={weekDate}
-                                    events={events}
+                                    schedules={schedules}
+                                    tags={tags}
                                     onDayPress={handleDayPress}
                                 />
                             </View>
@@ -203,7 +194,8 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
                             <View key={index}>
                                 <DayView
                                     date={dayDate}
-                                    events={events.filter(event => isSameDay(event.start, dayDate))}
+                                    schedules={schedules.filter(schedule => isSameDay(schedule.startTime, dayDate))}
+                                    tags={tags}
                                 />
                             </View>
                         ))}

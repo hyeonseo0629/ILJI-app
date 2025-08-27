@@ -1090,7 +1090,7 @@ PODS:
     - React-Core
     - React-cxxreact
     - React-debug
-    - React-Fabric/observers/events (= 0.79.5)
+    - React-Fabric/observers/schedules (= 0.79.5)
     - React-featureflags
     - React-graphics
     - React-hermes
@@ -1101,7 +1101,7 @@ PODS:
     - React-runtimescheduler
     - React-utils
     - ReactCommon/turbomodule/core
-  - React-Fabric/observers/events (0.79.5):
+  - React-Fabric/observers/schedules (0.79.5):
     - DoubleConversion
     - fast_float (= 6.1.4)
     - fmt (= 11.0.2)
@@ -1135,7 +1135,7 @@ PODS:
     - React-Core
     - React-cxxreact
     - React-debug
-    - React-Fabric/observers/events
+    - React-Fabric/observers/schedules
     - React-featureflags
     - React-graphics
     - React-hermes

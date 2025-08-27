@@ -3,16 +3,16 @@
 import React, { useRef, useEffect } from 'react';
 import { View, ScrollView } from 'react-native';
 import * as S from './CalendarStyle';
-import { CalendarEvent } from './types';
+import { Schedule } from './types';
 import { differenceInMinutes, isToday, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
 
-const calculateEventPosition = (event: CalendarEvent) => {
-    const startHour = event.start.getHours();
-    const startMinute = event.start.getMinutes();
-    const durationInMinutes = differenceInMinutes(event.end, event.start);
+const calculateEventPosition = (event: Schedule) => {
+    const startHour = event.startTime.getHours();
+    const startMinute = event.startTime.getMinutes();
+    const durationInMinutes = differenceInMinutes(event.endTime, event.startTime);
     const top = (startHour * HOUR_HEIGHT) + (startMinute / 60 * HOUR_HEIGHT);
     const height = (durationInMinutes / 60) * HOUR_HEIGHT;
     return { top, height };
@@ -20,11 +20,11 @@ const calculateEventPosition = (event: CalendarEvent) => {
 
 interface DayViewProps {
     date: Date;
-    events: CalendarEvent[];
-    onEventPress?: (event: CalendarEvent) => void;
+    schedules: Schedule[];
+    onEventPress?: (event: Schedule) => void;
 }
 
-const DayView: React.FC<DayViewProps> = ({ date, events = [], onEventPress }) => {
+const DayView: React.FC<DayViewProps> = ({ date, schedules = [], onEventPress }) => {
     const scrollViewRef = useRef<ScrollView>(null);
     const timeLabels = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
@@ -58,12 +58,14 @@ const DayView: React.FC<DayViewProps> = ({ date, events = [], onEventPress }) =>
                             {/* Background grid lines */}
                             {timeLabels.map(time => <S.HourCell key={time} />)}
 
-                            {/* Events for this day */}
-                            {events.map(event => {
-                                const { top, height } = calculateEventPosition(event);
+                            {/* schedules for this day */}
+                            {schedules.map(schedule => {
+                                const tagColors: { [key: number]: string } = { 1: 'tomato', 2: 'royalblue' };
+                                const eventColor = tagColors[schedule.tagId] || 'gray';
+                                const { top, height } = calculateEventPosition(schedule);
                                 return (
-                                    <S.EventBlock key={event.id} top={top} height={height} color={event.color} onPress={() => onEventPress?.(event)}>
-                                        <S.EventBlockText>{event.title}</S.EventBlockText>
+                                    <S.EventBlock key={schedule.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(schedule)}>
+                                        <S.EventBlockText>{schedule.title}</S.EventBlockText>
                                     </S.EventBlock>
                                 );
                             })}

@@ -5,7 +5,7 @@ export const CContainer = styled.View`
     flex: 1; /* 남은 공간을 모두 차지하도록 설정 */
     background-color: #ffffff;
     width: 100%;
-    padding: 30px;
+    padding: 15px 30px;
 `
 
 // Monthly Calendar Component
@@ -49,7 +49,7 @@ export const MDayNameText = styled.Text.attrs({
 
 export const MWeek = styled.View`
     flex-direction: row;
-    height: 50px;
+    height: 65px;
 `;
 
 interface MDayContainerProps {
@@ -58,9 +58,9 @@ interface MDayContainerProps {
 
 export const MDayContainer = styled.TouchableOpacity<MDayContainerProps>`
     flex: 1;
-    height: 65px;
-    justify-content: center; /* 내부 요소를 세로 중앙에 정렬 */
-    align-items: center;
+    flex-direction: column; /* 날짜와 제목을 세로로 쌓습니다. */
+    align-items: center; /* 가로 중앙 정렬 */
+    justify-content: flex-start; /* 세로 상단 정렬 */
     padding: 10px;
     background-color: ${(props) => (props.$isSelected ? '#EFEFEF' : 'transparent')};
     border-radius: 8px;
@@ -68,7 +68,7 @@ export const MDayContainer = styled.TouchableOpacity<MDayContainerProps>`
 
 export const MEmptyDayContainer = styled.View`
     flex: 1;
-    height: 65px; /* MDayContainer와 높이를 통일하여 레이아웃 깨짐 방지 */
+    height: 10px; /* MDayContainer와 높이를 통일하여 레이아웃 깨짐 방지 */
 `;
 
 interface MDayTextProps {
@@ -109,42 +109,19 @@ export const EventDot = styled.View<{ color?: string }>`
     bottom: 8px;
 `;
 
-/**
- * Day View Styles
- */
-export const DayViewContainer = styled.ScrollView`
-    padding: 20px;
-    flex: 1;
-`;
-
-export const EventItem = styled.View`
-    background-color: #f9f9f9;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    flex-direction: row;
-    align-items: center;
-`;
-
-export const EventColorIndicator = styled.View<{ color: string }>`
-    width: 10px;
-    height: 10px;
-    border-radius: 5px;
-    background-color: ${(props) => props.color};
-    margin-right: 10px;
-`;
-
-export const EventTitle = styled.Text`
-    font-size: 16px;
-`;
-
-export const NoEventsText = styled.Text`
+export const EventTitleText = styled.Text.attrs({
+    numberOfLines: 2, // 텍스트를 한 줄로 제한합니다.
+    ellipsizeMode: 'tail', // 길이가 길면 끝에 ...을 표시합니다.
+})`
+    font-size: 8px; /* 월별 캘린더에 맞게 작은 글씨 크기 */
     text-align: center;
-    color: #8e8e93;
-    margin-top: 20px;
-    font-size: 16px;
+    margin-top: 2px;
+    width: 100%; /* 컨테이너 너비에 맞춤 */
+    border-radius: 4px;
+    padding: 1px 3px; /* 텍스트 주변에 약간의 여백을 줍니다. */
+    color: #ffffff;
+    background-color: ${(props) => props.color || 'tomato'};
 `;
-
 
 /**
  * Timetable (Week) View Styles
