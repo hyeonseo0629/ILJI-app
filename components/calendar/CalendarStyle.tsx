@@ -104,10 +104,10 @@ export const MDayText = styled.Text.attrs({
     font-size: 12px;
     text-align: center;
     color: ${(props) => {
-        if (props.$isSelected) return '#FFFFFF';
-        if (props.$isNotInMonth) return '#D1D1D6';
-        return '#333';
-    }};
+    if (props.$isSelected) return '#FFFFFF';
+    if (props.$isNotInMonth) return '#D1D1D6';
+    return '#333';
+}};
     font-weight: ${(props) => (props.$isToday && !props.$isSelected ? 'bold' : 'normal')};
 `;
 

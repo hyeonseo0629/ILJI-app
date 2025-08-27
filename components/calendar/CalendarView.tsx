@@ -90,8 +90,13 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
     };
 
     const handleDayPress = (day: Date) => {
+        // Day View로 전환하기 전에, 앱의 중앙 날짜를 클릭된 날짜로 업데이트합니다.
+        // 이렇게 해야 Day View가 올바른 날짜의 데이터를 가지고 렌더링될 수 있습니다.
+        onDateChange(day);
+        // selectedDate 상태도 동기화해줍니다.
         setSelectedDate(day);
-        pagerRef.current?.setPage(2); // Switch to Day View
+        // Pager를 Day View(인덱스 2)로 전환합니다.
+        pagerRef.current?.setPage(2);
     };
 
     const viewModes: ('month' | 'week' | 'day')[] = ['month', 'week', 'day'];
