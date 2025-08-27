@@ -1,5 +1,5 @@
 import React, {useState, useMemo, useRef, useEffect} from 'react';
-import {View, Text, FlatList, Dimensions} from 'react-native';
+import {View, Text, FlatList, Dimensions, Modal} from 'react-native';
 import PagerView from 'react-native-pager-view';
 import {
     format,
@@ -31,6 +31,10 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
     const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
     const [selectedDate, setSelectedDate] = useState(date);
     const [monthContainerHeight, setMonthContainerHeight] = useState(0);
+
+    // State for event detail modal
+    const [isModalVisible, setModalVisible] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
     // Data sources for vertical swiping in each view
     const [months, setMonths] = useState([sub(date, {months: 1}), date, add(date, {months: 1})]);
@@ -97,6 +101,17 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
         setSelectedDate(day);
         // Pager를 Day View(인덱스 2)로 전환합니다.
         pagerRef.current?.setPage(2);
+    };
+
+    const handleEventPress = (event: CalendarEvent) => {
+        setSelectedEvent(event);
+        setModalVisible(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalVisible(false);
+        // A short delay before clearing the event to prevent content from disappearing during the closing animation
+        setTimeout(() => setSelectedEvent(null), 300);
     };
 
     const viewModes: ('month' | 'week' | 'day')[] = ['month', 'week', 'day'];
@@ -182,6 +197,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
                                     date={weekDate}
                                     events={events}
                                     onDayPress={handleDayPress}
+                                    onEventPress={handleEventPress}
                                 />
                             </View>
                         ))}
@@ -209,12 +225,36 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
                                 <DayView
                                     date={dayDate}
                                     events={events.filter(event => isSameDay(event.start, dayDate))}
+                                    onEventPress={handleEventPress}
                                 />
                             </View>
                         ))}
                     </PagerView>
                 </View>
             </PagerView>
+
+            {/* Event Detail Modal */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isModalVisible}
+                onRequestClose={handleCloseModal}
+            >
+                <S.ModalOverlay>
+                    <S.ModalContainer>
+                        {selectedEvent && (
+                            <>
+                                <S.ModalTitle>{selectedEvent.title}</S.ModalTitle>
+                                <S.ModalInfoText>시작: {format(selectedEvent.start, 'p')}</S.ModalInfoText>
+                                <S.ModalInfoText>종료: {format(selectedEvent.end, 'p')}</S.ModalInfoText>
+                                <S.ModalCloseButton onPress={handleCloseModal}>
+                                    <S.ModalCloseButtonText>닫기</S.ModalCloseButtonText>
+                                </S.ModalCloseButton>
+                            </>
+                        )}
+                    </S.ModalContainer>
+                </S.ModalOverlay>
+            </Modal>
         </S.MContainer>
     );
 };
