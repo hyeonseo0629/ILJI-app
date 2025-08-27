@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
-import { View } from 'react-native';
+// C:/cay/Final-Project-Github/ilji-mobile/components/calendar/WeekView.tsx
+
+import React, { useMemo, useRef, useEffect } from 'react';
+import { View, ScrollView } from 'react-native';
 import {
     eachDayOfInterval,
     startOfWeek,
@@ -8,31 +10,31 @@ import {
     isToday,
     isSameDay,
     differenceInMinutes,
+    isSameWeek,
 } from 'date-fns';
 import * as S from './CalendarStyle';
 import { CalendarEvent } from './types';
 
 const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
 
-interface WeekViewProps {
-    date: Date;
-    events?: CalendarEvent[];
-    onEventPress?: (event: CalendarEvent) => void;
-}
-
 const calculateEventPosition = (event: CalendarEvent) => {
     const startHour = event.start.getHours();
     const startMinute = event.start.getMinutes();
     const durationInMinutes = differenceInMinutes(event.end, event.start);
-
     const top = (startHour * HOUR_HEIGHT) + (startMinute / 60 * HOUR_HEIGHT);
     const height = (durationInMinutes / 60) * HOUR_HEIGHT;
-
     return { top, height };
 };
 
-const WeekView: React.FC<WeekViewProps> = ({ date, events = [], onEventPress }) => {
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+interface WeekViewProps {
+    date: Date;
+    events?: CalendarEvent[];
+    onDayPress?: (day: Date) => void;
+    onEventPress?: (event: CalendarEvent) => void;
+}
+
+const WeekView: React.FC<WeekViewProps> = ({ date, events = [], onDayPress, onEventPress }) => {
+    const scrollViewRef = useRef<ScrollView>(null);
     const timeLabels = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
     const weekDays = useMemo(() => {
@@ -42,49 +44,72 @@ const WeekView: React.FC<WeekViewProps> = ({ date, events = [], onEventPress }) 
         return eachDayOfInterval({ start, end });
     }, [date]);
 
+    // date prop이 변경될 때마다, 스크롤을 맨 위로 초기화합니다.
+    useEffect(() => {
+        // setTimeout을 사용하여 UI 렌더링이 완료된 후 스크롤을 실행합니다.
+        setTimeout(() => {
+            scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+        }, 0);
+    }, [date]);
+
     return (
         <View style={{ flex: 1 }}>
             {/* Day Headers */}
             <S.MWeek style={{ marginLeft: 50, marginBottom: 0 }}>
-                {weekDays.map(day => (
-                    <S.MDayContainer key={day.toISOString()} style={{ height: 'auto', padding: 5 }}>
-                        <S.MDayNameText>{format(day, 'EEE')}</S.MDayNameText>
-                        <S.MDayText $isToday={isToday(day)}>{format(day, 'd')}</S.MDayText>
-                    </S.MDayContainer>
-                ))}
+                {weekDays.map((day) => {
+                    const isCurrentDay = isToday(day);
+                    return (
+                        <S.MDayContainer
+                            key={day.toISOString()}
+                            style={{ height: 'auto', padding: 5 }}
+                            onPress={() => onDayPress?.(day)}
+                        >
+                            <S.MDayNameText>{format(day, 'EEE')}</S.MDayNameText>
+                            {isCurrentDay ? (
+                                <S.MDayCircle>
+                                    <S.MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</S.MDayText>
+                                </S.MDayCircle>
+                            ) : (
+                                <S.MDayText>{format(day, 'd')}</S.MDayText>
+                            )}
+                        </S.MDayContainer>
+                    );
+                })}
             </S.MWeek>
 
-            <S.TimetableContainer>
-                <S.TimetableGrid>
-                    {/* Time Column */}
-                    <S.TimeColumn>
-                        {timeLabels.map(time => (
-                            <S.TimeLabelCell key={time}>
-                                <S.TimeLabelText>{time}</S.TimeLabelText>
-                            </S.TimeLabelCell>
-                        ))}
-                    </S.TimeColumn>
+            <S.TimetableWrapper>
+                <ScrollView ref={scrollViewRef}>
+                    <S.TimetableGrid>
+                        {/* Time Column */}
+                        <S.TimeColumn>
+                            {timeLabels.map(time => (
+                                <S.TimeLabelCell key={time}>
+                                    <S.TimeLabelText>{time}</S.TimeLabelText>
+                                </S.TimeLabelCell>
+                            ))}
+                        </S.TimeColumn>
 
-                    {/* Days Columns */}
-                    <S.DaysContainer>
-                        {weekDays.map(day => (
-                            <S.DayColumn key={day.toISOString()}>
-                                {timeLabels.map(time => <S.HourCell key={`${day.toISOString()}-${time}`} />)}
-                                
-                                {/* Events for this day */}
-                                {events.filter(event => isSameDay(event.start, day)).map(event => {
-                                    const { top, height } = calculateEventPosition(event);
-                                    return (
-                                        <S.EventBlock key={event.id} top={top} height={height} color={event.color} onPress={() => onEventPress?.(event)}>
-                                            <S.EventBlockText>{event.title}</S.EventBlockText>
-                                        </S.EventBlock>
-                                    );
-                                })}
-                            </S.DayColumn>
-                        ))}
-                    </S.DaysContainer>
-                </S.TimetableGrid>
-            </S.TimetableContainer>
+                        {/* Days Columns */}
+                        <S.DaysContainer>
+                            {weekDays.map((day) => (
+                                <S.DayColumn key={day.toISOString()} $isToday={isToday(day)}>
+                                    {timeLabels.map(time => <S.HourCell key={`${day.toISOString()}-${time}`} />)}
+
+                                    {/* Events for this day */}
+                                    {events.filter(event => isSameDay(event.start, day)).map(event => {
+                                        const { top, height } = calculateEventPosition(event);
+                                        return (
+                                            <S.EventBlock key={event.id} top={top} height={height} color={event.color} onPress={() => onEventPress?.(event)}>
+                                                <S.EventBlockText>{event.title}</S.EventBlockText>
+                                            </S.EventBlock>
+                                        );
+                                    })}
+                                </S.DayColumn>
+                            ))}
+                        </S.DaysContainer>
+                    </S.TimetableGrid>
+                </ScrollView>
+            </S.TimetableWrapper>
         </View>
     );
 };

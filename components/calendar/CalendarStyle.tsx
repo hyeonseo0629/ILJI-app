@@ -24,7 +24,7 @@ export const MLoadingContainer = styled.View`
 
 export const MHeader = styled.View`
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     margin-bottom: 20px;
     padding-horizontal: 15px;
@@ -34,6 +34,7 @@ export const MMonthText = styled.Text`
     font-size: 20px;
     font-weight: bold;
     color: #333;
+    width: 115px;
 `;
 
 // --- Day/Week/Month 버튼 스타일 ---
@@ -69,6 +70,7 @@ export const MDayNameText = styled.Text.attrs({
 
 export const MWeek = styled.View`
     flex-direction: row;
+    height: 50px;
 `;
 
 interface MDayContainerProps {
@@ -109,18 +111,14 @@ export const MDayText = styled.Text.attrs({
     font-weight: ${(props) => (props.$isToday && !props.$isSelected ? 'bold' : 'normal')};
 `;
 
-export const MDayCircle = styled.Text.attrs({
-    allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
-})
-    `   width: 25px;
-        height: 25px;
-        background-color: mediumslateblue;
-        border-radius: 16px;
-        text-align: center;
-        line-height: 25px;
-        font-size: 10px;
-        overflow: hidden;
-    `;
+export const MDayCircle = styled.View`
+    width: 25px;
+    height: 25px;
+    background-color: mediumslateblue;
+    border-radius: 12.5px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
+    justify-content: center; /* 내부 텍스트를 세로 중앙에 정렬 */
+    align-items: center; /* 내부 텍스트를 가로 중앙에 정렬 */
+`;
 
 
 export const EventDot = styled.View<{ color?: string }>`
@@ -172,7 +170,7 @@ export const NoEventsText = styled.Text`
 /**
  * Timetable (Week) View Styles
  */
-export const TimetableContainer = styled.ScrollView`
+export const TimetableWrapper = styled.View`
     flex: 1;
     border-top-width: 1px;
     border-top-color: #f0f0f0;
@@ -200,15 +198,25 @@ export const TimeLabelText = styled.Text`
     transform: translateY(-8px); /* 선의 중앙에 오도록 미세 조정 */
 `;
 
+export const DayText = styled.Text`
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    font-size: 20px;
+    border-bottom-width: 1px ;
+    border-bottom-color: #f0f0f0;
+`
+
 export const DaysContainer = styled.View`
     flex: 1;
     flex-direction: row;
 `;
 
-export const DayColumn = styled.View`
+export const DayColumn = styled.View<{ $isToday?: boolean }>`
     flex: 1;
     border-left-width: 1px;
     border-left-color: #f0f0f0;
+    background-color: ${(props) => (props.$isToday ? '#f7f7f7' : 'transparent')};
 `;
 
 export const HourCell = styled.View`
@@ -266,12 +274,19 @@ export const ButtonText = styled.Text<ViewModeButtonProps>`
     color: ${(props) => (props.$isActive ? 'white' : 'black')};
 `;
 
-export const NavButton = styled.TouchableOpacity`
-    padding: 10px;
-`;
+/**
+ * Day View Header Styles
+ */
+export const DayViewHeader = styled.View`
+     padding: 10px 20px;
+     background-color: #f8f8f8;
+     border-bottom-width: 1px;
+     border-bottom-color: #eee;
+ `;
 
-export const NavButtonText = styled.Text`
-    font-size: 18px;
-    color: #007AFF;
-    font-weight: 500;
-`;
+export const DayViewHeaderText = styled.Text`
+     font-size: 16px;
+     font-weight: 600;
+     color: #333;
+     text-align: center;
+ `;
