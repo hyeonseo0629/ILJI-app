@@ -1,9 +1,10 @@
 // C:/cay/Final-Project-Github/ilji-mobile/components/calendar/DayView.tsx
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { View, ScrollView } from 'react-native';
 import * as S from './CalendarStyle';
-import { Schedule } from './types';
+import { Schedule } from '@/components/calendar/types';
+import { Tag } from '@/components/ToDo/types';
 import { differenceInMinutes, isToday, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
@@ -21,10 +22,11 @@ const calculateEventPosition = (event: Schedule) => {
 interface DayViewProps {
     date: Date;
     schedules: Schedule[];
+    tags?: Tag[];
     onEventPress?: (event: Schedule) => void;
 }
 
-const DayView: React.FC<DayViewProps> = ({ date, schedules = [], onEventPress }) => {
+const DayView: React.FC<DayViewProps> = ({ date, schedules = [], tags = [], onEventPress }) => {
     const scrollViewRef = useRef<ScrollView>(null);
     const timeLabels = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
@@ -35,6 +37,15 @@ const DayView: React.FC<DayViewProps> = ({ date, schedules = [], onEventPress })
             scrollViewRef.current?.scrollTo({ y: 0, animated: false });
         }, 0);
     }, [date]);
+
+    // tags 배열이 변경될 때만 색상 맵을 다시 생성하여 성능을 최적화합니다.
+    const tagColorMap = useMemo(() => {
+        const map = new Map<number, string>();
+        tags.forEach(tag => {
+            map.set(tag.id, tag.color);
+        });
+        return map;
+    }, [tags]);
 
     return (
         <View style={{ flex: 1 }}>
@@ -60,8 +71,7 @@ const DayView: React.FC<DayViewProps> = ({ date, schedules = [], onEventPress })
 
                             {/* schedules for this day */}
                             {schedules.map(schedule => {
-                                const tagColors: { [key: number]: string } = { 1: 'tomato', 2: 'royalblue' };
-                                const eventColor = tagColors[schedule.tagId] || 'gray';
+                                const eventColor = tagColorMap.get(schedule.tagId) || 'gray';
                                 const { top, height } = calculateEventPosition(schedule);
                                 return (
                                     <S.EventBlock key={schedule.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(schedule)}>

@@ -15,19 +15,19 @@ import {
     MainTodoCategoryText,
     MainToDoCategoryWarp
 } from "@/components/MainStyle";
-import {ToDoContent} from "@/components/bottomSheet/BottomSheet";
+import {BottomSheetContent} from "@/components/bottomSheet/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
 
 export default function HomeScreen() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const [activeTab, setActiveTab] = useState('To-Do');
     const [sheetIndex, setSheetIndex] = useState(0);
     const tabPressedRef = useRef(false);
 
     const [tags, setTags] = useState<Tag[]>([
-        { id: 1, color: 'tomato', createdAt: new Date(), label: 'Work', updatedAt: new Date(), userId: 1 },
-        { id: 2, color: 'royalblue', createdAt: new Date(), label: 'Personal', updatedAt: new Date(), userId: 1 },
+        { id: 1, color: '#FFB3A7', createdAt: new Date(), label: 'Work', updatedAt: new Date(), userId: 1 }, // Soft Coral
+        { id: 2, color: '#A7D7FF', createdAt: new Date(), label: 'Personal', updatedAt: new Date(), userId: 1 }, // Light Sky Blue
+        { id: 3, color: '#A7FFD4', createdAt: new Date(), label: 'Study', updatedAt: new Date(), userId: 1 }, // Mint Green
     ]);
 
     // 1. API 등에서 가져온 원본 일정 데이터를 상태로 관리합니다.
@@ -35,18 +35,28 @@ export default function HomeScreen() {
         {
             id: 1, userId: 1, tagId: 1, title: '프로젝트 기획 회의',
             location: '회의실 A', description: '1분기 프로젝트 기획 회의',
-            startTime: set(new Date("2023-11-25"), {hours: 10, minutes: 0, seconds: 0}),
-            endTime: set(new Date("2023-11-25"), {hours: 13, minutes: 30, seconds: 0}),
+            startTime: set(new Date(), {hours: 10, minutes: 0, seconds: 0}),
+            endTime: set(new Date(), {hours: 13, minutes: 30, seconds: 0}),
             isAllDay: false, rrule: '', createdAt: new Date(), updatedAt: new Date(), calendarId: 1,
         },
         {
             id: 2, userId: 1, tagId: 2, title: '치과 예약',
             location: '강남역 튼튼치과', description: '정기 검진',
-            startTime: set(new Date("2023-11-27"), {hours: 14, minutes: 0, seconds: 0}),
-            endTime: set(new Date("2023-11-27"), {hours: 15, minutes: 0, seconds: 0}),
+            startTime: set(new Date(), {hours: 14, minutes: 0, seconds: 0}),
+            endTime: set(new Date(), {hours: 15, minutes: 0, seconds: 0}),
             isAllDay: false, rrule: '', createdAt: new Date(), updatedAt: new Date(), calendarId: 1,
         },
+        {
+            id: 3, userId: 1, tagId: 3, title: '에이',
+            location: '강남역 튼튼치과', description: '정기 검진',
+            startTime: set(new Date(), {hours: 17, minutes: 0, seconds: 0}),
+            endTime: set(new Date(), {hours: 18, minutes: 0, seconds: 0}),
+            isAllDay: false, rrule: '', createdAt: new Date(), updatedAt: new Date(), calendarId: 1,
+        }
     ]);
+
+    // 1. activeTab의 초기값을 tags 배열의 첫 번째 아이템 라벨로 설정합니다.
+    const [activeTab, setActiveTab] = useState(tags[0]?.label || '');
 
     const handleSheetChanges = useCallback((index: number) => {
         setSheetIndex(index);
@@ -73,29 +83,17 @@ export default function HomeScreen() {
     const TabHandle = () => (
         <Pressable onPress={handleSheetToggle}>
             <MainToDoCategoryWarp>
-                <MainToDoCategory
-                    $isActive={activeTab === 'To-Do'}
-                    activeColor="darksalmon"
-                    onPress={() => handleTabPress('To-Do')}
-                >
-                    <MainTodoCategoryText $isActive={activeTab === 'To-Do'}>To-Do</MainTodoCategoryText>
-                </MainToDoCategory>
-
-                <MainToDoCategory
-                    $isActive={activeTab === 'Routine'}
-                    activeColor="khaki"
-                    onPress={() => handleTabPress('Routine')}
-                >
-                    <MainTodoCategoryText $isActive={activeTab === 'Routine'}>Routine</MainTodoCategoryText>
-                </MainToDoCategory>
-
-                <MainToDoCategory
-                    $isActive={activeTab === 'Goal'}
-                    activeColor="lightblue"
-                    onPress={() => handleTabPress('Goal')}
-                >
-                    <MainTodoCategoryText $isActive={activeTab === 'Goal'}>Goal</MainTodoCategoryText>
-                </MainToDoCategory>
+                {/* 2. tags 배열을 기반으로 탭을 동적으로 렌더링합니다. */}
+                {tags.map(tag => (
+                    <MainToDoCategory
+                        key={tag.id}
+                        $isActive={activeTab === tag.label}
+                        activeColor={tag.color}
+                        onPress={() => handleTabPress(tag.label)}
+                    >
+                        <MainTodoCategoryText $isActive={activeTab === tag.label}>{tag.label}</MainTodoCategoryText>
+                    </MainToDoCategory>
+                ))}
             </MainToDoCategoryWarp>
         </Pressable>
     );
@@ -141,9 +139,7 @@ export default function HomeScreen() {
                 >
                     {/* 3. 탭 UI가 핸들로 이동했으므로, 여기에는 콘텐츠만 남깁니다. */}
                     <MainContentWrap>
-                        {activeTab === 'To-Do' && <ToDoContent/>}
-                        {activeTab === 'Routine' && <ToDoContent/>}
-                        {activeTab === 'Goal' && <ToDoContent/>}
+                        <BottomSheetContent schedules={schedules} tags={tags} activeTab={activeTab} />
                     </MainContentWrap>
                 </BottomSheet>
             </MainContainer>

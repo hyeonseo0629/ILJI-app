@@ -15,15 +15,17 @@ import {
     differenceInDays,
 } from 'date-fns';
 import * as S from './CalendarStyle';
-import { Schedule } from './types';
+import { Schedule } from '@/components/calendar/types';
+import { Tag } from '@/components/ToDo/types';
 
 interface MonthViewProps {
     date: Date;
-    schedules?: (Schedule & { color: string })[];
+    schedules?: Schedule[];
+    tags?: Tag[];
     onDayPress?: (day: Date) => void;
 }
 
-const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], onDayPress }) => {
+const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], tags = [], onDayPress }) => {
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const weeks = useMemo(() => {
         const monthStart = startOfMonth(date);
@@ -48,6 +50,15 @@ const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], onDayPress 
         }
         return weeksArray;
     }, [date]);
+
+    // tags 배열이 변경될 때만 색상 맵을 다시 생성하여 성능을 최적화합니다.
+    const tagColorMap = useMemo(() => {
+        const map = new Map<number, string>();
+        tags.forEach(tag => {
+            map.set(tag.id, tag.color);
+        });
+        return map;
+    }, [tags]);
 
     return (
         <>
@@ -77,8 +88,9 @@ const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], onDayPress 
                                 )}
                                 {/* 해당 날짜의 모든 일정을 순회하며 표시합니다. */}
                                 {daySchedules.map(schedule => {
+                                    const eventColor = tagColorMap.get(schedule.tagId) || 'gray';
                                     return (
-                                        <S.EventTitleText key={schedule.id} color={schedule.color}>
+                                        <S.EventTitleText key={schedule.id} color={eventColor}>
                                             {schedule.title}
                                         </S.EventTitleText>
                                     );

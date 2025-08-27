@@ -13,7 +13,8 @@ import {
     isSameWeek,
 } from 'date-fns';
 import * as S from './CalendarStyle';
-import { Schedule } from './types';
+import { Schedule } from '@/components/calendar/types';
+import { Tag } from '@/components/ToDo/types';
 
 const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
 
@@ -28,12 +29,13 @@ const calculateEventPosition = (event: Schedule) => {
 
 interface WeekViewProps {
     date: Date;
-    schedules?: (Schedule & { color: string })[];
+    schedules?: Schedule[];
+    tags?: Tag[];
     onDayPress?: (day: Date) => void;
     onEventPress?: (event: Schedule) => void;
 }
 
-const WeekView: React.FC<WeekViewProps> = ({ date, schedules = [], onDayPress, onEventPress }) => {
+const WeekView: React.FC<WeekViewProps> = ({ date, schedules = [], tags = [], onDayPress, onEventPress }) => {
     const scrollViewRef = useRef<ScrollView>(null);
     const timeLabels = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
@@ -43,6 +45,15 @@ const WeekView: React.FC<WeekViewProps> = ({ date, schedules = [], onDayPress, o
         const end = endOfWeek(date, { weekStartsOn });
         return eachDayOfInterval({ start, end });
     }, [date]);
+
+    // tags 배열이 변경될 때만 색상 맵을 다시 생성하여 성능을 최적화합니다.
+    const tagColorMap = useMemo(() => {
+        const map = new Map<number, string>();
+        tags.forEach(tag => {
+            map.set(tag.id, tag.color);
+        });
+        return map;
+    }, [tags]);
 
     // date prop이 변경될 때마다, 스크롤을 맨 위로 초기화합니다.
     useEffect(() => {
@@ -97,9 +108,10 @@ const WeekView: React.FC<WeekViewProps> = ({ date, schedules = [], onDayPress, o
 
                                     {/* schedules for this day */}
                                     {schedules.filter(event => isSameDay(event.startTime, day)).map(event => {
+                                        const eventColor = tagColorMap.get(event.tagId) || 'gray';
                                         const { top, height } = calculateEventPosition(event);
                                         return (
-                                            <S.EventBlock key={event.id} top={top} height={height} color={event.color} onPress={() => onEventPress?.(event)}>
+                                            <S.EventBlock key={event.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(event)}>
                                                 <S.EventBlockText>{event.title}</S.EventBlockText>
                                             </S.EventBlock>
                                         );
