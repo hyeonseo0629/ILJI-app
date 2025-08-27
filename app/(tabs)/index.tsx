@@ -1,6 +1,6 @@
 // app/(tabs)/index.tsx
 import React, {useState, useRef, useMemo, useCallback} from 'react';
-import {Pressable, useWindowDimensions} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Header from "@/components/header/Header";
@@ -12,8 +12,9 @@ import {
     MainTodoCategoryText,
     MainToDoCategoryWarp
 } from "@/components/MainStyle";
-import {GoalContent, RoutineContent, ToDoContent} from "@/components/BottomSheet/ToDoCategory";
+import {GoalContent, RoutineContent, ToDoContent} from "@/components/bottom_sheet/ToDoCategory";
 import CalendarView from "@/components/calendar/CalendarView";
+import {useFetchSchedules} from "@/app/hooks/useFetchSchedules";
 
 export default function HomeScreen() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -21,6 +22,9 @@ export default function HomeScreen() {
     const [activeTab, setActiveTab] = useState('To-Do');
     const [sheetIndex, setSheetIndex] = useState(0);
     const tabPressedRef = useRef(false);
+
+    // Fetch schedules from the backend
+    const { schedules, loading, error } = useFetchSchedules();
 
     const handleSheetChanges = useCallback((index: number) => {
         setSheetIndex(index);
@@ -83,14 +87,41 @@ export default function HomeScreen() {
                 disappearsOnIndex={0}
                 appearsOnIndex={1}
                 pressBehavior="collapse"
-                opacity={0.10} // Adjust the opacity here for a lighter grey
+                opacity={0.10}
             />
         ),
         []
     );
 
+    const renderContent = () => {
+        if (loading) {
+            return <Text>Loading...</Text>;
+        }
+
+        if (error) {
+            return <Text>Error: {error.message}</Text>;
+        }
+
+        // Simple filtering based on title for now.
+        // This can be improved with better data from the backend.
+        const toDo = schedules.filter(s => s.title.toLowerCase().includes('todo'));
+        const routines = schedules.filter(s => s.title.toLowerCase().includes('routine'));
+        const goals = schedules.filter(s => s.title.toLowerCase().includes('goal'));
+
+
+        if (activeTab === 'To-Do') {
+            return <ToDoContent data={toDo} />;
+        }
+        if (activeTab === 'Routine') {
+            return <RoutineContent data={routines} />;
+        }
+        if (activeTab === 'Goal') {
+            return <GoalContent data={goals} />;
+        }
+        return null;
+    };
+
     return (
-        // GestureHandlerRootView는 앱의 최상단에서 전체 화면을 차지해야 합니다.
         <GestureHandlerRootView style={{flex: 1}}>
             <MainContainer>
                 <Header/>
@@ -112,11 +143,8 @@ export default function HomeScreen() {
                         backgroundColor: 'transparent',
                     }}
                 >
-                    {/* 3. 탭 UI가 핸들로 이동했으므로, 여기에는 콘텐츠만 남깁니다. */}
                     <MainContentWrap>
-                        {activeTab === 'To-Do' && <ToDoContent/>}
-                        {activeTab === 'Routine' && <RoutineContent/>}
-                        {activeTab === 'Goal' && <GoalContent/>}
+                        {renderContent()}
                     </MainContentWrap>
                 </BottomSheet>
             </MainContainer>

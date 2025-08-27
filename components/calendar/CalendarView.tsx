@@ -1,12 +1,12 @@
-import React, {useState, useMemo, useRef, useEffect} from 'react';
-import {View, Text, FlatList, Dimensions, TouchableOpacity} from 'react-native';
+import React, {useState, useRef, useEffect} from 'react';
+import {View, Text, FlatList, Dimensions} from 'react-native';
 import {
-    format,
-    add,
-    sub,
-    isValid,
-    isSameDay,
-    set,
+    format,       // 날짜를 지정된 형식의 문자열로 변환합니다.
+    add,          // 날짜에 특정 기간을 더합니다.
+    sub,          // 날짜에서 특정 기간을 뺍니다.
+    isValid,      // 주어진 날짜가 유효한지 확인합니다.
+    isSameDay,    // 두 날짜가 같은 날인지 확인합니다.
+    set,          // 날짜의 특정 부분(시간, 분 등)을 설정합니다.
 } from 'date-fns';
 import * as S from './CalendarStyle';
 import MonthView from './MonthView';
@@ -14,17 +14,29 @@ import WeekView from './WeekView';
 import DayView from './DayView';
 import {CalendarEvent} from './types';
 
-interface SixWeekCalendarProps {
+// --- 컴포넌트 Props 정의 ---
+
+interface CalendarViewProps {
+    // `date`는 캘린더의 현재 날짜를 나타냅니다.
     date: Date;
+    // `onDateChange`는 날짜가 변경될 때 부모 컴포넌트로 새 날짜를 전달하는 콜백 함수입니다.
     onDateChange: (newDate: Date) => void;
 }
 
-const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
+// --- CalendarView 컴포넌트 ---
+
+const CalendarView: React.FC<CalendarViewProps> = ({date, onDateChange}) => {
     const flatListRef = useRef<FlatList>(null);
     const [months, setMonths] = useState([sub(date, {months: 1}), date, add(date, {months: 1})]);
     const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
     const [selectedDate, setSelectedDate] = useState(date);
-    const {width: screenWidth} = Dimensions.get('window');
+    const [isTransitioning, setIsTransitioning] = useState(false);
+
+    // **수정된 부분:**
+    // 화면 전체 너비에서 부모 컨테이너의 좌우 패딩(각각 30px)을 뺀 값을 캘린더의 너비로 명시적으로 계산합니다.
+    // 이렇게 하면 동적 측정의 불안정성을 피하고 항상 정확한 너비를 보장할 수 있습니다.
+    const screenWidth = Dimensions.get('window').width;
+    const calendarWidth = screenWidth - 60; // 30px padding on each side
 
     if (!isValid(date)) {
         return (
@@ -34,15 +46,14 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
         );
     }
 
-    // date prop이 변경될 때마다 month 리스트를 재설정합니다.
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
         setMonths([sub(date, {months: 1}), date, add(date, {months: 1})]);
-        // 외부에서 날짜가 변경되었을 때 스크롤 위치를 중앙으로 즉시 이동
-        setTimeout(() => flatListRef.current?.scrollToIndex({index: 1, animated: false}), 0);
+        setTimeout(() => {
+            flatListRef.current?.scrollToIndex({index: 1, animated: false});
+            setIsTransitioning(false);
+        }, 100);
     }, [date]);
 
-    // 샘플 이벤트 데이터. 나중에는 API 호출 등으로 데이터를 가져옵니다.
     const [events, setEvents] = useState<CalendarEvent[]>([
         {
             id: '1',
@@ -60,23 +71,16 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
         },]);
 
     const handleMomentumScrollEnd = (event: any) => {
-        const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
-        if (index === 1) return; // 중앙에 그대로 있으면 아무것도 안 함
+        if (isTransitioning) return;
 
+        const index = Math.round(event.nativeEvent.contentOffset.x / calendarWidth);
+        if (index === 1) return;
+
+        setIsTransitioning(true);
         const newDate = months[index];
         onDateChange(newDate);
     };
 
-    const handlePrev = () => {
-        const newDate = viewMode === 'week' ? sub(date, {weeks: 1}) : sub(date, {days: 1});
-        onDateChange(newDate);
-    };
-    const handleNext = () => {
-        const newDate = viewMode === 'week' ? add(date, {weeks: 1}) : add(date, {days: 1});
-        onDateChange(newDate);
-    };
-
-    // 날짜를 눌렀을 때, 선택된 날짜를 업데이트하고 일별 뷰로 전환합니다.
     const handleDayPress = (day: Date) => {
         setSelectedDate(day);
         setViewMode('day');
@@ -87,17 +91,14 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
             <S.MHeader>
                 <S.MMonthText>{format(date, 'MMMM yyyy')}</S.MMonthText>
                 <S.ViewModeContainer>
-                    <S.ViewModeButton $isActive={viewMode === 'month'}
-                                      onPress={() => setViewMode('month')}>
-                        <S.ButtonText  $isActive={viewMode === 'month'}>월</S.ButtonText>
+                    <S.ViewModeButton $isActive={viewMode === 'month'} onPress={() => setViewMode('month')}>
+                        <S.ButtonText $isActive={viewMode === 'month'}>월</S.ButtonText>
                     </S.ViewModeButton>
-                    <S.ViewModeButton $isActive={viewMode === 'week'}
-                                      onPress={() => setViewMode('week')}>
-                        <S.ButtonText  $isActive={viewMode === 'week'}>주</S.ButtonText>
+                    <S.ViewModeButton $isActive={viewMode === 'week'} onPress={() => setViewMode('week')}>
+                        <S.ButtonText $isActive={viewMode === 'week'}>주</S.ButtonText>
                     </S.ViewModeButton>
-                    <S.ViewModeButton $isActive={viewMode === 'day'}
-                                      onPress={() => setViewMode('day')}>
-                        <S.ButtonText  $isActive={viewMode === 'day'}>일</S.ButtonText>
+                    <S.ViewModeButton $isActive={viewMode === 'day'} onPress={() => setViewMode('day')}>
+                        <S.ButtonText $isActive={viewMode === 'day'}>일</S.ButtonText>
                     </S.ViewModeButton>
                 </S.ViewModeContainer>
             </S.MHeader>
@@ -107,7 +108,8 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
                     ref={flatListRef}
                     data={months}
                     renderItem={({item}) => (
-                        <View style={{width: screenWidth, paddingHorizontal: 15}}>
+                        // **수정된 부분:** 각 월별 뷰가 정확히 계산된 너비를 갖도록 설정합니다.
+                        <View style={{width: calendarWidth}}>
                             <MonthView
                                 date={item}
                                 events={events}
@@ -119,12 +121,12 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
                     horizontal
                     pagingEnabled
                     showsHorizontalScrollIndicator={false}
-                    initialScrollIndex={1} // 항상 중앙(현재 월)에서 시작
+                    initialScrollIndex={1}
                     onMomentumScrollEnd={handleMomentumScrollEnd}
-                    getItemLayout={(data, index) => ({
-                        length: screenWidth,
-                        offset: screenWidth * index,
-
+                    scrollEnabled={!isTransitioning}
+                    getItemLayout={(data, index) => ({ // **수정된 부분:** 정확히 계산된 너비를 사용합니다.
+                        length: calendarWidth,
+                        offset: calendarWidth * index,
                         index,
                     })}
                 />
@@ -133,8 +135,8 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange}) => {
 
             {viewMode === 'day' && (
                 <DayView
-                    date={selectedDate}
-                    events={events.filter(e => isSameDay(e.date, selectedDate))}
+                    events={events.filter(e => isSameDay(e.start, selectedDate))}
+                    onEventPress={(e) => alert(e.title)}
                 />
             )}
         </S.MContainer>

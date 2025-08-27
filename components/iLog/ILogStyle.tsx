@@ -4,7 +4,7 @@ import styled from "styled-components/native";
 // Container //
 // --------- //
 
-export const DiaryContainer = styled.View`
+export const ILogContainer = styled.View`
     width: 100%;
     height: 100%;
     background-color: #ffffff;
@@ -14,57 +14,57 @@ export const DiaryContainer = styled.View`
 // Profile //
 // ------- //
 
-export const PWrap = styled.View`
+export const IWrap = styled.View`
     background-color: #ffffff;
     padding: 20px;
 `
 
-export const PTop = styled.View`
+export const ITop = styled.View`
     width: 100%;
     flex-direction: row;
 `
 
-export const PImage = styled.View`
+export const IImage = styled.View`
     width: 100px;
     height: 100px;
     border-radius: 50px;
     background-color: lavender;
 `
 
-export const PTextWrap = styled.View`
+export const ITextWrap = styled.View`
 `
 
-export const PUserID = styled.Text`
+export const IUserID = styled.Text`
     color: mediumslateblue;
     font-size: 18px;
     padding: 15px 30px 10px;
 `
 
-export const PCountWrap = styled.View`
+export const ICountWrap = styled.View`
     flex-direction: row;
     width: 250px;
     margin: 0 20px;
 `
 
 
-export const PCount = styled.View`
+export const ICount = styled.View`
     margin: 5px 20px;
     align-items: center;
 `
 
-export const PBottom = styled.View`
+export const IBottom = styled.View`
     width: 100%;
     flex-direction: row;
     justify-content: space-between;
 `
 
-export const PUserName = styled.Text`
+export const IUserName = styled.Text`
     font-size: 18px;
     color: mediumslateblue;
     padding: 20px 8px 0;
 `
 
-export const PEditButton = styled.Text`
+export const IEditButton = styled.Text`
     width: 100px;
     height: 30px;
     margin: 20px 15px 0;
@@ -95,3 +95,36 @@ export const TopTab = styled.Text`
     color: mediumslateblue;
     background-color: lavender;
 `
+
+export const ILogContentWrap = styled.View`
+  flex: 1;
+`;
+
+export const TabButton = styled.TouchableOpacity<{ active: boolean }>`
+  padding: 10px;
+  border-bottom-width: 2px;
+  border-bottom-color: ${(props) => (props.active ? 'blue' : 'transparent')};
+`;
+
+export const ListContainer = styled.View`
+  flex: 1;
+`;
+
+export const ListItem = styled.View`
+  flex-direction: row;
+  align-items: center;
+  height: 20%;
+  padding: 10px;
+  border-bottom-width: 1px;
+  border-bottom-color: #ccc;
+`;
+
+export const ListImage = styled.Image`
+  width: 80px;
+  height: 80px;
+  margin-right: 10px;
+`;
+
+export const ListTitle = styled.Text`
+  font-size: 18px;
+`;
