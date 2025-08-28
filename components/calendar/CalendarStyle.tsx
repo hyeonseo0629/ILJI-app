@@ -302,12 +302,14 @@ export const ModalOverlay = styled.View`
 `;
 
 export const ModalContainer = styled.View`
-    width: 80%;
+    width: 90%;
+    height: 80%; /* 화면 높이의 80%를 차지하도록 설정 */
     background-color: white;
     border-radius: 15px;
     padding: 20px;
     align-items: center;
     elevation: 10;
+    margin-top: 10px;
 `;
 
 export const ModalTitle = styled.Text`
