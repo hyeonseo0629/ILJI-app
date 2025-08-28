@@ -1,6 +1,6 @@
 import {Text, TouchableOpacity} from "react-native";
 import React, {useMemo, useState} from "react";
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import {
     BSContainer, BSContentWrap, BSHeader, BSHeaderLeft, BSHeaderRight, BSTodayText,
     BSToDoAddButton
@@ -19,6 +19,7 @@ interface BottomSheetContentProps {
 }
 
 export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({schedules, tags, activeTab}) => {
+    const router = useRouter();
     const [sortBy, setSortBy] = useState('latest');
     const pickerItems = [
         {label: "latest", value: "latest"},
@@ -52,11 +53,9 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({schedules
                 </BSHeaderLeft>
                 <BSHeaderRight>
                     <BSTodayText>{format(new Date(), "yyyy-MM-dd")}</BSTodayText>
-                    <Link href="/add-schedule" asChild>
-                        <TouchableOpacity>
-                            <BSToDoAddButton name="pluscircleo" size={20}/>
-                        </TouchableOpacity>
-                    </Link>
+                    <TouchableOpacity onPress={() => router.push({ pathname: '/add-schedule', params: { tags: JSON.stringify(tags) } })}>
+                        <BSToDoAddButton name="pluscircleo" size={20}/>
+                    </TouchableOpacity>
                 </BSHeaderRight>
             </BSHeader>
             <BottomSheetScrollView style={{flex:1}}>
