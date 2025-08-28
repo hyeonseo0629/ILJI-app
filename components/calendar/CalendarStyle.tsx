@@ -37,6 +37,27 @@ export const MMonthText = styled.Text`
     width: 115px;
 `;
 
+// --- Day/Week/Month 버튼 스타일 ---
+export const MViewModeContainer = styled.View`
+    flex-direction: row;
+    align-items: center;
+    gap: 5px; /* 버튼 사이에 간격을 줍니다 */
+`;
+
+export const MViewModeButton = styled.Pressable<{ isActive: boolean }>`
+    padding: 8px 10px; /* 버튼의 크기를 조절합니다 */
+    border-radius: 20px; /* 동그란 모양을 만듭니다 */
+    background-color: ${({ isActive }) => (isActive ? '#EAEAFB' : 'transparent')}; /* 활성화 시 연보라색 배경 */
+`;
+
+export const MViewModeButtonText = styled.Text<{ isActive: boolean }>`
+    font-size: 14px;
+    font-weight: 600;
+    color: ${({ isActive }) => (isActive ? '#5856D6' : '#000000')}; /* 활성화 시 진한 보라색 텍스트 */
+`;
+// --- 버튼 스타일 끝 ---
+
+
 export const MDayNameText = styled.Text.attrs({
     allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
 })`
@@ -83,10 +104,10 @@ export const MDayText = styled.Text.attrs({
     font-size: 12px;
     text-align: center;
     color: ${(props) => {
-        if (props.$isSelected) return '#FFFFFF';
-        if (props.$isNotInMonth) return '#D1D1D6';
-        return '#333';
-    }};
+    if (props.$isSelected) return '#FFFFFF';
+    if (props.$isNotInMonth) return '#D1D1D6';
+    return '#333';
+}};
     font-weight: ${(props) => (props.$isToday && !props.$isSelected ? 'bold' : 'normal')};
 `;
 
@@ -247,3 +268,48 @@ export const DayViewHeaderText = styled.Text`
      color: #333;
      text-align: center;
  `;
+
+/**
+ * Event Detail Modal Styles
+ */
+export const ModalOverlay = styled.View`
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+`;
+
+export const ModalContainer = styled.View`
+    width: 90%;
+    height: 80%; /* 화면 높이의 80%를 차지하도록 설정 */
+    background-color: white;
+    border-radius: 15px;
+    padding: 20px;
+    align-items: center;
+    elevation: 10;
+    margin-top: 10px;
+`;
+
+export const ModalTitle = styled.Text`
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+`;
+
+export const ModalInfoText = styled.Text`
+    font-size: 16px;
+    margin-bottom: 8px;
+`;
+
+export const ModalCloseButton = styled.TouchableOpacity`
+    margin-top: 20px;
+    background-color: #5856D6;
+    padding: 10px 25px;
+    border-radius: 20px;
+`;
+
+export const ModalCloseButtonText = styled.Text`
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+`;
