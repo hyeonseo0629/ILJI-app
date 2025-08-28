@@ -1,11 +1,31 @@
-import styled from 'styled-components/native';
+import styled, { css } from 'styled-components/native';
 
-export const HContainer = styled.View`
+interface HContainerProps {
+    $isMain?: boolean;
+    $isSheetExpanded?: boolean;
+}
+
+const mainHeaderStyles = css<HContainerProps>`
+    /* iOS Shadow */
+    shadow-color: #000;
+    shadow-offset: 0px 2px;
+    /* 바텀 시트가 열리면 그림자를 숨깁니다. */
+    shadow-opacity: ${(props) => (props.$isSheetExpanded ? 0 : 0.08)};
+    shadow-radius: 3.84px;
+    /* Android Shadow */
+    /* 바텀 시트가 열리면 elevation을 0으로 만들어 뒤로 보냅니다. */
+    elevation: ${(props) => (props.$isSheetExpanded ? 0 : 5)};
+`;
+
+export const HContainer = styled.View<HContainerProps>`
     width: 100%;
     background-color: #ffffff;
-    //elevation: 5;
-    z-index: 1;
-`
+    /* 바텀 시트가 확장되면 zIndex를 0으로, 아닐 때는 1로 설정합니다. */
+    z-index: ${(props) => (props.$isSheetExpanded ? 0 : 1)};
+
+    /* $isMain prop이 true일 때만 그림자 효과를 적용합니다. */
+    ${(props) => props.$isMain && mainHeaderStyles}
+`;
 
 export const HTop = styled.View`
     margin-top: 45px;

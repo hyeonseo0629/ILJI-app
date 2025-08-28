@@ -1,18 +1,19 @@
 // C:/cay/Final-Project-Github/ilji-mobile/components/calendar/DayView.tsx
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { View, ScrollView } from 'react-native';
 import * as S from './CalendarStyle';
-import { CalendarEvent } from './types';
+import { Schedule } from '@/components/calendar/types';
+import { Tag } from '@/components/ToDo/types';
 import { differenceInMinutes, isToday, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
 
-const calculateEventPosition = (event: CalendarEvent) => {
-    const startHour = event.start.getHours();
-    const startMinute = event.start.getMinutes();
-    const durationInMinutes = differenceInMinutes(event.end, event.start);
+const calculateEventPosition = (event: Schedule) => {
+    const startHour = event.startTime.getHours();
+    const startMinute = event.startTime.getMinutes();
+    const durationInMinutes = differenceInMinutes(event.endTime, event.startTime);
     const top = (startHour * HOUR_HEIGHT) + (startMinute / 60 * HOUR_HEIGHT);
     const height = (durationInMinutes / 60) * HOUR_HEIGHT;
     return { top, height };
@@ -20,11 +21,12 @@ const calculateEventPosition = (event: CalendarEvent) => {
 
 interface DayViewProps {
     date: Date;
-    events: CalendarEvent[];
-    onEventPress?: (event: CalendarEvent) => void;
+    schedules: Schedule[];
+    tags?: Tag[];
+    onEventPress?: (event: Schedule) => void;
 }
 
-const DayView: React.FC<DayViewProps> = ({ date, events = [], onEventPress }) => {
+const DayView: React.FC<DayViewProps> = ({ date, schedules = [], tags = [], onEventPress }) => {
     const scrollViewRef = useRef<ScrollView>(null);
     const timeLabels = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
@@ -35,6 +37,15 @@ const DayView: React.FC<DayViewProps> = ({ date, events = [], onEventPress }) =>
             scrollViewRef.current?.scrollTo({ y: 0, animated: false });
         }, 0);
     }, [date]);
+
+    // tags 배열이 변경될 때만 색상 맵을 다시 생성하여 성능을 최적화합니다.
+    const tagColorMap = useMemo(() => {
+        const map = new Map<number, string>();
+        tags.forEach(tag => {
+            map.set(tag.id, tag.color);
+        });
+        return map;
+    }, [tags]);
 
     return (
         <View style={{ flex: 1 }}>
@@ -58,12 +69,13 @@ const DayView: React.FC<DayViewProps> = ({ date, events = [], onEventPress }) =>
                             {/* Background grid lines */}
                             {timeLabels.map(time => <S.HourCell key={time} />)}
 
-                            {/* Events for this day */}
-                            {events.map(event => {
-                                const { top, height } = calculateEventPosition(event);
+                            {/* schedules for this day */}
+                            {schedules.map(schedule => {
+                                const eventColor = tagColorMap.get(schedule.tagId) || 'gray';
+                                const { top, height } = calculateEventPosition(schedule);
                                 return (
-                                    <S.EventBlock key={event.id} top={top} height={height} color={event.color} onPress={() => onEventPress?.(event)}>
-                                        <S.EventBlockText>{event.title}</S.EventBlockText>
+                                    <S.EventBlock key={schedule.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(schedule)}>
+                                        <S.EventBlockText>{schedule.title}</S.EventBlockText>
                                     </S.EventBlock>
                                 );
                             })}

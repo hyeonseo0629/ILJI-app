@@ -1,7 +1,15 @@
-export interface CalendarEvent {
-    id: string;
-    start: Date;
-    end: Date;
+export interface Schedule {
+    id: number;
+    userId: number,
+    tagId: number,
     title: string;
-    color: string;
+    location: string
+    description: string;
+    startTime: Date;
+    endTime: Date;
+    isAllDay: boolean;
+    rrule: string;
+    createdAt: Date,
+    updatedAt: Date,
+    calendarId: number,
 }
