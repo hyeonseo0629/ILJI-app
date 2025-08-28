@@ -6,13 +6,23 @@
       "@/*": [
         "./*"
       ]
-    },
-    "baseUrl": "."
+    }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "./app/**/*.ts",
+    "./app/**/*.tsx",
+    "./components/**/*.ts",
+    "./components/**/*.tsx",
+    "./hooks/**/*.ts",
+    "./hooks/**/*.tsx",
+    "./src/**/*.ts",
+    "./src/**/*.tsx",
+    "./expo-env.d.ts",
+    "./.expo/types/**/*.ts",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

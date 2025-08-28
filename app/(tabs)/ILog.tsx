@@ -15,7 +15,7 @@ export default function ILogScreen() {
                 styled-component입니다. */}
             <MainContainer>
                 {/* `Header` 컴포넌트는 앱의 상단에 위치하는 헤더를 렌더링합니다. */}
-                <Header/>
+                <Header sheetIndex={0}/>
                 {/* `ILogView` 컴포넌트는 다이어리의 내용을 보여주는 주된 UI를 렌더링합니다. */}
                 <ILogView/>
             </MainContainer>

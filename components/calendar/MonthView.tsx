@@ -6,13 +6,11 @@ import {
     endOfMonth,
     startOfWeek,
     endOfWeek,
+    addDays,
     format,
-    add,
-    sub,
     isSameMonth,
     isToday,
     isSameDay,
-    differenceInDays,
 } from 'date-fns';
 import * as S from './CalendarStyle';
 import { Schedule } from '@/components/calendar/types';
@@ -29,19 +27,15 @@ const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], tags = [], 
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const weeks = useMemo(() => {
         const monthStart = startOfMonth(date);
-        const monthEnd = endOfMonth(date);
         const weekStartsOn = 0; // 0 for Sunday
 
-        const naturalStart = startOfWeek(monthStart, { weekStartsOn });
-        const naturalEnd = endOfWeek(monthEnd, { weekStartsOn });
+        // 달력 그리드의 시작일 (해당 월의 첫 날이 포함된 주의 일요일)
+        const startDate = startOfWeek(monthStart, { weekStartsOn });
 
-        const naturalDays = differenceInDays(naturalEnd, naturalStart) + 1;
-        const paddingDays = 42 - naturalDays;
-        const paddingBefore = Math.round(paddingDays / 2);
+        // 6주(42일) 후의 날짜를 계산합니다. addDays는 새로운 Date 객체를 반환하여 안전합니다.
+        const endDate = addDays(startDate, 41);
 
-        const startDate = sub(naturalStart, { days: paddingBefore });
-        const endDate = add(startDate, { days: 41 });
-
+        // 6주(42일)치 날짜를 생성하여 그리드를 만듭니다.
         const days = eachDayOfInterval({ start: startDate, end: endDate });
 
         const weeksArray = [];

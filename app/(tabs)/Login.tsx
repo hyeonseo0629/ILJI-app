@@ -17,7 +17,7 @@ import {
     statusCodes,
     User,
     SignInResponse,            // v15: signIn() 반환 타입
-    SignInSilentlyResponse,    // v15: signInSilently() 반환 타입
+    SignInSilentlyResponse,    // v1s5: signInSilently() 반환 타입
 } from '@react-native-google-signin/google-signin';
 
 import { MainContainer } from '@/components/MainStyle';
@@ -31,10 +31,7 @@ interface ExtraType {
     };
 }
 
-const extra: ExtraType =
-    (Constants.expoConfig?.extra as ExtraType) ??
-    ((Constants.manifest as any)?.extra as ExtraType) ??
-    {};
+const extra: ExtraType = (Constants.expoConfig?.extra as ExtraType) ?? {};
 
 const googleClientId = extra.googleClientId ?? {};
 
@@ -51,6 +48,7 @@ const summarize = (u: User) => ({
     scopes: u.scopes ?? [],
 });
 
+// eslint-disable-next-line import/no-unused-modules
 export default function LoginScreen(): React.JSX.Element {
     const [busy, setBusy] = useState(false);
     const [userInfo, setUserInfo] = useState<User | null>(null);
@@ -161,7 +159,7 @@ export default function LoginScreen(): React.JSX.Element {
 
     return (
         <MainContainer>
-            <Header />
+            <Header sheetIndex={0} />
             <View style={styles.container}>
                 <Text style={styles.title}>Login</Text>
                 <Text style={styles.subtitle}>Sign in to sync your schedules.</Text>
