@@ -1,62 +1,29 @@
-import {Text, FlatList, View} from "react-native";
+import {Text} from "react-native";
 import React from "react";
 import {TCContainer} from "@/components/bottom_sheet/ToDoCategoryStyle";
-import {Schedule} from "@/app/hooks/useFetchSchedules";
 
-interface ContentProps {
-  data: Schedule[];
-}
 
 // -------------------------------------- //
 // 컴포넌트 이름은 카테고리 확정에 따라 변경 예정 //
 // -------------------------------------- //
-export const ToDoContent = ({ data }: ContentProps) => {
+export const ToDoContent = () => {
     return (
         <TCContainer>
-            <FlatList
-                data={data}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                    <View style={{padding: 10}}>
-                        <Text>{item.title}</Text>
-                    </View>
-                )}
-                ListEmptyComponent={<Text>No To-Do items for today.</Text>}
-            />
+            <Text> To-Do Input Form </Text>
         </TCContainer>
     );
 }
-
-export const RoutineContent = ({ data }: ContentProps) => {
+export const RoutineContent = () => {
     return (
         <TCContainer>
-            <FlatList
-                data={data}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                    <View style={{padding: 10}}>
-                        <Text>{item.title}</Text>
-                    </View>
-                )}
-                ListEmptyComponent={<Text>No routines for today.</Text>}
-            />
+            <Text> Routine Input Form </Text>
         </TCContainer>
     );
 }
-
-export const GoalContent = ({ data }: ContentProps) => {
+export const GoalContent = () => {
     return (
         <TCContainer>
-            <FlatList
-                data={data}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                    <View style={{padding: 10}}>
-                        <Text>{item.title}</Text>
-                    </View>
-                )}
-                ListEmptyComponent={<Text>No goals for today.</Text>}
-            />
+            <Text> Goal Input Form </Text>
         </TCContainer>
     );
 }

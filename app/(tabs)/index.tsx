@@ -1,6 +1,6 @@
 // app/(tabs)/index.tsx
 import React, {useState, useRef, useMemo, useCallback} from 'react';
-import {Pressable, Text, View} from 'react-native';
+import {Pressable, Text} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Header from "@/components/header/Header";
@@ -14,7 +14,35 @@ import {
 } from "@/components/MainStyle";
 import {GoalContent, RoutineContent, ToDoContent} from "@/components/bottom_sheet/ToDoCategory";
 import CalendarView from "@/components/calendar/CalendarView";
-import {useFetchSchedules} from "@/app/hooks/useFetchSchedules";
+import { Schedule } from "@/hooks/useFetchSchedules";
+
+// Dummy schedule data matching the correct schema
+const dummySchedules: Schedule[] = [
+    {
+        id: 1,
+        userId: 1,
+        title: 'Team Meeting',
+        description: 'Discuss project progress.',
+        startTime: '2024-05-20T10:00:00',
+        endTime: '2024-05-20T11:00:00',
+        isAllDay: false,
+        rrule: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    },
+    {
+        id: 2,
+        userId: 1,
+        title: 'Project Deadline',
+        description: 'Final submission.',
+        startTime: '2024-05-25T09:00:00',
+        endTime: '2024-05-25T17:00:00',
+        isAllDay: false,
+        rrule: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    },
+];
 
 export default function HomeScreen() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -22,9 +50,6 @@ export default function HomeScreen() {
     const [activeTab, setActiveTab] = useState('To-Do');
     const [sheetIndex, setSheetIndex] = useState(0);
     const tabPressedRef = useRef(false);
-
-    // Fetch schedules from the backend
-    const { schedules, loading, error } = useFetchSchedules();
 
     const handleSheetChanges = useCallback((index: number) => {
         setSheetIndex(index);
@@ -93,34 +118,6 @@ export default function HomeScreen() {
         []
     );
 
-    const renderContent = () => {
-        if (loading) {
-            return <Text>Loading...</Text>;
-        }
-
-        if (error) {
-            return <Text>Error: {error.message}</Text>;
-        }
-
-        // Simple filtering based on title for now.
-        // This can be improved with better data from the backend.
-        const toDo = schedules.filter(s => s.title.toLowerCase().includes('todo'));
-        const routines = schedules.filter(s => s.title.toLowerCase().includes('routine'));
-        const goals = schedules.filter(s => s.title.toLowerCase().includes('goal'));
-
-
-        if (activeTab === 'To-Do') {
-            return <ToDoContent data={toDo} />;
-        }
-        if (activeTab === 'Routine') {
-            return <RoutineContent data={routines} />;
-        }
-        if (activeTab === 'Goal') {
-            return <GoalContent data={goals} />;
-        }
-        return null;
-    };
-
     return (
         <GestureHandlerRootView style={{flex: 1}}>
             <MainContainer>
@@ -129,6 +126,7 @@ export default function HomeScreen() {
                     <CalendarView
                         date={currentDate}
                         onDateChange={setCurrentDate}
+                        schedules={dummySchedules} // Pass the dummy schedules directly
                     />
                 </CContainer>
                 <BottomSheet
@@ -144,7 +142,9 @@ export default function HomeScreen() {
                     }}
                 >
                     <MainContentWrap>
-                        {renderContent()}
+                        {activeTab === 'To-Do' && <ToDoContent />}
+                        {activeTab === 'Routine' && <RoutineContent />}
+                        {activeTab === 'Goal' && <GoalContent />}
                     </MainContentWrap>
                 </BottomSheet>
             </MainContainer>

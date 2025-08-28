@@ -1,41 +1,71 @@
 import React, { useMemo } from 'react';
 import {
-    eachDayOfInterval, // 주어진 기간 내의 모든 날짜를 배열로 반환합니다.
-    startOfMonth,      // 주어진 날짜가 속한 달의 시작 날짜를 반환합니다.
-    startOfWeek,       // 주어진 날짜가 속한 주의 시작 날짜를 반환합니다.
-    format,            // 날짜를 지정된 형식의 문자열로 변환합니다.
-    add,               // 날짜에 특정 기간을 더합니다.
-    isSameMonth,       // 두 날짜가 같은 달에 속하는지 확인합니다.
-    isToday,           // 주어진 날짜가 오늘인지 확인합니다.
-    isSameDay,         // 두 날짜가 같은 날인지 확인합니다.
+    eachDayOfInterval,
+    startOfMonth,
+    endOfMonth,
+    startOfWeek,
+    endOfWeek,
+    format,
+    add,
+    sub,
+    isSameMonth,
+    isToday,
+    isSameDay,
+    differenceInDays,
+    getDay,
 } from 'date-fns';
-import * as S from './CalendarStyle';
+import { MWeek, MDayNameText, MEmptyDayContainer, MDayContainer, MDayCircle, MDayText, EventDot } from './CalendarStyle';
 import { CalendarEvent } from './types';
 
-// --- 컴포넌트 Props 정의 ---
+// --- Component Props Definition ---
 
 interface MonthViewProps {
-    // `date`는 현재 보여줄 월(month)을 결정하는 기준 날짜입니다.
     date: Date;
-    // `events`는 캘린더에 표시될 이벤트의 배열입니다.
     events?: CalendarEvent[];
-    // `onDayPress`는 특정 날짜가 눌렸을 때 호출될 선택적 콜백 함수입니다.
     onDayPress?: (day: Date) => void;
 }
 
-// --- MonthView 컴포넌트 ---
+// --- MonthView Component ---
 
 const MonthView: React.FC<MonthViewProps> = ({ date, events = [], onDayPress }) => {
-    // 요일 헤더에 표시될 이름 배열입니다.
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-    // `useMemo`를 사용하여 `date` prop이 변경될 때만 캘린더에 표시될 주(week) 배열을 다시 계산합니다.
     const weeks = useMemo(() => {
         const monthStart = startOfMonth(date);
-        const weekStartsOn = 0; // 주의 시작을 일요일(0)로 설정합니다.
-        const startDate = startOfWeek(monthStart, { weekStartsOn });
-        const endDate = add(startDate, { days: 41 });
-        const days = eachDayOfInterval({ start: startDate, end: endDate });
+        const monthEnd = endOfMonth(date);
+        const weekStartsOn = 0; // Sunday
+
+        const naturalGridStart = startOfWeek(monthStart, { weekStartsOn });
+        const naturalGridEnd = endOfWeek(monthEnd, { weekStartsOn });
+
+        // Calculate the number of weeks the month naturally spans
+        const naturalWeeks = (differenceInDays(naturalGridEnd, naturalGridStart) + 1) / 7;
+
+        let startDate = naturalGridStart;
+
+        if (naturalWeeks === 4) {
+            // If the month spans 4 weeks, add one week before and one after.
+            // We do this by setting the start date one week before the natural start.
+            // The 6-week (42-day) interval will automatically cover one week after.
+            startDate = sub(naturalGridStart, { weeks: 1 });
+        } else if (naturalWeeks === 5) {
+            // If the month spans 5 weeks, add one week to balance the grid.
+            // We add the extra week to the side with fewer empty days from adjacent months.
+            const blanksAtStart = getDay(monthStart); // Empty days at the beginning of the month grid
+            const blanksAtEnd = 6 - getDay(monthEnd);   // Empty days at the end of the month grid
+
+            if (blanksAtStart > blanksAtEnd) {
+                // If there are more empty days at the start, add the extra week at the end.
+                // The grid starts at the natural start, and the 6th week is added at the end.
+                startDate = naturalGridStart;
+            } else {
+                // If there are fewer or equal empty days at the start, add the extra week at the beginning.
+                startDate = sub(naturalGridStart, { weeks: 1 });
+            }
+        }
+        // If naturalWeeks is 6, startDate remains naturalGridStart, and the grid is 6 weeks.
+
+        const days = eachDayOfInterval({ start: startDate, end: add(startDate, { days: 41 }) });
 
         const weeksArray = [];
         for (let i = 0; i < 6; i++) {
@@ -46,21 +76,18 @@ const MonthView: React.FC<MonthViewProps> = ({ date, events = [], onDayPress }) 
 
     return (
         <>
-            {/* 요일 헤더 (일, 월, 화...) */}
-            <S.MWeek>
-                {dayNames.map(name => <S.MDayNameText key={name}>{name}</S.MDayNameText>)}
-            </S.MWeek>
+            {/* Day of the week header (Sun, Mon, Tue...) */}
+            <MWeek>
+                {dayNames.map(name => <MDayNameText key={name}>{name}</MDayNameText>)}
+            </MWeek>
 
-            {/* 캘린더의 주(week)들을 렌더링합니다. */}
+            {/* Render the weeks of the calendar */}
             {weeks.map((week, weekIndex) => (
-                // **수정된 부분:**
-                // 각 주(week)의 key를 날짜 기반이 아닌 인덱스 기반으로 변경하여 안정성을 높입니다.
-                // 이 방법은 리스트가 재정렬되지 않는 경우에 안전하며, 렌더링 오류를 방지합니다.
-                <S.MWeek key={`week-${weekIndex}`}>
-                    {/* 각 주의 날짜들을 렌더링합니다. */}
+                <MWeek key={`week-${weekIndex}`}>
+                    {/* Render the days of the week */}
                     {week.map((day, dayIndex) => {
                         if (!day) {
-                            return <S.MEmptyDayContainer key={`empty-${weekIndex}-${dayIndex}`} />;
+                            return <MEmptyDayContainer key={`empty-${weekIndex}-${dayIndex}`} />;
                         }
 
                         const isCurrentMonth = isSameMonth(day, date);
@@ -68,23 +95,22 @@ const MonthView: React.FC<MonthViewProps> = ({ date, events = [], onDayPress }) 
                         const dayEvents = events.filter(event => event && event.start && isSameDay(event.start, day));
 
                         return (
-                            <S.MDayContainer
-                                // **수정된 부분:** 각 날짜의 key도 인덱스 기반으로 변경하여 고유성과 안정성을 보장합니다.
+                            <MDayContainer
                                 key={`day-${weekIndex}-${dayIndex}`}
                                 onPress={() => onDayPress?.(day)}
                             >
-                                {isCurrentDay ? ( // '오늘' 날짜는 특별한 스타일(원)을 적용합니다.
-                                    <S.MDayCircle>
-                                        <S.MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</S.MDayText>
-                                    </S.MDayCircle>
-                                ) : ( // 다른 날짜들은 일반 텍스트로 표시합니다.
-                                    <S.MDayText $isNotInMonth={!isCurrentMonth} $isToday={isCurrentDay}>{format(day, 'd')}</S.MDayText>
+                                {isCurrentDay ? ( // Apply a special style (circle) for 'today'.
+                                    <MDayCircle>
+                                        <MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</MDayText>
+                                    </MDayCircle>
+                                ) : ( // Display other dates as plain text.
+                                    <MDayText $isNotInMonth={!isCurrentMonth}>{format(day, 'd')}</MDayText>
                                 )}
-                                {dayEvents.length > 0 && <S.EventDot color={dayEvents[0].color} />}
-                            </S.MDayContainer>
+                                {dayEvents.length > 0 && <EventDot color={dayEvents[0].color} />}
+                            </MDayContainer>
                         );
                     })}
-                </S.MWeek>
+                </MWeek>
             ))}
         </>
     );
