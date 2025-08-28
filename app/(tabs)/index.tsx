@@ -47,8 +47,8 @@ export default function HomeScreen() {
             isAllDay: false, rrule: '', createdAt: new Date(), updatedAt: new Date(), calendarId: 1,
         },
         {
-            id: 3, userId: 1, tagId: 3, title: '에이',
-            location: '강남역 튼튼치과', description: '정기 검진',
+            id: 3, userId: 1, tagId: 3, title: '프로젝트 개발 진행',
+            location: '솔데스크', description: '파이널 프로젝트 진행 중',
             startTime: set(new Date(), {hours: 17, minutes: 0, seconds: 0}),
             endTime: set(new Date(), {hours: 18, minutes: 0, seconds: 0}),
             isAllDay: false, rrule: '', createdAt: new Date(), updatedAt: new Date(), calendarId: 1,

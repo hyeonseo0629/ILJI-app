@@ -99,20 +99,14 @@ export const MDayCircle = styled.View`
     align-items: center; /* 내부 텍스트를 가로 중앙에 정렬 */
 `;
 
-
-export const EventDot = styled.View<{ color?: string }>`
-    width: 5px;
-    height: 5px;
-    border-radius: 2.5px;
-    background-color: ${(props) => props.color || 'tomato'};
-    position: absolute;
-    bottom: 8px;
-`;
+interface EventTitleTextProps {
+    color?: string;
+}
 
 export const EventTitleText = styled.Text.attrs({
-    numberOfLines: 2, // 텍스트를 한 줄로 제한합니다.
+    numberOfLines: 1, // 텍스트를 한 줄로 제한합니다.
     ellipsizeMode: 'tail', // 길이가 길면 끝에 ...을 표시합니다.
-})`
+})<EventTitleTextProps>`
     font-size: 8px; /* 월별 캘린더에 맞게 작은 글씨 크기 */
     text-align: center;
     margin-top: 2px;
@@ -120,8 +114,15 @@ export const EventTitleText = styled.Text.attrs({
     border-radius: 4px;
     padding: 1px 3px; /* 텍스트 주변에 약간의 여백을 줍니다. */
     color: #ffffff;
-    background-color: ${(props) => props.color || 'tomato'};
+    background-color: ${(props) => props.color || 'gray'};
 `;
+
+export const MEventsContainer = styled.View`
+     flex: 1; /* 날짜 텍스트를 제외한 나머지 세로 공간을 모두 차지합니다. */
+     width: 100%; /* 부모 컨테이너의 너비에 맞춥니다. */
+     overflow: hidden; /* 이 컨테이너의 크기를 벗어나는 자식 요소(일정)를 숨깁니다. */
+ `;
+
 
 /**
  * Timetable (Week) View Styles

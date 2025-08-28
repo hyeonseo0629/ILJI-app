@@ -86,15 +86,17 @@ const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], tags = [], 
                                 ) : ( // 다른 날짜들은 텍스트만 표시합니다.
                                     <S.MDayText $isNotInMonth={!isCurrentMonth} $isToday={isCurrentDay}>{format(day, 'd')}</S.MDayText>
                                 )}
-                                {/* 해당 날짜의 모든 일정을 순회하며 표시합니다. */}
-                                {daySchedules.map(schedule => {
-                                    const eventColor = tagColorMap.get(schedule.tagId) || 'gray';
-                                    return (
-                                        <S.EventTitleText key={schedule.id} color={eventColor}>
-                                            {schedule.title}
-                                        </S.EventTitleText>
-                                    );
-                                })}
+                                <S.MEventsContainer>
+                                    {/* 해당 날짜의 모든 일정을 순회하며 표시합니다. */}
+                                    {daySchedules.map(schedule => {
+                                        const eventColor = tagColorMap.get(schedule.tagId) || 'gray';
+                                        return (
+                                            <S.EventTitleText key={schedule.id} color={eventColor}>
+                                                {schedule.title}
+                                            </S.EventTitleText>
+                                        );
+                                    })}
+                                </S.MEventsContainer>
                             </S.MDayContainer>
                         );
                     })}
