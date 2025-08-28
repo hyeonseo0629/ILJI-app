@@ -1,5 +1,6 @@
 import {Text, TouchableOpacity} from "react-native";
 import React, {useMemo, useState} from "react";
+import { Link } from "expo-router";
 import {
     BSContainer, BSContentWrap, BSHeader, BSHeaderLeft, BSHeaderRight, BSTodayText,
     BSToDoAddButton
@@ -20,9 +21,9 @@ interface BottomSheetContentProps {
 export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({schedules, tags, activeTab}) => {
     const [sortBy, setSortBy] = useState('latest');
     const pickerItems = [
-        {label: "최신순", value: "latest"},
-        {label: "오래된순", value: "oldest"},
-        {label: "중요도순", value: "priority"},
+        {label: "latest", value: "latest"},
+        {label: "oldest", value: "oldest"},
+        {label: "priority", value: "priority"},
     ];
 
     // 1. activeTab(태그 라벨)에 해당하는 스케줄만 필터링합니다.
@@ -51,9 +52,11 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({schedules
                 </BSHeaderLeft>
                 <BSHeaderRight>
                     <BSTodayText>{format(new Date(), "yyyy-MM-dd")}</BSTodayText>
-                    <TouchableOpacity>
-                        <BSToDoAddButton name="pluscircleo" size={20}/>
-                    </TouchableOpacity>
+                    <Link href="/add-schedule" asChild>
+                        <TouchableOpacity>
+                            <BSToDoAddButton name="pluscircleo" size={20}/>
+                        </TouchableOpacity>
+                    </Link>
                 </BSHeaderRight>
             </BSHeader>
             <BottomSheetScrollView style={{flex:1}}>
