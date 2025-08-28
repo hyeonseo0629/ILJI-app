@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import {
     eachDayOfInterval,
@@ -12,60 +13,36 @@ import {
     isToday,
     isSameDay,
     differenceInDays,
-    getDay,
 } from 'date-fns';
-import { MWeek, MDayNameText, MEmptyDayContainer, MDayContainer, MDayCircle, MDayText, EventDot } from './CalendarStyle';
-import { CalendarEvent } from './types';
-
-// --- Component Props Definition ---
+import * as S from './CalendarStyle';
+import { Schedule } from '@/components/calendar/types';
+import { Tag } from '@/components/ToDo/types';
 
 interface MonthViewProps {
     date: Date;
-    events?: CalendarEvent[];
+    schedules?: Schedule[];
+    tags?: Tag[];
     onDayPress?: (day: Date) => void;
 }
 
-// --- MonthView Component ---
-
-const MonthView: React.FC<MonthViewProps> = ({ date, events = [], onDayPress }) => {
+const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], tags = [], onDayPress }) => {
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
     const weeks = useMemo(() => {
         const monthStart = startOfMonth(date);
         const monthEnd = endOfMonth(date);
-        const weekStartsOn = 0; // Sunday
+        const weekStartsOn = 0; // 0 for Sunday
 
-        const naturalGridStart = startOfWeek(monthStart, { weekStartsOn });
-        const naturalGridEnd = endOfWeek(monthEnd, { weekStartsOn });
+        const naturalStart = startOfWeek(monthStart, { weekStartsOn });
+        const naturalEnd = endOfWeek(monthEnd, { weekStartsOn });
 
-        // Calculate the number of weeks the month naturally spans
-        const naturalWeeks = (differenceInDays(naturalGridEnd, naturalGridStart) + 1) / 7;
+        const naturalDays = differenceInDays(naturalEnd, naturalStart) + 1;
+        const paddingDays = 42 - naturalDays;
+        const paddingBefore = Math.round(paddingDays / 2);
 
-        let startDate = naturalGridStart;
+        const startDate = sub(naturalStart, { days: paddingBefore });
+        const endDate = add(startDate, { days: 41 });
 
-        if (naturalWeeks === 4) {
-            // If the month spans 4 weeks, add one week before and one after.
-            // We do this by setting the start date one week before the natural start.
-            // The 6-week (42-day) interval will automatically cover one week after.
-            startDate = sub(naturalGridStart, { weeks: 1 });
-        } else if (naturalWeeks === 5) {
-            // If the month spans 5 weeks, add one week to balance the grid.
-            // We add the extra week to the side with fewer empty days from adjacent months.
-            const blanksAtStart = getDay(monthStart); // Empty days at the beginning of the month grid
-            const blanksAtEnd = 6 - getDay(monthEnd);   // Empty days at the end of the month grid
-
-            if (blanksAtStart > blanksAtEnd) {
-                // If there are more empty days at the start, add the extra week at the end.
-                // The grid starts at the natural start, and the 6th week is added at the end.
-                startDate = naturalGridStart;
-            } else {
-                // If there are fewer or equal empty days at the start, add the extra week at the beginning.
-                startDate = sub(naturalGridStart, { weeks: 1 });
-            }
-        }
-        // If naturalWeeks is 6, startDate remains naturalGridStart, and the grid is 6 weeks.
-
-        const days = eachDayOfInterval({ start: startDate, end: add(startDate, { days: 41 }) });
+        const days = eachDayOfInterval({ start: startDate, end: endDate });
 
         const weeksArray = [];
         for (let i = 0; i < 6; i++) {
@@ -74,43 +51,56 @@ const MonthView: React.FC<MonthViewProps> = ({ date, events = [], onDayPress }) 
         return weeksArray;
     }, [date]);
 
+    // tags 배열이 변경될 때만 색상 맵을 다시 생성하여 성능을 최적화합니다.
+    const tagColorMap = useMemo(() => {
+        const map = new Map<number, string>();
+        tags.forEach(tag => {
+            map.set(tag.id, tag.color);
+        });
+        return map;
+    }, [tags]);
+
     return (
         <>
-            {/* Day of the week header (Sun, Mon, Tue...) */}
-            <MWeek>
-                {dayNames.map(name => <MDayNameText key={name}>{name}</MDayNameText>)}
-            </MWeek>
-
-            {/* Render the weeks of the calendar */}
-            {weeks.map((week, weekIndex) => (
-                <MWeek key={`week-${weekIndex}`}>
-                    {/* Render the days of the week */}
-                    {week.map((day, dayIndex) => {
-                        if (!day) {
-                            return <MEmptyDayContainer key={`empty-${weekIndex}-${dayIndex}`} />;
-                        }
-
+            <S.MWeek style={{height: 20}}>
+                {dayNames.map(name => <S.MDayNameText key={name}>{name}</S.MDayNameText>)}
+            </S.MWeek>
+            {weeks.map((week, i) => (
+                <S.MWeek key={i}>
+                    {week.map((day, j) => {
+                        if (!day) return <S.MEmptyDayContainer key={`empty-${j}`} />;
                         const isCurrentMonth = isSameMonth(day, date);
                         const isCurrentDay = isToday(day);
-                        const dayEvents = events.filter(event => event && event.start && isSameDay(event.start, day));
+                        const daySchedules = schedules.filter(schedule => isSameDay(schedule.startTime, day));
 
                         return (
-                            <MDayContainer
-                                key={`day-${weekIndex}-${dayIndex}`}
+                            <S.MDayContainer
+                                key={day.toISOString()}
                                 onPress={() => onDayPress?.(day)}
                             >
-                                {isCurrentDay ? ( // Apply a special style (circle) for 'today'.
-                                    <MDayCircle>
-                                        <MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</MDayText>
-                                    </MDayCircle>
-                                ) : ( // Display other dates as plain text.
-                                    <MDayText $isNotInMonth={!isCurrentMonth}>{format(day, 'd')}</MDayText>
+                                {isCurrentDay ? ( // '오늘' 날짜는 파란색 원으로 감쌉니다.
+                                    <S.MDayCircle>
+                                        {/* 원 안의 텍스트는 MDayText로 감싸고, 선택된 스타일(흰색)을 적용합니다. */}
+                                        <S.MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</S.MDayText>
+                                    </S.MDayCircle>
+                                ) : ( // 다른 날짜들은 텍스트만 표시합니다.
+                                    <S.MDayText $isNotInMonth={!isCurrentMonth} $isToday={isCurrentDay}>{format(day, 'd')}</S.MDayText>
                                 )}
-                                {dayEvents.length > 0 && <EventDot color={dayEvents[0].color} />}
-                            </MDayContainer>
+                                <S.MEventsContainer>
+                                    {/* 해당 날짜의 모든 일정을 순회하며 표시합니다. */}
+                                    {daySchedules.map(schedule => {
+                                        const eventColor = tagColorMap.get(schedule.tagId) || 'gray';
+                                        return (
+                                            <S.EventTitleText key={schedule.id} color={eventColor}>
+                                                {schedule.title}
+                                            </S.EventTitleText>
+                                        );
+                                    })}
+                                </S.MEventsContainer>
+                            </S.MDayContainer>
                         );
                     })}
-                </MWeek>
+                </S.MWeek>
             ))}
         </>
     );

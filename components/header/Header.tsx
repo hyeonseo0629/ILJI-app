@@ -1,35 +1,37 @@
+import React from "react";
 import {HBottom, HContainer, HIcon, HIconWrap, HLogo, HRecentDiary, HTop} from "@/components/header/HeaderStyle";
 import {usePathname} from "expo-router";
 
-// Header 컴포넌트는 앱의 헤더 섹션을 렌더링합니다.
-const Header = () => {
-    // `usePathname` 훅은 현재 URL의 경로 이름을 반환합니다.
-    // 예를 들어, 홈 화면에서는 '/', 다이어리 화면에서는 '/Diary'를 반환합니다.
-    // 이를 통해 현재 어떤 화면에 있는지 알 수 있습니다.
+interface HeaderProps {
+    sheetIndex: number;
+}
+
+const Header: React.FC<HeaderProps> = ({ sheetIndex }) => {
+    // 1. expo-router의 usePathname 훅을 사용해 현재 화면의 경로를 가져옵니다.
+    //    - 홈 화면 (index.tsx)일 경우: '/'
+    //    - 다이어리 화면 (Diary.tsx)일 경우: '/Diary'
     const pathname = usePathname();
+    const isMain = pathname === '/';
+    // 2. 바텀 시트가 확장된 상태인지 (인덱스가 0보다 큰지) 확인합니다.
+    const isSheetExpanded = sheetIndex > 0;
 
     return (
         <>
-            {/* HContainer는 헤더의 메인 컨테이너입니다. */}
-            <HContainer>
-                {/* HTop은 헤더의 상단 부분을 담당합니다. */}
+            {/* 3. isMain과 isSheetExpanded 값을 prop으로 전달하여,
+                   HContainer가 스스로 그림자와 z-index를 제어하도록 합니다.
+            */}
+            <HContainer $isMain={isMain} $isSheetExpanded={isSheetExpanded}>
                 <HTop>
-                    {/* HLogo는 앱 로고를 표시합니다. */}
                     <HLogo/>
-                    {/* HIconWrap은 아이콘들을 감싸는 컨테이너입니다. */}
                     <HIconWrap>
-                        {/* HIcon은 개별 아이콘을 표시합니다. */}
                         <HIcon>🔔</HIcon>
                         <HIcon>📤</HIcon>
                         <HIcon>✉️</HIcon>
                     </HIconWrap>
                 </HTop>
-                {/* 현재 경로가 홈 화면('/')일 때만 HBottom 컴포넌트를 렌더링합니다. */}
-                {/* 이는 홈 화면에서만 최근 다이어리 목록을 보여주기 위함입니다. */}
-                {pathname === '/' && (
+                {/* 4. 현재 경로가 홈 화면('/')일 때만 HBottom을 렌더링합니다. */}
+                {isMain && (
                     <HBottom>
-                        {/* HRecentDiary는 최근 다이어리 항목을 표시하는 컴포넌트입니다. */}
-                        {/* 지금은 5개의 동일한 컴포넌트를 렌더링하고 있습니다. */}
                         <HRecentDiary/>
                         <HRecentDiary/>
                         <HRecentDiary/>

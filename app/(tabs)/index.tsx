@@ -1,9 +1,12 @@
 // app/(tabs)/index.tsx
 import React, {useState, useRef, useMemo, useCallback} from 'react';
-import {Pressable, Text} from 'react-native';
+import {Pressable} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Header from "@/components/header/Header";
+import {set} from "date-fns";
+import {Schedule} from "@/components/calendar/types";
+import {Tag} from "@/components/ToDo/types";
 import {CContainer} from "@/components/calendar/CalendarStyle";
 import {
     MainContainer,
@@ -12,44 +15,48 @@ import {
     MainTodoCategoryText,
     MainToDoCategoryWarp
 } from "@/components/MainStyle";
-import {GoalContent, RoutineContent, ToDoContent} from "@/components/bottom_sheet/ToDoCategory";
+import {BottomSheetContent} from "@/components/bottomSheet/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
-import { Schedule } from "@/hooks/useFetchSchedules";
-
-// Dummy schedule data matching the correct schema
-const dummySchedules: Schedule[] = [
-    {
-        id: 1,
-        userId: 1,
-        title: 'Team Meeting',
-        description: 'Discuss project progress.',
-        startTime: '2024-05-20T10:00:00',
-        endTime: '2024-05-20T11:00:00',
-        isAllDay: false,
-        rrule: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-    },
-    {
-        id: 2,
-        userId: 1,
-        title: 'Project Deadline',
-        description: 'Final submission.',
-        startTime: '2024-05-25T09:00:00',
-        endTime: '2024-05-25T17:00:00',
-        isAllDay: false,
-        rrule: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-    },
-];
 
 export default function HomeScreen() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const [activeTab, setActiveTab] = useState('To-Do');
     const [sheetIndex, setSheetIndex] = useState(0);
     const tabPressedRef = useRef(false);
+
+    const [tags, setTags] = useState<Tag[]>([
+        { id: 1, color: '#FFB3A7', createdAt: new Date(), label: 'Work', updatedAt: new Date(), userId: 1 }, // Soft Coral
+        { id: 2, color: '#A7D7FF', createdAt: new Date(), label: 'Personal', updatedAt: new Date(), userId: 1 }, // Light Sky Blue
+        { id: 3, color: '#A7FFD4', createdAt: new Date(), label: 'Study', updatedAt: new Date(), userId: 1 }, // Mint Green
+    ]);
+
+    // 1. API 등에서 가져온 원본 일정 데이터를 상태로 관리합니다.
+    const [schedules, setSchedules] = useState<Schedule[]>([
+        {
+            id: 1, userId: 1, tagId: 1, title: '프로젝트 기획 회의',
+            location: '회의실 A', description: '1분기 프로젝트 기획 회의',
+            startTime: set(new Date(), {hours: 10, minutes: 0, seconds: 0}),
+            endTime: set(new Date(), {hours: 13, minutes: 30, seconds: 0}),
+            isAllDay: false, rrule: '', createdAt: new Date(), updatedAt: new Date(), calendarId: 1,
+        },
+        {
+            id: 2, userId: 1, tagId: 2, title: '치과 예약',
+            location: '강남역 튼튼치과', description: '정기 검진',
+            startTime: set(new Date(), {hours: 14, minutes: 0, seconds: 0}),
+            endTime: set(new Date(), {hours: 15, minutes: 0, seconds: 0}),
+            isAllDay: false, rrule: '', createdAt: new Date(), updatedAt: new Date(), calendarId: 1,
+        },
+        {
+            id: 3, userId: 1, tagId: 3, title: '프로젝트 개발 진행',
+            location: '솔데스크', description: '파이널 프로젝트 진행 중',
+            startTime: set(new Date(), {hours: 17, minutes: 0, seconds: 0}),
+            endTime: set(new Date(), {hours: 18, minutes: 0, seconds: 0}),
+            isAllDay: false, rrule: '', createdAt: new Date(), updatedAt: new Date(), calendarId: 1,
+        }
+    ]);
+
+    // 1. activeTab의 초기값을 tags 배열의 첫 번째 아이템 라벨로 설정합니다.
+    const [activeTab, setActiveTab] = useState(tags[0]?.label || '');
 
     const handleSheetChanges = useCallback((index: number) => {
         setSheetIndex(index);
@@ -76,34 +83,22 @@ export default function HomeScreen() {
     const TabHandle = () => (
         <Pressable onPress={handleSheetToggle}>
             <MainToDoCategoryWarp>
-                <MainToDoCategory
-                    $isActive={activeTab === 'To-Do'}
-                    activeColor="darksalmon"
-                    onPress={() => handleTabPress('To-Do')}
-                >
-                    <MainTodoCategoryText $isActive={activeTab === 'To-Do'}>To-Do</MainTodoCategoryText>
-                </MainToDoCategory>
-
-                <MainToDoCategory
-                    $isActive={activeTab === 'Routine'}
-                    activeColor="khaki"
-                    onPress={() => handleTabPress('Routine')}
-                >
-                    <MainTodoCategoryText $isActive={activeTab === 'Routine'}>Routine</MainTodoCategoryText>
-                </MainToDoCategory>
-
-                <MainToDoCategory
-                    $isActive={activeTab === 'Goal'}
-                    activeColor="lightblue"
-                    onPress={() => handleTabPress('Goal')}
-                >
-                    <MainTodoCategoryText $isActive={activeTab === 'Goal'}>Goal</MainTodoCategoryText>
-                </MainToDoCategory>
+                {/* 2. tags 배열을 기반으로 탭을 동적으로 렌더링합니다. */}
+                {tags.map(tag => (
+                    <MainToDoCategory
+                        key={tag.id}
+                        $isActive={activeTab === tag.label}
+                        activeColor={tag.color}
+                        onPress={() => handleTabPress(tag.label)}
+                    >
+                        <MainTodoCategoryText $isActive={activeTab === tag.label}>{tag.label}</MainTodoCategoryText>
+                    </MainToDoCategory>
+                ))}
             </MainToDoCategoryWarp>
         </Pressable>
     );
 
-    const snapPoints = useMemo(() => ['16%', '65%'], []);
+    const snapPoints = useMemo(() => ['14.5%', '90%'], []);
 
     const renderBackdrop = useCallback(
         (props: any) => (
@@ -112,21 +107,23 @@ export default function HomeScreen() {
                 disappearsOnIndex={0}
                 appearsOnIndex={1}
                 pressBehavior="collapse"
-                opacity={0.10}
+                opacity={0.10} // Adjust the opacity here for a lighter grey
             />
         ),
         []
     );
 
     return (
+        // GestureHandlerRootView는 앱의 최상단에서 전체 화면을 차지해야 합니다.
         <GestureHandlerRootView style={{flex: 1}}>
             <MainContainer>
-                <Header/>
+                <Header sheetIndex={sheetIndex} />
                 <CContainer>
                     <CalendarView
                         date={currentDate}
                         onDateChange={setCurrentDate}
-                        schedules={dummySchedules} // Pass the dummy schedules directly
+                        schedules={schedules}
+                        tags={tags}
                     />
                 </CContainer>
                 <BottomSheet
@@ -136,15 +133,13 @@ export default function HomeScreen() {
                     handleComponent={TabHandle}
                     onChange={handleSheetChanges}
                     backdropComponent={renderBackdrop}
-                    enablePanDownToClose={true}
                     backgroundStyle={{
                         backgroundColor: 'transparent',
                     }}
                 >
+                    {/* 3. 탭 UI가 핸들로 이동했으므로, 여기에는 콘텐츠만 남깁니다. */}
                     <MainContentWrap>
-                        {activeTab === 'To-Do' && <ToDoContent />}
-                        {activeTab === 'Routine' && <RoutineContent />}
-                        {activeTab === 'Goal' && <GoalContent />}
+                        <BottomSheetContent schedules={schedules} tags={tags} activeTab={activeTab} />
                     </MainContentWrap>
                 </BottomSheet>
             </MainContainer>
