@@ -141,6 +141,7 @@ export default function HomeScreen() {
                         onDateChange={setCurrentDate}
                         schedules={schedules}
                         tags={tags}
+                        onSchedulesChange={setSchedules}
                     />
                 </CContainer>
                 <BottomSheet

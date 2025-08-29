@@ -1,5 +1,5 @@
 import React, {useState, useMemo, useRef, useEffect} from 'react';
-import {View, Text, FlatList, Dimensions, Modal} from 'react-native';
+import {View, Text, FlatList, Dimensions, Alert} from 'react-native';
 import PagerView from 'react-native-pager-view';
 import {
     format,
@@ -13,6 +13,7 @@ import * as S from './CalendarStyle';
 import MonthView from './MonthView';
 import WeekView from './WeekView';
 import DayView from './DayView';
+import DetailSchedule from '@/components/DetailSchedule/detail-schedule'; // 이 경로는 이미 올바르게 되어있을 수 있습니다.
 import { Schedule } from '@/components/calendar/types';
 import { Tag } from '@/components/ToDo/types';
 
@@ -21,9 +22,10 @@ interface SixWeekCalendarProps {
     onDateChange: (newDate: Date) => void;
     schedules: Schedule[];
     tags: Tag[];
+    onSchedulesChange: (schedules: Schedule[]) => void;
 }
 
-const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, schedules = [], tags = []}) => {
+const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, schedules, tags, onSchedulesChange}) => {
     // Refs for controlling pagers and lists
     const pagerRef = useRef<PagerView>(null);
     const monthFlatListRef = useRef<FlatList>(null);
@@ -43,6 +45,12 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
     const [months, setMonths] = useState([sub(date, {months: 1}), date, add(date, {months: 1})]);
     const [weeks, setWeeks] = useState([sub(date, {weeks: 1}), date, add(date, {weeks: 1})]);
     const [days, setDays] = useState([sub(date, {days: 1}), date, add(date, {days: 1})]);
+
+    // WeekView와 DayView에 표시할 '시간 지정' 일정만 필터링합니다.
+    // `schedules`가 변경될 때마다 이 목록이 다시 계산되어 삭제/수정이 반영됩니다.
+    const timedSchedules = useMemo(() => {
+        return schedules.filter(schedule => !schedule.isAllDay);
+    }, [schedules])
 
     // When the central date changes, update all data sources and reset inner pagers
     useEffect(() => {
@@ -97,6 +105,21 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
         setModalVisible(false);
         // A short delay before clearing the event to prevent content from disappearing during the closing animation
         setTimeout(() => setSelectedEvent(null), 300);
+    };
+
+    const handleUpdateSchedule = (updatedSchedule: Schedule) => {
+        const newSchedules = schedules.map(s => s.id === updatedSchedule.id ? updatedSchedule : s);
+        onSchedulesChange(newSchedules);
+        // 수정 후 모달을 닫지 않고, DetailSchedule 컴포넌트가 직접 뷰를 전환하도록 합니다.
+    };
+
+    const handleDeleteEvent = () => {
+        if (!selectedEvent) return;
+        // 선택된 일정을 제외한 새 배열을 만듭니다.
+        const newSchedules = schedules.filter(schedule => schedule.id !== selectedEvent.id);
+        // 부모에게 "일정 목록이 이걸로 바뀌었어!" 라고 알립니다.
+        onSchedulesChange(newSchedules);
+        handleCloseModal();
     };
 
     const viewModes: ('month' | 'week' | 'day')[] = ['month', 'week', 'day'];
@@ -185,7 +208,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                             <View key={index}>
                                 <WeekView
                                     date={weekDate}
-                                    schedules={schedules}
+                                    schedules={timedSchedules}
                                     tags={tags}
                                     onDayPress={handleDayPress}
                                     onEventPress={handleEventPress}
@@ -215,7 +238,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                             <View key={index}>
                                 <DayView
                                     date={dayDate}
-                                    schedules={schedules.filter(schedule => isSameDay(schedule.startTime, dayDate))}
+                                    schedules={timedSchedules.filter(schedule => isSameDay(schedule.startTime, dayDate))}
                                     tags={tags}
                                     onEventPress={handleEventPress}
                                 />
@@ -225,28 +248,14 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                 </View>
             </PagerView>
 
-            {/* Event Detail Modal */}
-            <Modal
-                animationType="fade"
-                transparent={true}
+            <DetailSchedule
+                schedule={selectedEvent}
                 visible={isModalVisible}
-                onRequestClose={handleCloseModal}
-            >
-                <S.ModalOverlay>
-                    <S.ModalContainer>
-                        {selectedEvent && (
-                            <>
-                                <S.ModalTitle>{selectedEvent.title}</S.ModalTitle>
-                                <S.ModalInfoText>시작: {format(selectedEvent.startTime, 'p')}</S.ModalInfoText>
-                                <S.ModalInfoText>종료: {format(selectedEvent.endTime, 'p')}</S.ModalInfoText>
-                                <S.ModalCloseButton onPress={handleCloseModal}>
-                                    <S.ModalCloseButtonText>닫기</S.ModalCloseButtonText>
-                                </S.ModalCloseButton>
-                            </>
-                        )}
-                    </S.ModalContainer>
-                </S.ModalOverlay>
-            </Modal>
+                onClose={handleCloseModal}
+                onDelete={handleDeleteEvent}
+                onUpdate={handleUpdateSchedule}
+                tags={tags}
+            />
         </S.MContainer>
     );
 };
