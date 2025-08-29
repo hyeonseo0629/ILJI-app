@@ -1,8 +1,8 @@
 // app/(tabs)/index.tsx
-import React, {useState, useRef, useMemo, useCallback} from 'react';
+import React, {useCallback, useMemo, useRef, useState, useEffect} from 'react';
 import {Pressable} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import Header from "@/components/header/Header";
 import {set} from "date-fns";
 import {Schedule} from "@/components/calendar/types";
@@ -17,8 +17,11 @@ import {
 } from "@/components/MainStyle";
 import {BottomSheetContent} from "@/components/bottomSheet/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
+import {GestureHandlerRootView} from "react-native-gesture-handler";
 
 export default function HomeScreen() {
+    const params = useLocalSearchParams();
+    const router = useRouter();
     const [currentDate, setCurrentDate] = useState(new Date());
     const bottomSheetRef = useRef<BottomSheet>(null);
     const [sheetIndex, setSheetIndex] = useState(0);
@@ -29,6 +32,20 @@ export default function HomeScreen() {
         { id: 2, color: '#A7D7FF', createdAt: new Date(), label: 'Personal', updatedAt: new Date(), userId: 1 }, // Light Sky Blue
         { id: 3, color: '#A7FFD4', createdAt: new Date(), label: 'Study', updatedAt: new Date(), userId: 1 }, // Mint Green
     ]);
+
+    useEffect(() => {
+        if (params.newSchedule) {
+            const newSchedule = JSON.parse(params.newSchedule as string);
+            // Date 객체는 JSON.stringify/parse 과정에서 문자열로 변환되므로, 다시 Date 객체로 만들어줍니다.
+            newSchedule.startTime = new Date(newSchedule.startTime);
+            newSchedule.endTime = new Date(newSchedule.endTime);
+
+            setSchedules(prevSchedules => [...prevSchedules, newSchedule]);
+
+            // 처리가 끝난 파라미터를 URL에서 제거하여, 화면이 다시 로드될 때 일정이 중복 추가되는 것을 방지합니다.
+            router.setParams({ newSchedule: '' });
+        }
+    }, [params.newSchedule]);
 
     // 1. API 등에서 가져온 원본 일정 데이터를 상태로 관리합니다.
     const [schedules, setSchedules] = useState<Schedule[]>([
