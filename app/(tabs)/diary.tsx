@@ -5,11 +5,12 @@ import {MainContainer} from "@/components/MainStyle";
 import DiaryView from "@/components/diary/DiaryView";
 
 export default function DiaryScreen() {
+    const [sheetIndex, setSheetIndex] = useState(0);
 
     return (
         <GestureHandlerRootView>
             <MainContainer>
-                <Header/>
+                <Header sheetIndex={sheetIndex}/>
                 <DiaryView/>
             </MainContainer>
         </GestureHandlerRootView>
