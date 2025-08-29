@@ -217,6 +217,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                                     date={dayDate}
                                     schedules={schedules.filter(schedule => isSameDay(schedule.startTime, dayDate))}
                                     tags={tags}
+                                    onEventPress={handleEventPress}
                                 />
                             </View>
                         ))}
