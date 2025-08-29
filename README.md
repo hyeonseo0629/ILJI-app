@@ -60,3 +60,5 @@ Join our community of developers creating universal apps.
 - npx expo install expo-secure-store
 - npx expo install react-native-pager-view
 - npx expo install @react-native-picker/picker
+- npx expo install @react-native-community/datetimepicker
+
