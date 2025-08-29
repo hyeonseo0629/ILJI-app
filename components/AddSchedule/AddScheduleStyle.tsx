@@ -61,7 +61,7 @@ export const ASSwitchRow = styled.View`
 
 export const ASDateTimeRow = styled.View`
     flex-direction: row;
-    gap: 10;
+    gap: 10px;
     margin-bottom: 20px; /* 버튼 대신 행 전체에 하단 여백을 주어 일관성을 높입니다. */
 `;
 
@@ -80,14 +80,6 @@ export const ASDateTimeButtonText = styled.Text`
     font-weight: bold;
 `;
 
-export const ASSaveButton = styled.TouchableOpacity`
-    background-color: mediumslateblue;
-    padding: 15px;
-    border-radius: 8px;
-    align-items: center;
-    margin-top: 40px;
-`;
-
 export const ASSelectedTagWrap = styled.View`
      flex-direction: row;
      flex-wrap: wrap; /* 태그가 여러 개일 경우 줄바꿈을 허용합니다. */
@@ -99,8 +91,9 @@ export const ASSelectedTag = styled.View<{ color: string }>`
      align-items: center;
      background-color: ${(props) => props.color};
      border-radius: 16px;
-     padding: 6px 12px;
- `;
+     padding: 6px 12px; 
+    margin-bottom: 30px;
+`;
 
 export const ASSelectedTagText = styled.Text`
      color: #ffffff;
@@ -108,9 +101,38 @@ export const ASSelectedTagText = styled.Text`
      font-size: 14px;
  `;
 
+export const ASButtonWrap = styled.View`
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    border: 2px solid #f0f0f0;
+`
+
+export const ASSaveButton = styled.TouchableOpacity`
+    width: 50%;
+    background-color: #ffffff;
+    color: mediumslateblue;
+    padding: 20px;
+    align-items: center;
+    border-right-width: 2px;
+    border-right-color: #f0f0f0;
+`;
+
+export const ASCancelButton = styled.TouchableOpacity`
+    width: 50%;
+    background-color: #ffffff;
+    padding: 20px;
+    align-items: center;
+`
+
+export const ASCancelButtonText = styled.Text`
+    color: mediumslateblue;
+    font-size: 25px;
+    font-weight: bold
+`
 
 export const ASSaveButtonText = styled.Text`
-    color: #ffffff;
-    font-size: 18px;
+    color: mediumslateblue;
+    font-size: 25px;
     font-weight: bold;
 `;
