@@ -6,14 +6,10 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": [
-      "iljiapp",
-      "com.googleusercontent.apps.292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7"
-    ],
+    "scheme": "iljiapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
       "bundleIdentifier": "com.ilji.ios",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -30,17 +26,11 @@
     "extra": {
       "GOOGLE_IOS_CLIENT_ID": "292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7.apps.googleusercontent.com",
       "GOOGLE_ANDROID_CLIENT_ID": "292298493030-22j6paogp17vgtqg3p1at3o6vstlqju4.apps.googleusercontent.com",
-      "GOOGLE_WEB_CLIENT_ID": "292298493030-l45okif1kf6pjm7llngs94jvlv56hrus.apps.googleusercontent.com",
-      "API_BASE_URL": "http://127.0.0.1:8090",
+      "API_BASE_URL": "http://localhost:8090",
       "router": {},
       "eas": {
         "projectId": "bdcf405c-968d-4397-839b-f9f73495ebed"
       }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
@@ -54,7 +44,15 @@
         }
       ],
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosClientId": "292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7.apps.googleusercontent.com",
+          "iosUrlScheme": "com.googleusercontent.apps.292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7"
+        }
+      ],
+      "expo-dev-client"
     ],
     "experiments": {
       "typedRoutes": true

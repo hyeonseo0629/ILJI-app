@@ -1,21 +1,19 @@
 import {useState, useEffect} from 'react';
 
-// Matches the backend's ScheduleResponse.java
+// Based on the backend's ScheduleResponse.java
 export interface Schedule {
     id: number;
     userId: number;
+    calendarId: number;
     title: string;
-    description: string | null;
-    startTime: string; // ISO 8601 format
-    endTime: string;   // ISO 8601 format
+    location: string;
+    tagId: number | null;
+    description: string;
+    startTime: string; // Assuming ISO 8601 format
+    endTime: string;   // Assuming ISO 8601 format
     isAllDay: boolean;
-    rrule: string | null;
-    createdAt: string;
-    updatedAt: string;
-    // The following are not in the user's schema but were in the original file
-    calendarId?: number;
-    location?: string;
-    tagId?: number | null;
+    rrule: string;
+    createdAt: string; // Assuming ISO 8601 format
 }
 
 const API_BASE_URL = 'http://10.0.2.2:8080'; // For Android emulator, this is the host machine
@@ -29,9 +27,29 @@ export const useFetchSchedules = (tagIds?: number[]) => {
         const fetchSchedules = async () => {
             try {
                 setLoading(true);
-                // For now, we will not fetch from the network.
-                // We will return an empty array to avoid network errors.
-                setSchedules([]);
+                let url = `${API_BASE_URL}/api/schedules`;
+                if (tagIds && tagIds.length > 0) {
+                    const params = new URLSearchParams();
+                    tagIds.forEach(id => params.append('tagIds', id.toString()));
+                    url += `?${params.toString()}`;
+                }
+
+                // This assumes you have a way to get the auth token
+                // For now, we'll proceed without authentication.
+                // In a real app, you would get the token from storage.
+                const response = await fetch(url, {
+                    headers: {
+                        // 'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch schedules');
+                }
+
+                const data: Schedule[] = await response.json();
+                setSchedules(data);
             } catch (e) {
                 if (e instanceof Error) {
                     setError(e);

@@ -1,25 +1,51 @@
+
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
 import { useColorScheme } from '@/hooks/useColorScheme';
+import React, { useState, useEffect } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import LoginScreen from '../src/screens/LoginScreen';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const router = useRouter();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const token = await SecureStore.getItemAsync('accessToken');
+        if (token) {
+          setIsAuthenticated(true);
+        }
+      } catch (e) {
+        console.error('Restoring token failed', e);
+      } finally {
+        setIsAuthLoading(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
+
+  if (!loaded || isAuthLoading) {
+    return null; // Show a loading screen here if you have one
   }
 
+  // If the user is not authenticated, show the login screen.
+  if (!isAuthenticated) {
+    // Pass a function that the login screen can call on success.
+    return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
+
+  // If the user is authenticated, show the main app.
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
