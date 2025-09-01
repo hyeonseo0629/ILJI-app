@@ -111,17 +111,19 @@ export const MDayText = styled.Text.attrs({
     font-weight: ${(props) => (props.$isToday && !props.$isSelected ? 'bold' : 'normal')};
 `;
 
-export const MDayCircle = styled.View`
+export const MDayCircle = styled.View<{$isCurrentMonth?: boolean}>`
     width: 25px;
     height: 25px;
     background-color: mediumslateblue;
     border-radius: 12.5px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
     justify-content: center; /* 내부 텍스트를 세로 중앙에 정렬 */
     align-items: center; /* 내부 텍스트를 가로 중앙에 정렬 */
+    opacity: ${({ $isCurrentMonth = true }) => $isCurrentMonth ? 1 : 0.3};
 `;
 
 interface EventTitleTextProps {
     color?: string;
+    $isCurrentMonth?: boolean;
 }
 
 export const EventTitleText = styled.Text.attrs({
@@ -136,6 +138,7 @@ export const EventTitleText = styled.Text.attrs({
     padding: 1px 3px; /* 텍스트 주변에 약간의 여백을 줍니다. */
     color: #ffffff;
     background-color: ${(props) => props.color || 'gray'};
+    opacity: ${({ $isCurrentMonth = true }) => $isCurrentMonth ? 1 : 0.4};
 `;
 
 export const MEventsContainer = styled.View`

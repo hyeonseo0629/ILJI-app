@@ -73,7 +73,7 @@ const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], tags = [], 
                                 onPress={() => onDayPress?.(day)}
                             >
                                 {isCurrentDay ? ( // '오늘' 날짜는 파란색 원으로 감쌉니다.
-                                    <S.MDayCircle>
+                                    <S.MDayCircle $isCurrentMonth={isCurrentMonth}>
                                         {/* 원 안의 텍스트는 MDayText로 감싸고, 선택된 스타일(흰색)을 적용합니다. */}
                                         <S.MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</S.MDayText>
                                     </S.MDayCircle>
@@ -85,7 +85,7 @@ const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], tags = [], 
                                     {daySchedules.map(schedule => {
                                         const eventColor = tagColorMap.get(schedule.tagId) || 'gray';
                                         return (
-                                            <S.EventTitleText key={schedule.id} color={eventColor}>
+                                            <S.EventTitleText key={schedule.id} color={eventColor} $isCurrentMonth={isCurrentMonth}>
                                                 {schedule.title}
                                             </S.EventTitleText>
                                         );
