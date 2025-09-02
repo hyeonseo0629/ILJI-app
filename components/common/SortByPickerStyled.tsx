@@ -1,6 +1,6 @@
 import styled from 'styled-components/native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export const PickerButton = styled.TouchableOpacity`
     height: 35px;
