@@ -17,6 +17,7 @@ export const DiaryContainer = styled.View`
 export const PWrap = styled.View`
     background-color: #ffffff;
     padding: 20px;
+    elevation: 3px;
 `
 
 export const PTop = styled.View`
@@ -25,10 +26,11 @@ export const PTop = styled.View`
 `
 
 export const PImage = styled.View`
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
     border-radius: 50px;
     background-color: lavender;
+    margin: 10px;
 `
 
 export const PTextWrap = styled.View`
@@ -58,12 +60,6 @@ export const PBottom = styled.View`
     justify-content: space-between;
 `
 
-export const PUserName = styled.Text`
-    font-size: 18px;
-    color: mediumslateblue;
-    padding: 20px 8px 0;
-`
-
 export const PEditButton = styled.Text`
     width: 100px;
     height: 30px;
@@ -74,24 +70,4 @@ export const PEditButton = styled.Text`
     text-align: center;
     background-color: mediumslateblue;
     color: #ffffff;
-`
-// ------- //
-// Top-Tab //
-// ------- //
-
-export const TopTabWrap = styled.View`
-    width: 100%;
-    background-color: #ffffff;
-    border: 2px solid;
-    flex-direction: row;
-    justify-content: space-around;
-`
-
-export const TopTab = styled.Text`
-    width: 200px;
-    font-size: 15px;
-    padding: 10px;
-    text-align: center;
-    color: mediumslateblue;
-    background-color: lavender;
 `

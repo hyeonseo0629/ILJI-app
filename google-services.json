@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1000303861580",
+    "project_id": "ilji-mobile-470907",
+    "storage_bucket": "ilji-mobile-470907.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1000303861580:android:b393cdc39be23f2ec9b9e9",
+        "android_client_info": {
+          "package_name": "com.dakkuyaki.ilji"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1000303861580-8ff0e19h5q46g842140cjdj51t45jorf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dakkuyaki.ilji",
+            "certificate_hash": "bd537c6bc9cea40d1adeca55ff02a18fbf22a56b"
+          }
+        },
+        {
+          "client_id": "1000303861580-q67fs068v2f3n8g63t2veb9r8afho1ft.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDblPwsGjz-X8PnLC1fQ-vwsKGocwNyW0k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1000303861580-q67fs068v2f3n8g63t2veb9r8afho1ft.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

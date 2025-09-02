@@ -1,7 +1,6 @@
 import {Text, TouchableOpacity} from "react-native";
 import {
     DiaryContainer,
-    PBottom,
     PCount,
     PWrap,
     PCountWrap,
@@ -10,7 +9,6 @@ import {
     PTextWrap,
     PTop,
     PUserID,
-    PUserName, TopTabWrap, TopTab,
 } from "@/components/diary/DiaryStyle";
 
 const DiaryView = () => {
@@ -37,28 +35,7 @@ const DiaryView = () => {
                         </PCountWrap>
                     </PTextWrap>
                 </PTop>
-                <PBottom>
-                    <PUserName>User NickName</PUserName>
-                    <PEditButton>Edit Profile</PEditButton>
-                </PBottom>
             </PWrap>
-            <TopTabWrap>
-                <TouchableOpacity>
-                    <TopTab>
-                        Grid
-                    </TopTab>
-                </TouchableOpacity>
-                <TouchableOpacity>
-                    <TopTab>
-                        List
-                    </TopTab>
-                </TouchableOpacity>
-                <TouchableOpacity>
-                    <TopTab>
-                        BookMark
-                    </TopTab>
-                </TouchableOpacity>
-            </TopTabWrap>
         </DiaryContainer>
     )
 }
