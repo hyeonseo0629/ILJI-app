@@ -1,62 +1,123 @@
-
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import 'react-native-reanimated';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ActivityIndicator, View } from 'react-native';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import React, { useState, useEffect } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import LoginScreen from '../src/screens/LoginScreen';
+import { StatusBar } from 'expo-status-bar';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+const AuthContext = createContext<{
+  session: string | null;
+  isLoading: boolean;
+  signIn: (token: string) => Promise<void>;
+  signOut: () => Promise<void>;
+}>({ 
+  session: null, 
+  isLoading: true, 
+  signIn: async () => {},
+  signOut: async () => {},
+});
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+export function useSession() {
+  return useContext(AuthContext);
+}
+
+function SessionProvider(props: React.PropsWithChildren) {
+  const [session, setSession] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
+    const restoreSession = async () => {
       try {
-        const token = await SecureStore.getItemAsync('accessToken');
-        if (token) {
-          setIsAuthenticated(true);
-        }
-      } catch (e) {
-        console.error('Restoring token failed', e);
+        const token = await AsyncStorage.getItem('jwtToken');
+        setSession(token);
       } finally {
-        setIsAuthLoading(false);
+        setIsLoading(false);
       }
     };
 
-    checkAuthStatus();
+    restoreSession();
   }, []);
 
-  if (!loaded || isAuthLoading) {
-    return null; // Show a loading screen here if you have one
-  }
+  const signIn = async (token: string) => {
+    await AsyncStorage.setItem('jwtToken', token);
+    setSession(token);
+  };
 
-  // If the user is not authenticated, show the login screen.
-  if (!isAuthenticated) {
-    // Pass a function that the login screen can call on success.
-    return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
-  }
+  const signOut = async () => {
+    await AsyncStorage.removeItem('jwtToken');
+    await GoogleSignin.signOut().catch(console.error);
+    setSession(null);
+  };
 
-  // If the user is authenticated, show the main app.
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="add-schedule"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <AuthContext.Provider
+      value={{
+        session,
+        isLoading,
+        signIn,
+        signOut,
+      }}>
+      {props.children}
+    </AuthContext.Provider>
+  );
+}
+
+function RootLayoutNav() {
+    const { session, isLoading } = useSession();
+    const segments = useSegments();
+    const router = useRouter();
+    const colorScheme = useColorScheme();
+
+    useEffect(() => {
+        if (isLoading) return;
+
+        // Check if the user is in the login screen or not.
+        const inLoginPage = segments[0] === 'login';
+
+        // If the user is not signed in and not on the login page, redirect to login.
+        if (!session && !inLoginPage) {
+            router.replace('/login');
+        }
+        // If the user is signed in and on the login page, redirect to the main app.
+        else if (session && inLoginPage) {
+            router.replace('/(tabs)');
+        }
+    }, [session, isLoading, segments]);
+
+    const [loaded] = useFonts({
+        SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    });
+
+    if (!loaded || isLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator />
+            </View>
+        );
+    }
+
+    return (
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+                {/* The initial route is now determined by the useEffect logic */}
+                <Stack.Screen name="login" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="add-schedule" options={{ headerShown: false }} />
+                <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="auto" />
+        </ThemeProvider>
+    );
+}
+
+export default function RootLayout() {
+  return (
+    <SessionProvider>
+      <RootLayoutNav />
+    </SessionProvider>
   );
 }

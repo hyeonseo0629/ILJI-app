@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity} from "react-native";
+import {TouchableOpacity} from "react-native";
 import React, {useMemo, useState} from "react";
 import { useRouter } from "expo-router";
 import {

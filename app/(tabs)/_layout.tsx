@@ -46,11 +46,9 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                // This tab will link to the Login.tsx file.
-                name="Login"
+                name="Profile"
                 options={{
-                    title: 'Login',
-                    // Using a 'person.fill' icon for the login tab.
+                    title: 'Profile',
                     tabBarIcon: ({color}) => <IconSymbol size={28} name="person.fill" color={color}/>,
                 }}
             />
