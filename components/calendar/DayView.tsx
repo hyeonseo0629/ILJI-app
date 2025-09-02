@@ -11,9 +11,9 @@ import { ko } from 'date-fns/locale';
 const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
 
 const calculateEventPosition = (event: Schedule) => {
-    const startHour = event.startTime.getHours();
-    const startMinute = event.startTime.getMinutes();
-    const durationInMinutes = differenceInMinutes(event.endTime, event.startTime);
+    const startHour = event.startTime.getHours(); // .start -> .startTime
+    const startMinute = event.startTime.getMinutes(); // .start -> .startTime
+    const durationInMinutes = differenceInMinutes(event.endTime, event.startTime); // .end, .start -> .endTime, .startTime
     const top = (startHour * HOUR_HEIGHT) + (startMinute / 60 * HOUR_HEIGHT);
     const height = (durationInMinutes / 60) * HOUR_HEIGHT;
     return { top, height };
@@ -70,12 +70,12 @@ const DayView: React.FC<DayViewProps> = ({ date, schedules = [], tags = [], onEv
                             {timeLabels.map(time => <S.HourCell key={time} />)}
 
                             {/* schedules for this day */}
-                            {schedules.map(schedule => {
-                                const eventColor = tagColorMap.get(schedule.tagId) || 'gray';
-                                const { top, height } = calculateEventPosition(schedule);
+                            {schedules.map(event => {
+                                const eventColor = tagColorMap.get(event.tagId) || 'gray';
+                                const { top, height } = calculateEventPosition(event);
                                 return (
-                                    <S.EventBlock key={schedule.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(schedule)}>
-                                        <S.EventBlockText>{schedule.title}</S.EventBlockText>
+                                    <S.EventBlock key={event.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(event)}>
+                                        <S.EventBlockText>{event.title}</S.EventBlockText>
                                     </S.EventBlock>
                                 );
                             })}
