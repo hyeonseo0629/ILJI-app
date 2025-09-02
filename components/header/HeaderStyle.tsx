@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components/native';
+import Octicons from "react-native-vector-icons/Octicons";
 
 interface HContainerProps {
     $isMain?: boolean;
@@ -37,19 +38,34 @@ export const HTop = styled.View`
 export const HLogo = styled.Image.attrs((props) => ({
     source: require('../../assets/images/logo.png'),
 }))`
-   width: 50px;
-   height: 50px;
- `;
+    width: 65px;
+    height: 65px;
+    margin: 5px;
+`;
 
 export const HIconWrap = styled.View`
     width: 30%;
-    margin: 10px;
+    margin: 20px;
     flex-direction: row;
     justify-content: space-between;
 `
 
 export const HIcon = styled.Text`
 font-size: 20px;
+`
+export const HIconBell = styled(Octicons).attrs({})`
+    padding: 5px;
+    color: mediumslateblue;
+`
+export const HIconMail = styled(Octicons).attrs({})`
+    padding: 5px;
+    color: mediumslateblue;
+`
+
+export const HIconShare = styled(Octicons).attrs({})`
+    padding: 5px;
+    color: mediumslateblue;
+    
 `
 
 export const HBottom = styled.View`
@@ -63,4 +79,5 @@ export const HRecentDiary = styled.View`
     height: 55px;
     border-radius: 50px;
     background-color: lavender;
+    border: 3px solid mediumslateblue;
 `

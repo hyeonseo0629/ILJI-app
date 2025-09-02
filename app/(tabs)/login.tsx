@@ -30,9 +30,10 @@ export default function LoginScreen() {
         try {
             await GoogleSignin.hasPlayServices();
             const googleUserInfo = await GoogleSignin.signIn();
-            console.log("✅ Google Login Success:", googleUserInfo.data);
+            const data = (googleUserInfo as any).data;
+            console.log("✅ Google Login Success:", data);
 
-            const idToken = googleUserInfo.data.idToken;
+            const idToken = data.idToken;
             if (idToken) {
                 const response = await fetch('http://10.100.0.109:8090/api/auth/google', {
                     method: 'POST',

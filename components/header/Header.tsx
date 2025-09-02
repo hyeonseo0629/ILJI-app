@@ -1,12 +1,22 @@
 import React from "react";
-import {HBottom, HContainer, HIcon, HIconWrap, HLogo, HRecentDiary, HTop} from "@/components/header/HeaderStyle";
+import {
+    HBottom,
+    HContainer,
+    HIcon,
+    HIconBell, HIconMail, HIconShare,
+    HIconWrap,
+    HLogo,
+    HRecentDiary,
+    HTop
+} from "@/components/header/HeaderStyle";
 import {usePathname} from "expo-router";
+import {TouchableOpacity} from "react-native";
 
 interface HeaderProps {
     sheetIndex: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ sheetIndex }) => {
+const Header: React.FC<HeaderProps> = ({sheetIndex}) => {
     // 1. expo-router의 usePathname 훅을 사용해 현재 화면의 경로를 가져옵니다.
     //    - 홈 화면 (index.tsx)일 경우: '/'
     //    - 다이어리 화면 (Diary.tsx)일 경우: '/Diary'
@@ -24,19 +34,35 @@ const Header: React.FC<HeaderProps> = ({ sheetIndex }) => {
                 <HTop>
                     <HLogo/>
                     <HIconWrap>
-                        <HIcon>🔔</HIcon>
-                        <HIcon>📤</HIcon>
-                        <HIcon>✉️</HIcon>
+                        <TouchableOpacity>
+                            <HIconBell name="bell" size={25}/>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <HIconShare name="share" size={25}/>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <HIconMail name="mail" size={25}/>
+                        </TouchableOpacity>
                     </HIconWrap>
                 </HTop>
                 {/* 4. 현재 경로가 홈 화면('/')일 때만 HBottom을 렌더링합니다. */}
                 {isMain && (
                     <HBottom>
-                        <HRecentDiary/>
-                        <HRecentDiary/>
-                        <HRecentDiary/>
-                        <HRecentDiary/>
-                        <HRecentDiary/>
+                        <TouchableOpacity>
+                            <HRecentDiary/>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <HRecentDiary/>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <HRecentDiary/>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <HRecentDiary/>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <HRecentDiary/>
+                        </TouchableOpacity>
                     </HBottom>
                 )}
             </HContainer>
