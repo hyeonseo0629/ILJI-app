@@ -25,12 +25,12 @@ export const HContainer = styled.View<HContainerProps>`
     z-index: ${(props) => (props.$isSheetExpanded ? 0 : 1)};
 
     /* $isMain prop이 true일 때만 그림자 효과를 적용합니다. */
-    ${(props) => props.$isMain && mainHeaderStyles}
+    ${(props) => props.$isMain && mainHeaderStyles};
+    padding-top: 10px;
 `;
 
 export const HTop = styled.View`
-    margin-top: 45px;
-    padding: 10px;
+    padding: 0 10px;
     flex-direction: row;
     justify-content: space-between;
 `
@@ -40,18 +40,18 @@ export const HLogo = styled.Image.attrs((props) => ({
 }))`
     width: 65px;
     height: 65px;
-    margin: 5px;
+    margin: 0 5px;
 `;
 
 export const HIconWrap = styled.View`
     width: 30%;
-    margin: 20px;
+    margin: 15px 20px 0;
     flex-direction: row;
     justify-content: space-between;
 `
 
 export const HIcon = styled.Text`
-font-size: 20px;
+    font-size: 20px;
 `
 export const HIconBell = styled(Octicons).attrs({})`
     padding: 5px;
@@ -69,7 +69,7 @@ export const HIconShare = styled(Octicons).attrs({})`
 `
 
 export const HBottom = styled.View`
-    padding: 15px;
+    padding: 4px 15px 25px;
     flex-direction: row;
     justify-content: space-around;
 `
