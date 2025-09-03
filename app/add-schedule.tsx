@@ -1,5 +1,5 @@
-import React, {useCallback, useMemo, useRef, useState} from 'react';
-import {Alert, Switch, Platform, Text} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Alert, Switch, Platform, Text, ActivityIndicator} from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import {Tag} from '@/components/ToDo/types';
 import * as S from '@/components/AddSchedule/AddScheduleStyle';
@@ -10,20 +10,18 @@ import {ASButtonWrap, ASCancelButtonText, ASHeader} from "@/components/AddSchedu
 import BottomSheet, {BottomSheetBackdrop} from "@gorhom/bottom-sheet";
 import { useSchedule } from '@/src/context/ScheduleContext';
 import {GestureHandlerRootView} from "react-native-gesture-handler";
-
-// 실제 앱에서는 이 화면으로 이동할 때 tags 목록을 prop으로 전달받거나
-// 전역 상태(global state)에서 가져와야 합니다. 여기서는 예시로 사용합니다.
+import api from "@/src/lib/api";
 
 const AddScheduleScreen = () => {
     const router = useRouter();
-    const params = useLocalSearchParams();
-    const tags: Tag[] = params.tags ? JSON.parse(params.tags as string) : [];
     const { createSchedule } = useSchedule(); // Context에서 생성 함수 가져오기
 
+    // --- 상태(State) 관리 ---
+    const [tags, setTags] = useState<Tag[]>([]);
+    const [isLoadingTags, setIsLoadingTags] = useState(true);
 
     const [title, setTitle] = useState('');
-    // 🚨 '태그 없음'을 명시적으로 처리하기 위해 초기값을 0으로 설정하고, tags가 있을 경우 첫 번째 태그를 기본값으로 합니다.
-    const [tagId, setTagId] = useState<number>(tags[0]?.id ?? 0);
+    const [tagId, setTagId] = useState<number>(0); // '태그 없음'을 기본값으로 설정
     const [location, setLocation] = useState('');
     const [description, setDescription] = useState('');
     const [isAllDay, setIsAllDay] = useState(false);
@@ -34,6 +32,26 @@ const AddScheduleScreen = () => {
     const [showPicker, setShowPicker] = useState(false);
     const [pickerTarget, setPickerTarget] = useState<'start' | 'end'>('start');
     const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date');
+
+    // --- 데이터 로딩 ---
+    useEffect(() => {
+        // 화면이 로드될 때, 서버에서 현재 사용자의 태그 목록을 직접 가져옵니다.
+        const fetchTags = async () => {
+            try {
+                // 백엔드에 사본 컨트롤러가 @RequestMapping("/api/dev/tags")로 생성되었으므로,
+                // 인증 문제로 500 오류가 발생하므로, 스케줄 API처럼 사용자 ID를 직접 지정하는 방식으로 변경합니다.
+                // GET /api/dev/tags/user/4
+                const response = await api.get<Tag[]>(`/tags/user/4`);
+                setTags(response.data);
+            } catch (error) {
+                console.error("태그 목록을 불러오는 데 실패했습니다:", error);
+                Alert.alert("오류", "태그 목록을 불러올 수 없습니다.");
+            } finally {
+                setIsLoadingTags(false);
+            }
+        };
+        fetchTags();
+    }, []);
 
     const onDateTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || (pickerTarget === 'start' ? startTime : endTime);
@@ -165,16 +183,19 @@ const AddScheduleScreen = () => {
 
                     <S.ASLabel>Tag</S.ASLabel>
                     <S.ASPickerWrap>
-                        <Picker selectedValue={tagId}
-                                onValueChange={(itemValue) => setTagId(itemValue)}
-                                style={{ color: 'mediumslateblue' }}
-                        >
-                            {/* 🚨 '태그 없음' 옵션을 명시적으로 추가하고, value를 0으로 설정합니다. */}
-                            <Picker.Item label="-- 태그 없음 --" value={0} />
-                            {tags.map((tag) => (
-                                <Picker.Item key={tag.id} label={tag.label} value={tag.id}/>
-                            ))}
-                        </Picker>
+                        {isLoadingTags ? (
+                            <ActivityIndicator size="small" color="mediumslateblue" />
+                        ) : (
+                            <Picker selectedValue={tagId}
+                                    onValueChange={(itemValue) => setTagId(itemValue)}
+                                    style={{ color: 'mediumslateblue' }}
+                            >
+                                <Picker.Item label="-- 태그 없음 --" value={0} />
+                                {tags.map((tag) => (
+                                    <Picker.Item key={tag.id} label={tag.label} value={tag.id}/>
+                                ))}
+                            </Picker>
+                        )}
                     </S.ASPickerWrap>
 
                     {/* 2. 선택된 태그가 있을 경우, 해시태그 스타일로 화면에 표시합니다. */}
@@ -222,10 +243,8 @@ const AddScheduleScreen = () => {
                 <S.ASSaveButton onPress={handleSave}>
                     <S.ASSaveButtonText>Save</S.ASSaveButtonText>
                 </S.ASSaveButton>
-                <S.ASCancelButton onPress={() => router.push({
-                    pathname: '/',
-                    params: {tags: JSON.stringify(tags)}
-                })}>
+                {/* Cancel 버튼은 단순히 이전 화면으로 돌아가도록 router.back()을 사용합니다. */}
+                <S.ASCancelButton onPress={() => router.back()}>
                     <ASCancelButtonText>Cancel</ASCancelButtonText>
                 </S.ASCancelButton>
             </ASButtonWrap>
