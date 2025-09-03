@@ -8,7 +8,7 @@ import {
     PImage,
     PTextWrap,
     PTop,
-    PUserID,
+    PUserID, MWrap, MDateText,
 } from "@/components/diary/DiaryStyle";
 
 const DiaryView = () => {
@@ -36,6 +36,9 @@ const DiaryView = () => {
                     </PTextWrap>
                 </PTop>
             </PWrap>
+            <MWrap>
+                <MDateText>asd</MDateText>
+            </MWrap>
         </DiaryContainer>
     )
 }

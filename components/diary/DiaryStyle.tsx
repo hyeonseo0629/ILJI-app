@@ -71,3 +71,20 @@ export const PEditButton = styled.Text`
     background-color: mediumslateblue;
     color: #ffffff;
 `
+
+    // ---- //
+    // Main //
+    // ---- //
+
+export const MWrap = styled.View`
+ width: 100%;
+`
+
+export const MTextWrap = styled.View`
+    width: 100%;
+    flex-direction: row;
+`
+
+export const MDateText = styled.Text`
+    font-size: 30px;
+`

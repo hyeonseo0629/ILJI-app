@@ -35,7 +35,7 @@ export default function LoginScreen() {
 
             const idToken = data.idToken;
             if (idToken) {
-                const response = await fetch('http://10.100.0.109:8090/api/auth/google', {
+                const response = await fetch('http://10.100.0.74:8090/api/auth/google', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
