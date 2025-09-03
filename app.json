@@ -22,7 +22,9 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.dakkuyaki.ilji"
+      "package": "com.dakkuyaki.ilji",
+      // 개발 중 http 통신을 허용하기 위한 설정
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",

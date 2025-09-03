@@ -7,6 +7,7 @@ import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { ScheduleProvider } from '@/src/context/ScheduleContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -22,14 +23,16 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="add-schedule"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <ScheduleProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="add-schedule"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </ScheduleProvider>
       <StatusBar style="auto" />
     </ThemeProvider>
   );

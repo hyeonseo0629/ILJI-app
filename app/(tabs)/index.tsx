@@ -1,10 +1,9 @@
 // app/(tabs)/index.tsx
 import React, {useCallback, useMemo, useRef, useState, useEffect} from 'react';
-import {Pressable} from 'react-native';
+import {Pressable, View, Text, StyleSheet, ActivityIndicator} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Header from "@/components/header/Header";
-import {set} from "date-fns";
 import {Schedule} from "@/components/calendar/types";
 import {Tag} from "@/components/ToDo/types";
 import {CContainer} from "@/components/calendar/CalendarStyle";
@@ -18,6 +17,7 @@ import {
 import {BottomSheetContent} from "@/components/bottomSheet/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
+import { useSchedule } from '@/src/context/ScheduleContext';
 
 export default function HomeScreen() {
     const params = useLocalSearchParams();
@@ -33,51 +33,42 @@ export default function HomeScreen() {
         { id: 3, color: '#A7FFD4', createdAt: new Date(), label: 'Study', updatedAt: new Date(), userId: 1 }, // Mint Green
     ]);
 
-    useEffect(() => {
-        if (params.newSchedule) {
-            const newSchedule = JSON.parse(params.newSchedule as string);
-            // Date 객체는 JSON.stringify/parse 과정에서 문자열로 변환되므로, 다시 Date 객체로 만들어줍니다.
-            newSchedule.startTime = new Date(newSchedule.startTime);
-            newSchedule.endTime = new Date(newSchedule.endTime);
-
-            setSchedules(prevSchedules => [...prevSchedules, newSchedule]);
-
-            // 처리가 끝난 파라미터를 URL에서 제거하여, 화면이 다시 로드될 때 일정이 중복 추가되는 것을 방지합니다.
-            router.setParams({ newSchedule: '' });
-        }
-    }, [params.newSchedule]);
-
-    // 1. API 등에서 가져온 원본 일정 데이터를 상태로 관리합니다.
-    const [schedules, setSchedules] = useState<Schedule[]>([
-        {
-            id: 1, userId: 1, tagId: 1, title: '프로젝트 기획 회의',
-            location: '회의실 A', description: '1분기 프로젝트 기획 회의',
-            startTime: set(new Date(), {hours: 10, minutes: 0, seconds: 0}),
-            endTime: set(new Date(), {hours: 13, minutes: 30, seconds: 0}),
-            isAllDay: false, rrule: '', createdAt: new Date(), updatedAt: new Date(), calendarId: 1,
-        },
-        {
-            id: 2, userId: 1, tagId: 2, title: '치과 예약',
-            location: '강남역 튼튼치과', description: '정기 검진',
-            startTime: set(new Date(), {hours: 14, minutes: 0, seconds: 0}),
-            endTime: set(new Date(), {hours: 15, minutes: 0, seconds: 0}),
-            isAllDay: false, rrule: '', createdAt: new Date(), updatedAt: new Date(), calendarId: 1,
-        },
-        {
-            id: 3, userId: 1, tagId: 3, title: '프로젝트 개발 진행',
-            location: '솔데스크', description: '파이널 프로젝트 진행 중',
-            startTime: set(new Date(), {hours: 17, minutes: 0, seconds: 0}),
-            endTime: set(new Date(), {hours: 18, minutes: 0, seconds: 0}),
-            isAllDay: false, rrule: '', createdAt: new Date(), updatedAt: new Date(), calendarId: 1,
-        }
-    ]);
+    // --- 데이터 연결 ---
+    // 1. ScheduleContext에서 진짜 데이터, 로딩 상태, 에러를 가져옵니다.
+    const { events: schedules, loading, error } = useSchedule();
 
     // 1. activeTab의 초기값을 tags 배열의 첫 번째 아이템 라벨로 설정합니다.
     const [activeTab, setActiveTab] = useState(tags[0]?.label || '');
 
+    // --- 모든 Hook과 핸들러 함수를 조건문 위로 이동 ---
     const handleSheetChanges = useCallback((index: number) => {
         setSheetIndex(index);
     }, []);
+
+    const snapPoints = useMemo(() => ['14.5%', '90%'], []);
+
+    const renderBackdrop = useCallback(
+        (props: any) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={0}
+                appearsOnIndex={1}
+                pressBehavior="collapse"
+                opacity={0.10} // Adjust the opacity here for a lighter grey
+            />
+        ),
+        []
+    );
+
+    // 2. 로딩 중일 때 보여줄 화면
+    if (loading) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" />
+                <Text>일정을 불러오는 중...</Text>
+            </View>
+        );
+    }
 
     const handleTabPress = (tabName: string) => {
         tabPressedRef.current = true;
@@ -115,21 +106,6 @@ export default function HomeScreen() {
         </Pressable>
     );
 
-    const snapPoints = useMemo(() => ['14.5%', '90%'], []);
-
-    const renderBackdrop = useCallback(
-        (props: any) => (
-            <BottomSheetBackdrop
-                {...props}
-                disappearsOnIndex={0}
-                appearsOnIndex={1}
-                pressBehavior="collapse"
-                opacity={0.10} // Adjust the opacity here for a lighter grey
-            />
-        ),
-        []
-    );
-
     return (
         // GestureHandlerRootView는 앱의 최상단에서 전체 화면을 차지해야 합니다.
         <GestureHandlerRootView style={{flex: 1}}>
@@ -139,9 +115,10 @@ export default function HomeScreen() {
                     <CalendarView
                         date={currentDate}
                         onDateChange={setCurrentDate}
-                        schedules={schedules}
+                        schedules={schedules} // 3. Context에서 가져온 'schedules'를 전달합니다.
                         tags={tags}
-                        onSchedulesChange={setSchedules}
+                        // CalendarView가 요구하는 onSchedulesChange prop을 임시로 전달합니다.
+                        onSchedulesChange={() => {}}
                     />
                 </CContainer>
                 <BottomSheet
@@ -157,10 +134,24 @@ export default function HomeScreen() {
                 >
                     {/* 3. 탭 UI가 핸들로 이동했으므로, 여기에는 콘텐츠만 남깁니다. */}
                     <MainContentWrap>
-                        <BottomSheetContent schedules={schedules} tags={tags} activeTab={activeTab} />
+                        <BottomSheetContent schedules={schedules} tags={tags} activeTab={activeTab} /> 
                     </MainContentWrap>
                 </BottomSheet>
             </MainContainer>
         </GestureHandlerRootView>
     );
 }
+
+const styles = StyleSheet.create({
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff', // 배경색 추가
+    },
+    errorText: {
+        color: 'red',
+        fontSize: 16,
+        marginBottom: 10,
+    },
+});

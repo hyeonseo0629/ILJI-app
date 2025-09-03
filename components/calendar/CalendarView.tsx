@@ -107,12 +107,6 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
         setTimeout(() => setSelectedEvent(null), 300);
     };
 
-    const handleUpdateSchedule = (updatedSchedule: Schedule) => {
-        const newSchedules = schedules.map(s => s.id === updatedSchedule.id ? updatedSchedule : s);
-        onSchedulesChange(newSchedules);
-        // 수정 후 모달을 닫지 않고, DetailSchedule 컴포넌트가 직접 뷰를 전환하도록 합니다.
-    };
-
     const handleDeleteEvent = () => {
         if (!selectedEvent) return;
         // 선택된 일정을 제외한 새 배열을 만듭니다.
@@ -253,7 +247,6 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                 visible={isModalVisible}
                 onClose={handleCloseModal}
                 onDelete={handleDeleteEvent}
-                onUpdate={handleUpdateSchedule}
                 tags={tags}
             />
         </S.MContainer>

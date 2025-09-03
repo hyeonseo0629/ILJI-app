@@ -6,6 +6,7 @@ import * as S from './DetailScheduleStyle';
 import { Schedule } from '@/components/calendar/types';
 import { Tag } from '@/components/ToDo/types';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useSchedule } from '@/src/context/ScheduleContext'; // 🚨 경로를 네 프로젝트에 맞게 수정했습니다.
 
 interface DetailScheduleProps {
     schedule: Schedule | null;
@@ -13,11 +14,12 @@ interface DetailScheduleProps {
     visible: boolean;
     onClose: () => void;
     onDelete: () => void;
-    onUpdate: (schedule: Schedule) => void;
+    // onUpdate prop은 Context를 직접 사용하므로 제거합니다.
 }
 
-const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, tags, visible, onClose, onDelete, onUpdate }) => {
+const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, tags, visible, onClose, onDelete, }) => {
     const [isEditMode, setIsEditMode] = useState(false);
+    const { updateSchedule } = useSchedule(); // Context에서 update 함수를 가져옵니다.
     const [formData, setFormData] = useState<Schedule | null>(schedule);
     // Date & Time Picker 상태
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -61,8 +63,10 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, tags, visible
     };
 
     const handleUpdatePress = () => {
-        onUpdate(formData);
-        setIsEditMode(false); // 수정 후 디테일 뷰로 전환
+        if (formData) {
+            updateSchedule(formData); // Context의 update 함수를 직접 호출합니다.
+            setIsEditMode(false); // 수정 후 디테일 뷰로 전환
+        }
     };
 
     const handleInputChange = (field: keyof Schedule, value: any) => {

@@ -1,14 +1,14 @@
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {Alert, Switch, Platform, Text} from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
-import {Schedule} from '@/components/calendar/types';
 import {Tag} from '@/components/ToDo/types';
 import * as S from '@/components/AddSchedule/AddScheduleStyle';
 import {Picker} from '@react-native-picker/picker';
 import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
-import {format} from 'date-fns';
+import { format } from 'date-fns';
 import {ASButtonWrap, ASCancelButtonText, ASHeader} from "@/components/AddSchedule/AddScheduleStyle";
 import BottomSheet, {BottomSheetBackdrop} from "@gorhom/bottom-sheet";
+import { useSchedule } from '@/src/context/ScheduleContext';
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 
 // 실제 앱에서는 이 화면으로 이동할 때 tags 목록을 prop으로 전달받거나
@@ -18,10 +18,12 @@ const AddScheduleScreen = () => {
     const router = useRouter();
     const params = useLocalSearchParams();
     const tags: Tag[] = params.tags ? JSON.parse(params.tags as string) : [];
+    const { createSchedule } = useSchedule(); // Context에서 생성 함수 가져오기
 
 
     const [title, setTitle] = useState('');
-    const [tagId, setTagId] = useState<number>(tags[0]?.id);
+    // 🚨 '태그 없음'을 명시적으로 처리하기 위해 초기값을 0으로 설정하고, tags가 있을 경우 첫 번째 태그를 기본값으로 합니다.
+    const [tagId, setTagId] = useState<number>(tags[0]?.id ?? 0);
     const [location, setLocation] = useState('');
     const [description, setDescription] = useState('');
     const [isAllDay, setIsAllDay] = useState(false);
@@ -54,7 +56,7 @@ const AddScheduleScreen = () => {
         setShowPicker(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!title.trim()) {
             Alert.alert('오류', '제목은 필수 항목입니다.');
             return;
@@ -64,26 +66,22 @@ const AddScheduleScreen = () => {
             return;
         }
 
-        // 사용자가 입력한 정보로 새로운 스케줄 객체를 만듭니다.
-        const newSchedule: Schedule = {
-            id: Date.now(), // 임시 ID
+        // 서버에 보낼 데이터 객체를 만듭니다. (id, createdAt 등은 제외)
+        const newScheduleData = {
             title: title.trim(),
             tagId: tagId,
             location: location.trim(),
             description: description.trim(),
-            userId: 1, // 임시 사용자 ID
+            userId: 4, // Context와 동일한 임시 사용자 ID
             startTime: startTime,
             endTime: endTime,
             isAllDay: isAllDay,
-            rrule: '',
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            rrule: '', // rrule은 null 대신 빈 문자열을 사용합니다.
             calendarId: 1,
         };
 
-        // 메인 화면으로 돌아가면서, 새로 생성된 일정을 파라미터로 전달합니다.
-        router.replace({pathname: '/', params: {newSchedule: JSON.stringify(newSchedule)}});
-
+        await createSchedule(newScheduleData); // Context의 함수를 호출해 서버에 저장
+        router.back(); // 저장이 완료되면 이전 화면으로 돌아갑니다.
     };
 
     // 1. 선택된 tagId가 바뀔 때마다, 전체 tags 배열에서 해당 태그 객체를 찾습니다.
@@ -169,9 +167,11 @@ const AddScheduleScreen = () => {
                     <S.ASPickerWrap>
                         <Picker selectedValue={tagId}
                                 onValueChange={(itemValue) => setTagId(itemValue)}
-                                style={{color: 'mediumslateblue'}}
+                                style={{ color: 'mediumslateblue' }}
                         >
-                            {tags.map(tag => (
+                            {/* 🚨 '태그 없음' 옵션을 명시적으로 추가하고, value를 0으로 설정합니다. */}
+                            <Picker.Item label="-- 태그 없음 --" value={0} />
+                            {tags.map((tag) => (
                                 <Picker.Item key={tag.id} label={tag.label} value={tag.id}/>
                             ))}
                         </Picker>
