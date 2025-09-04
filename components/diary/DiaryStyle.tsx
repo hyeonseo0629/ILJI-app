@@ -53,18 +53,6 @@ export const PCount = styled.View`
     align-items: center;
 `
 
-export const PEditButton = styled.Text`
-    width: 100px;
-    height: 30px;
-    margin: 20px 15px 0;
-    padding: 5px;
-    border-radius: 20px;
-    font-size: 15px;
-    text-align: center;
-    background-color: mediumslateblue;
-    color: #ffffff;
-`
-
     // ---- //
     // Main //
     // ---- //
@@ -100,11 +88,11 @@ export const MTextBottomWrap = styled.View`
 `
 
 export const MYearText = styled.Text`
-    font-weight: lighter ;
+    font-weight: 300;
 `
 
 export const MTimeText = styled.Text`
-    font-weight: lighter ;
+    font-weight: 300;
     color: #999999;
     padding: 0 5px;
 `
@@ -129,6 +117,6 @@ export const MTitle = styled.Text`
 `
 
 export const MContent = styled.Text`
-    font-weight: 0;
+    font-weight: normal;
     padding: 10px 15px;
 `

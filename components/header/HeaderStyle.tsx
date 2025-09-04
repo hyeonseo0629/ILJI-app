@@ -65,7 +65,6 @@ export const HIconMail = styled(Octicons).attrs({})`
 export const HIconShare = styled(Octicons).attrs({})`
     padding: 5px;
     color: mediumslateblue;
-    
 `
 
 export const HBottom = styled.View`

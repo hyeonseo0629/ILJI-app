@@ -13,8 +13,6 @@ import {
 } from "@/components/header/HeaderStyle";
 import {usePathname} from "expo-router";
 import {TouchableOpacity, View} from "react-native";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
-
 interface HeaderProps {
     sheetIndex: number;
 }

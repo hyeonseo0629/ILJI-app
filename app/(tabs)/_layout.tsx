@@ -1,5 +1,5 @@
 import {Tabs} from 'expo-router';
-import React, {useEffect} from 'react';
+import React from 'react';
 import {Platform, View} from 'react-native';
 
 import {HapticTab} from '@/components/HapticTab';
@@ -9,25 +9,15 @@ import {Colors} from '@/constants/Colors';
 import {useColorScheme} from '@/hooks/useColorScheme';
 import {StatusBar} from "expo-status-bar";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
-import * as NavigationBar from 'expo-navigation-bar';
-
+import {GestureHandlerRootView} from "react-native-gesture-handler";
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
     const isnets = useSafeAreaInsets();
 
-    useEffect(() => {
-        // 안드로이드 플랫폼에서만 실행합니다.
-        if (Platform.OS === 'android') {
-            // 사용자가 화면 하단을 스와이프하면 네비게이션 바가 나타나도록 설정합니다.
-            NavigationBar.setBehaviorAsync('inset-swipe');
-            // 네비게이션 바를 숨깁니다.
-            NavigationBar.setVisibilityAsync('hidden');
-        }
-    }, []); // 빈 배열은 이 코드가 앱 시작 시 한 번만 실행되도록 보장합니다.
-
     return (
-        <View style={{flex: 1}}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+        <View style={{flex: 1, paddingBottom: isnets.bottom}}>
             <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
                 <StatusBar style="dark"/>
                 <Tabs
@@ -84,6 +74,6 @@ export default function TabLayout() {
                 </Tabs>
             </View>
         </View>
-
+</GestureHandlerRootView>
     );
 }
