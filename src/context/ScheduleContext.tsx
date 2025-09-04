@@ -1,4 +1,4 @@
-// C:/LGE/ILJI-app/src/contexts/ScheduleContext.tsx
+// C:/LGE/ILJI-app/src/context/ScheduleContext.tsx
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import axios from 'axios';
@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { Alert } from 'react-native';
 import api from '../lib/api'; // 1단계에서 만든 전화기!
 import { Schedule } from '@/components/calendar/types'; // 캘린더 UI가 사용하는 타입 가져오기
+import { Tag } from '@/components/ToDo/types';
 
 // --- 타입 정의 (TypeScript의 장점!) ---
 
@@ -26,10 +27,11 @@ interface RawScheduleEvent {
 
 // Context가 제공할 값들의 타입
 interface ScheduleContextType {
-    events: Schedule[]; // UI 컴포넌트가 사용하는 Schedule 타입으로 변경
-    loading: boolean;
+    events: Schedule[]; // 기존 이름 유지
+    tags: Tag[]; // [추가] 태그 목록
+    loading: boolean; // 기존 이름 유지
     error: Error | null;
-    fetchSchedules: () => void;
+    fetchSchedules: () => void; // 기존 함수 유지
     updateSchedule: (schedule: Schedule) => Promise<void>;
     createSchedule: (newScheduleData: Omit<Schedule, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
 }
@@ -54,6 +56,7 @@ interface ScheduleProviderProps {
 
 export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const [events, setEvents] = useState<Schedule[]>([]);
+    const [tags, setTags] = useState<Tag[]>([]); // [추가] 태그 상태
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
@@ -78,17 +81,26 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         };
     }, []);
 
+    // [수정] 기존 fetchSchedules 함수가 태그도 함께 불러오도록 기능 강화
     const fetchSchedules = useCallback(async () => {
         setLoading(true);
         try {
-            // 이제 '/schedules'만 적어도 'http://.../api/dev/schedules'로 요청됨
-            const response = await api.get<RawScheduleEvent[]>('/schedules');
-            const formattedEvents = response.data.map(formatRawSchedule);
-            setEvents(formattedEvents);
+            // 스케줄과 태그를 동시에 병렬로 가져옵니다.
+            const [schedulesResponse, tagsResponse] = await Promise.all([
+                // 404 오류 발생: '/schedules/user/4' 경로가 없음. 기존에 작동하던 '/schedules'로 되돌립니다.
+                api.get<RawScheduleEvent[]>('/schedules'),
+                // 성공적으로 작동했던 사용자별 태그 주소를 사용합니다.
+                api.get<Tag[]>(`/tags/user/4`)
+            ]);
+
+            const formattedEvents = schedulesResponse.data.map(formatRawSchedule);
+            setEvents(formattedEvents); // 'events' 이름 유지
+            setTags(tagsResponse.data); // 새로 추가된 태그 상태 업데이트
             setError(null);
         } catch (err) {
-            console.error("일정 로딩 실패:", err);
+            console.error("초기 데이터 로딩 실패:", err);
             setError(err as Error);
+            Alert.alert("오류", "데이터를 불러오는 데 실패했습니다.");
         } finally {
             setLoading(false);
         }
@@ -174,6 +186,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
 
     const value = {
         events,
+        tags, // [추가] Context 값에 태그 목록 포함
         loading,
         error,
         fetchSchedules,

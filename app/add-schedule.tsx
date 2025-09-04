@@ -10,15 +10,11 @@ import {ASButtonWrap, ASCancelButtonText, ASHeader} from "@/components/AddSchedu
 import BottomSheet, {BottomSheetBackdrop} from "@gorhom/bottom-sheet";
 import { useSchedule } from '@/src/context/ScheduleContext';
 import {GestureHandlerRootView} from "react-native-gesture-handler";
-import api from "@/src/lib/api";
 
 const AddScheduleScreen = () => {
     const router = useRouter();
-    const { createSchedule } = useSchedule(); // Context에서 생성 함수 가져오기
-
-    // --- 상태(State) 관리 ---
-    const [tags, setTags] = useState<Tag[]>([]);
-    const [isLoadingTags, setIsLoadingTags] = useState(true);
+    // Context에서 생성 함수, 태그 목록, 로딩 상태를 가져옵니다.
+    const { createSchedule, tags, loading } = useSchedule();
 
     const [title, setTitle] = useState('');
     const [tagId, setTagId] = useState<number>(0); // '태그 없음'을 기본값으로 설정
@@ -32,26 +28,6 @@ const AddScheduleScreen = () => {
     const [showPicker, setShowPicker] = useState(false);
     const [pickerTarget, setPickerTarget] = useState<'start' | 'end'>('start');
     const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date');
-
-    // --- 데이터 로딩 ---
-    useEffect(() => {
-        // 화면이 로드될 때, 서버에서 현재 사용자의 태그 목록을 직접 가져옵니다.
-        const fetchTags = async () => {
-            try {
-                // 백엔드에 사본 컨트롤러가 @RequestMapping("/api/dev/tags")로 생성되었으므로,
-                // 인증 문제로 500 오류가 발생하므로, 스케줄 API처럼 사용자 ID를 직접 지정하는 방식으로 변경합니다.
-                // GET /api/dev/tags/user/4
-                const response = await api.get<Tag[]>(`/tags/user/4`);
-                setTags(response.data);
-            } catch (error) {
-                console.error("태그 목록을 불러오는 데 실패했습니다:", error);
-                Alert.alert("오류", "태그 목록을 불러올 수 없습니다.");
-            } finally {
-                setIsLoadingTags(false);
-            }
-        };
-        fetchTags();
-    }, []);
 
     const onDateTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || (pickerTarget === 'start' ? startTime : endTime);
@@ -183,7 +159,7 @@ const AddScheduleScreen = () => {
 
                     <S.ASLabel>Tag</S.ASLabel>
                     <S.ASPickerWrap>
-                        {isLoadingTags ? (
+                        {loading ? (
                             <ActivityIndicator size="small" color="mediumslateblue" />
                         ) : (
                             <Picker selectedValue={tagId}
@@ -191,7 +167,7 @@ const AddScheduleScreen = () => {
                                     style={{ color: 'mediumslateblue' }}
                             >
                                 <Picker.Item label="-- 태그 없음 --" value={0} />
-                                {tags.map((tag) => (
+                                {tags && tags.map((tag) => (
                                     <Picker.Item key={tag.id} label={tag.label} value={tag.id}/>
                                 ))}
                             </Picker>

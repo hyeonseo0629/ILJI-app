@@ -10,16 +10,15 @@ import { useSchedule } from '@/src/context/ScheduleContext'; // 🚨 경로를 �
 
 interface DetailScheduleProps {
     schedule: Schedule | null;
-    tags: Tag[];
     visible: boolean;
     onClose: () => void;
     onDelete: () => void;
     // onUpdate prop은 Context를 직접 사용하므로 제거합니다.
 }
 
-const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, tags, visible, onClose, onDelete, }) => {
+const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onClose, onDelete, }) => {
     const [isEditMode, setIsEditMode] = useState(false);
-    const { updateSchedule } = useSchedule(); // Context에서 update 함수를 가져옵니다.
+    const { updateSchedule, tags } = useSchedule(); // Context에서 update 함수와 tags 목록을 직접 가져옵니다.
     const [formData, setFormData] = useState<Schedule | null>(schedule);
     // Date & Time Picker 상태
     const [showDatePicker, setShowDatePicker] = useState(false);
