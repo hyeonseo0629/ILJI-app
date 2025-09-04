@@ -2,6 +2,7 @@
 import React, {useCallback, useMemo, useRef, useState, useEffect} from 'react';
 import {Pressable} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
+import { useSharedValue } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Header from "@/components/header/Header";
 import {set} from "date-fns";
@@ -18,14 +19,15 @@ import {
 import {BottomSheetContent} from "@/components/bottomSheet/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
+import { AnimationContext } from '@/components/common/AnimationContext';
 
 export default function HomeScreen() {
     const params = useLocalSearchParams();
     const router = useRouter();
     const [currentDate, setCurrentDate] = useState(new Date());
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const [sheetIndex, setSheetIndex] = useState(0);
     const tabPressedRef = useRef(false);
+    const animatedIndex = useSharedValue<number>(0);
 
     const [tags, setTags] = useState<Tag[]>([
         { id: 1, color: '#FFB3A7', createdAt: new Date(), label: 'Work', updatedAt: new Date(), userId: 1 }, // Soft Coral
@@ -36,18 +38,13 @@ export default function HomeScreen() {
     useEffect(() => {
         if (params.newSchedule) {
             const newSchedule = JSON.parse(params.newSchedule as string);
-            // Date 객체는 JSON.stringify/parse 과정에서 문자열로 변환되므로, 다시 Date 객체로 만들어줍니다.
             newSchedule.startTime = new Date(newSchedule.startTime);
             newSchedule.endTime = new Date(newSchedule.endTime);
-
             setSchedules(prevSchedules => [...prevSchedules, newSchedule]);
-
-            // 처리가 끝난 파라미터를 URL에서 제거하여, 화면이 다시 로드될 때 일정이 중복 추가되는 것을 방지합니다.
             router.setParams({ newSchedule: '' });
         }
     }, [params.newSchedule]);
 
-    // 1. API 등에서 가져온 원본 일정 데이터를 상태로 관리합니다.
     const [schedules, setSchedules] = useState<Schedule[]>([
         {
             id: 1, userId: 1, tagId: 1, title: '프로젝트 기획 회의',
@@ -72,12 +69,7 @@ export default function HomeScreen() {
         }
     ]);
 
-    // 1. activeTab의 초기값을 tags 배열의 첫 번째 아이템 라벨로 설정합니다.
     const [activeTab, setActiveTab] = useState(tags[0]?.label || '');
-
-    const handleSheetChanges = useCallback((index: number) => {
-        setSheetIndex(index);
-    }, []);
 
     const handleTabPress = (tabName: string) => {
         tabPressedRef.current = true;
@@ -90,7 +82,7 @@ export default function HomeScreen() {
             tabPressedRef.current = false;
             return;
         }
-        if (sheetIndex === 1) {
+        if (animatedIndex.value > 0) {
             bottomSheetRef.current?.collapse();
         } else {
             bottomSheetRef.current?.expand();
@@ -100,7 +92,6 @@ export default function HomeScreen() {
     const TabHandle = () => (
         <Pressable onPress={handleSheetToggle}>
             <MainToDoCategoryWarp>
-                {/* 2. tags 배열을 기반으로 탭을 동적으로 렌더링합니다. */}
                 {tags.map(tag => (
                     <MainToDoCategory
                         key={tag.id}
@@ -124,43 +115,43 @@ export default function HomeScreen() {
                 disappearsOnIndex={0}
                 appearsOnIndex={1}
                 pressBehavior="collapse"
-                opacity={0.10} // Adjust the opacity here for a lighter grey
+                opacity={0.10}
             />
         ),
         []
     );
 
     return (
-        // GestureHandlerRootView는 앱의 최상단에서 전체 화면을 차지해야 합니다.
         <GestureHandlerRootView style={{flex: 1}}>
-            <MainContainer>
-                <Header sheetIndex={sheetIndex} />
-                <CContainer>
-                    <CalendarView
-                        date={currentDate}
-                        onDateChange={setCurrentDate}
-                        schedules={schedules}
-                        tags={tags}
-                        onSchedulesChange={setSchedules}
-                    />
-                </CContainer>
-                <BottomSheet
-                    ref={bottomSheetRef}
-                    index={0}
-                    snapPoints={snapPoints}
-                    handleComponent={TabHandle}
-                    onChange={handleSheetChanges}
-                    backdropComponent={renderBackdrop}
-                    backgroundStyle={{
-                        backgroundColor: 'transparent',
-                    }}
-                >
-                    {/* 3. 탭 UI가 핸들로 이동했으므로, 여기에는 콘텐츠만 남깁니다. */}
-                    <MainContentWrap>
-                        <BottomSheetContent schedules={schedules} tags={tags} activeTab={activeTab} />
-                    </MainContentWrap>
-                </BottomSheet>
-            </MainContainer>
+            <AnimationContext.Provider value={{ animatedIndex }}>
+                <MainContainer>
+                    <Header />
+                    <CContainer>
+                        <CalendarView
+                            date={currentDate}
+                            onDateChange={setCurrentDate}
+                            schedules={schedules}
+                            tags={tags}
+                            onSchedulesChange={setSchedules}
+                        />
+                    </CContainer>
+                    <BottomSheet
+                        ref={bottomSheetRef}
+                        index={0}
+                        snapPoints={snapPoints}
+                        handleComponent={TabHandle}
+                        animatedIndex={animatedIndex}
+                        backdropComponent={renderBackdrop}
+                        backgroundStyle={{
+                            backgroundColor: 'transparent',
+                        }}
+                    >
+                        <MainContentWrap>
+                            <BottomSheetContent schedules={schedules} tags={tags} activeTab={activeTab} />
+                        </MainContentWrap>
+                    </BottomSheet>
+                </MainContainer>
+            </AnimationContext.Provider>
         </GestureHandlerRootView>
     );
 }
