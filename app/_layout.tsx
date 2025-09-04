@@ -1,5 +1,5 @@
 import { useFonts } from 'expo-font';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments, usePathname } from 'expo-router'; // Added usePathname
 import 'react-native-reanimated';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -43,15 +43,21 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const loadSession = async () => {
+      console.log("AuthProvider: Attempting to load session...");
       try {
         const storedSession = await SecureStore.getItemAsync(TOKEN_KEY);
         if (storedSession) {
-          setSession(JSON.parse(storedSession));
+          const parsedSession = JSON.parse(storedSession);
+          setSession(parsedSession);
+          console.log("AuthProvider: Session loaded successfully:", parsedSession);
+        } else {
+          console.log("AuthProvider: No session found in SecureStore.");
         }
       } catch (e) {
-        console.error("Failed to load session from secure store", e);
+        console.error("AuthProvider: Failed to load session from secure store", e);
       } finally {
         setIsLoading(false);
+        console.log("AuthProvider: isLoading set to false.");
       }
     };
 
@@ -59,13 +65,25 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (user: SessionUser) => {
+    console.log("AuthProvider: Signing in user:", user);
     setSession(user);
-    await SecureStore.setItemAsync(TOKEN_KEY, JSON.stringify(user));
+    try {
+      await SecureStore.setItemAsync(TOKEN_KEY, JSON.stringify(user));
+      console.log("AuthProvider: Session saved to SecureStore.");
+    } catch (e) {
+      console.error("AuthProvider: Failed to save session to SecureStore", e);
+    }
   };
 
   const signOut = async () => {
+    console.log("AuthProvider: Signing out user.");
     setSession(null);
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    try {
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      console.log("AuthProvider: Session deleted from SecureStore.");
+    } catch (e) {
+      console.error("AuthProvider: Failed to delete session from SecureStore", e);
+    }
   };
 
   return (
@@ -80,49 +98,67 @@ function Layout() {
   const { session, isLoading } = useSession();
   const segments = useSegments();
   const router = useRouter();
+  const pathname = usePathname(); // Get pathname using usePathname()
 
   useEffect(() => {
-    if (isLoading) return; // Wait until the session is loaded
-
-    const inLoginPage = segments[0] === 'login';
-
-    if (!session && !inLoginPage) {
-      // User is not signed in and not on the login page, redirect to login.
-      router.replace('/login');
-    } else if (session && inLoginPage) {
-      // User is signed in and on the login page, redirect to the main app.
-      router.replace('/(tabs)');
+    console.log("Layout useEffect: session=", session, "isLoading=", isLoading, "segments=", segments, "pathname=", pathname);
+    if (isLoading) {
+      console.log("Layout useEffect: Still loading, returning.");
+      return; // Wait until the session is loaded
     }
-  }, [session, isLoading, segments]);
+
+    const inAuthGroup = segments[0] === 'login'; // Check if the current segment is 'login'
+    const inAppGroup = segments[0] === '(tabs)'; // Check if the current segment is '(tabs)'
+    const inSettingsOrProfile = segments[0] === 'settings' || segments[0] === 'profile-edit'; // Check for settings or profile
+
+    if (!session) {
+      // User is not signed in
+      if (!inAuthGroup) {
+        // If not on the login page, redirect to login
+        console.log("Layout useEffect: Not signed in and not on login page, redirecting to /login");
+        router.replace('/login');
+      }
+    } else {
+      // User is signed in
+      if (inAuthGroup) {
+        // If on the login page, redirect to app group
+        console.log("Layout useEffect: Signed in and on login page, redirecting to /(tabs)");
+        router.replace('/(tabs)');
+      } else if (!inAppGroup && !inSettingsOrProfile) {
+        // If signed in but not in app group, settings, or profile, redirect to app group
+        console.log("Layout useEffect: Signed in, but not in app group, settings, or profile, redirecting to /(tabs)");
+        router.replace('/(tabs)');
+      }
+    }
+  }, [session, isLoading, segments, pathname]); // Depend on segments and pathname
 
   // The initial route is determined by the logic above.
   // We can just render the stack navigator here.
   return (
       <Stack>
         <Stack.Screen name="login" options={{ headerShown: false }}/>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '' }} />
         <Stack.Screen name="add-schedule" options={{ title: 'New Schedule', presentation: 'modal' }} />
-        <Stack.Screen 
-          name="settings" 
-          options={{ 
-            title: 'Settings', 
-            presentation: 'modal', 
-            headerShown: false 
-          }} 
+        <Stack.Screen
+          name="settings"
+          options={{
+            title: 'Settings',
+            headerBackTitle: '', // Added this line
+          }}
         />
-        <Stack.Screen 
-          name="profile-edit" 
-          options={{ 
-            title: 'Edit Profile', 
-            presentation: 'modal' 
-          }} 
+        <Stack.Screen
+          name="profile-edit"
+          options={{
+            title: 'Edit Profile',
+            headerBackTitle: '', // Added this line
+          }}
         />
-        <Stack.Screen 
-          name="notification-settings" 
-          options={{ 
-            title: 'Notification Settings', 
-            presentation: 'modal' 
-          }} 
+        <Stack.Screen
+          name="notification-settings"
+          options={{
+            title: 'Notification Settings',
+            presentation: 'modal'
+          }}
         />
         <Stack.Screen name="+not-found" />
       </Stack>
