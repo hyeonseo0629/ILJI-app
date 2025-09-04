@@ -34,6 +34,7 @@ interface ScheduleContextType {
     fetchSchedules: () => void; // 기존 함수 유지
     updateSchedule: (schedule: Schedule) => Promise<void>;
     createSchedule: (newScheduleData: Omit<Schedule, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+    deleteSchedule: (scheduleId: number) => Promise<void>;
 }
 
 // --- Context 생성 ---
@@ -184,6 +185,24 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         }
     }, [formatRawSchedule]);
 
+    const deleteSchedule = useCallback(async (scheduleId: number) => {
+        try {
+            // 1. 서버에 삭제 요청을 보냅니다. (DELETE /schedules/{id})
+            await api.delete(`/schedules/${scheduleId}`);
+
+            // 2. 서버에서 성공적으로 삭제되면, 화면(events 상태)에서도 해당 일정을 제거합니다.
+            setEvents(prevEvents => prevEvents.filter(event => event.id !== scheduleId));
+
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                console.error("Axios 삭제 에러:", err.message);
+            } else {
+                console.error("일정 삭제 실패:", err);
+            }
+            Alert.alert("삭제 실패", "일정을 삭제하는 중 오류가 발생했습니다.");
+        }
+    }, []);
+
     const value = {
         events,
         tags, // [추가] Context 값에 태그 목록 포함
@@ -192,6 +211,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         fetchSchedules,
         updateSchedule,
         createSchedule,
+        deleteSchedule,
     };
 
     return (

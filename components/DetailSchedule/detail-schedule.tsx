@@ -12,13 +12,12 @@ interface DetailScheduleProps {
     schedule: Schedule | null;
     visible: boolean;
     onClose: () => void;
-    onDelete: () => void;
-    // onUpdate prop은 Context를 직접 사용하므로 제거합니다.
 }
 
-const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onClose, onDelete, }) => {
+const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onClose }) => {
     const [isEditMode, setIsEditMode] = useState(false);
-    const { updateSchedule, tags } = useSchedule(); // Context에서 update 함수와 tags 목록을 직접 가져옵니다.
+    // [수정] Context에서 deleteSchedule 함수도 가져옵니다.
+    const { updateSchedule, deleteSchedule, tags } = useSchedule();
     const [formData, setFormData] = useState<Schedule | null>(schedule);
     // Date & Time Picker 상태
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -54,7 +53,12 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                 },
                 {
                     text: "삭제",
-                    onPress: onDelete, // 부모로부터 받은 삭제 함수를 실행
+                    onPress: async () => {
+                        // [수정] Context의 deleteSchedule 함수를 호출합니다.
+                        await deleteSchedule(schedule.id);
+                        // 삭제 후 모달을 닫습니다.
+                        onClose();
+                    },
                     style: "destructive",
                 }
             ]
