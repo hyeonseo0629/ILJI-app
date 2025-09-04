@@ -64,17 +64,22 @@ export const IUserName = styled.Text`
     padding: 20px 8px 0;
 `
 
-export const IEditButton = styled.Text`
+export const IEditButton = styled.TouchableOpacity`
     width: 100px;
     height: 30px;
     margin: 20px 15px 0;
     padding: 5px;
     border-radius: 20px;
-    font-size: 15px;
-    text-align: center;
+    align-items: center;
+    justify-content: center;
     background-color: mediumslateblue;
+`
+
+export const IEditButtonText = styled.Text`
+    font-size: 15px;
     color: #ffffff;
 `
+
 // ------- //
 // Top-Tab //
 // ------- //

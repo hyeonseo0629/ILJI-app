@@ -2,12 +2,11 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {Alert, Switch, Platform, Text} from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import {Schedule} from '@/components/calendar/types';
-import {Tag} from '@/components/ToDo/types';
-import * as S from '@/components/AddSchedule/AddScheduleStyle';
+import {Tag} from '@/components/todo/types';
+import * as S from '@/components/addSchedule/AddScheduleStyle';
 import {Picker} from '@react-native-picker/picker';
 import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import {format} from 'date-fns';
-import {ASButtonWrap, ASCancelButtonText, ASHeader} from "@/components/AddSchedule/AddScheduleStyle";
 import BottomSheet, {BottomSheetBackdrop} from "@gorhom/bottom-sheet";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 
@@ -111,7 +110,7 @@ const AddScheduleScreen = () => {
     return (
         <GestureHandlerRootView>
             <S.ASContainer contentContainerStyle={{paddingBottom: 40}}>
-                <ASHeader>New Reminder</ASHeader>
+                <S.ASHeader>New Reminder</S.ASHeader>
                 <S.ASContentWrap>
 
                     <S.ASLabel>Title</S.ASLabel>
@@ -218,7 +217,7 @@ const AddScheduleScreen = () => {
             >
                 <Text>ASD</Text>
             </BottomSheet>
-            <ASButtonWrap>
+            <S.ASButtonWrap>
                 <S.ASSaveButton onPress={handleSave}>
                     <S.ASSaveButtonText>Save</S.ASSaveButtonText>
                 </S.ASSaveButton>
@@ -226,9 +225,9 @@ const AddScheduleScreen = () => {
                     pathname: '/',
                     params: {tags: JSON.stringify(tags)}
                 })}>
-                    <ASCancelButtonText>Cancel</ASCancelButtonText>
+                    <S.ASCancelButtonText>Cancel</S.ASCancelButtonText>
                 </S.ASCancelButton>
-            </ASButtonWrap>
+            </S.ASButtonWrap>
         </GestureHandlerRootView>
     );
 };

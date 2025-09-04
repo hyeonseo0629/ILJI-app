@@ -13,9 +13,9 @@ import * as S from './CalendarStyle';
 import MonthView from './MonthView';
 import WeekView from './WeekView';
 import DayView from './DayView';
-import DetailSchedule from '@/components/DetailSchedule/detail-schedule'; // 이 경로는 이미 올바르게 되어있을 수 있습니다.
+import DetailSchedule from '@/components/detailSchedule/detail-schedule'; // 이 경로는 이미 올바르게 되어있을 수 있습니다.
 import { Schedule } from '@/components/calendar/types';
-import { Tag } from '@/components/ToDo/types';
+import { Tag } from '@/components/todo/types';
 
 interface SixWeekCalendarProps {
     date: Date;

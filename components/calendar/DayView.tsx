@@ -4,7 +4,7 @@ import React, { useRef, useEffect, useMemo } from 'react';
 import { View, ScrollView } from 'react-native';
 import * as S from './CalendarStyle';
 import { Schedule } from '@/components/calendar/types';
-import { Tag } from '@/components/ToDo/types';
+import { Tag } from '@/components/todo/types';
 import { differenceInMinutes, isToday, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 

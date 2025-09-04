@@ -8,9 +8,9 @@ import {
 import SortByPicker from "@/components/common/SortByPicker";
 import {format} from "date-fns";
 import {BottomSheetScrollView} from "@gorhom/bottom-sheet";
-import {ToDo} from "@/components/ToDo/ToDo";
+import {ToDo} from "@/components/todo/ToDo";
 import {Schedule} from "@/components/calendar/types";
-import {Tag} from "@/components/ToDo/types";
+import {Tag} from "@/components/todo/types";
 
 interface BottomSheetContentProps {
     schedules: Schedule[];

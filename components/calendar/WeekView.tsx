@@ -14,7 +14,7 @@ import {
 } from 'date-fns';
 import * as S from './CalendarStyle';
 import { Schedule } from '@/components/calendar/types';
-import { Tag } from '@/components/ToDo/types';
+import { Tag } from '@/components/todo/types';
 
 const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
 

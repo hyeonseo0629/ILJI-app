@@ -6,7 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import Header from "@/components/header/Header";
 import {set} from "date-fns";
 import {Schedule} from "@/components/calendar/types";
-import {Tag} from "@/components/ToDo/types";
+import {Tag} from "@/components/todo/types";
 import {CContainer} from "@/components/calendar/CalendarStyle";
 import {
     MainContainer,

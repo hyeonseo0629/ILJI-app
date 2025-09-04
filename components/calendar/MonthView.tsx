@@ -14,7 +14,7 @@ import {
 } from 'date-fns';
 import * as S from './CalendarStyle';
 import { Schedule } from '@/components/calendar/types';
-import { Tag } from '@/components/ToDo/types';
+import { Tag } from '@/components/todo/types';
 
 interface MonthViewProps {
     date: Date;

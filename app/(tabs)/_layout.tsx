@@ -52,6 +52,8 @@ export default function TabLayout() {
                     tabBarIcon: ({color}) => <IconSymbol size={28} name="person.fill" color={color}/>,
                 }}
             />
+
+            {/* Modal screens are now handled in the root _layout.tsx */}
         </Tabs>
     );
 }

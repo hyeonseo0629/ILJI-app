@@ -11,10 +11,14 @@ import {
     ITop,
     IUserID,
     IUserName,
+    IEditButtonText
 } from "@/components/iLog/ILogStyle";
 import {ILogContents} from "./ILogContents";
+import {useRouter} from "expo-router";
 
 const ILogView = () => {
+    const router = useRouter();
+
     return (
         <ILogContainer>
             <IWrap>
@@ -40,7 +44,9 @@ const ILogView = () => {
                 </ITop>
                 <IBottom>
                     <IUserName>User NickName</IUserName>
-                    <IEditButton>Edit Profile</IEditButton>
+                    <IEditButton onPress={() => router.push('/profile-edit')}>
+                        <IEditButtonText>Edit Profile</IEditButtonText>
+                    </IEditButton>
                 </IBottom>
             </IWrap>
             <ILogContents/>
