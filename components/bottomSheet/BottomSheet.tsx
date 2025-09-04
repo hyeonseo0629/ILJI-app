@@ -11,15 +11,16 @@ import {BottomSheetScrollView} from "@gorhom/bottom-sheet";
 import {ToDo} from "@/components/ToDo/ToDo";
 import {Schedule} from "@/components/calendar/types";
 import {Tag} from "@/components/ToDo/types";
+import {useSchedule} from "@/src/context/ScheduleContext";
 
 interface BottomSheetContentProps {
-    schedules: Schedule[];
-    tags: Tag[];
     activeTab: string; // e.g., "Work", "Personal", "Study"
 }
 
-export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({schedules, tags, activeTab}) => {
+export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab}) => {
     const router = useRouter();
+    // [수정] Context에서 'events'를 가져와 'schedules'라는 별명으로 사용합니다.
+    const { events: schedules, tags } = useSchedule();
     const [sortBy, setSortBy] = useState('latest');
     const pickerItems = [
         {label: "latest", value: "latest"},
@@ -53,7 +54,7 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({schedules
                 </BSHeaderLeft>
                 <BSHeaderRight>
                     <BSTodayText>{format(new Date(), "yyyy-MM-dd")}</BSTodayText>
-                    <TouchableOpacity onPress={() => router.push({ pathname: '/add-schedule', params: { tags: JSON.stringify(tags) } })}>
+                    <TouchableOpacity onPress={() => router.push('/add-schedule')}>
                         <BSToDoAddButton name="pluscircleo" size={20}/>
                     </TouchableOpacity>
                 </BSHeaderRight>

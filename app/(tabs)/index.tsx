@@ -27,20 +27,20 @@ export default function HomeScreen() {
     const [sheetIndex, setSheetIndex] = useState(0);
     const tabPressedRef = useRef(false);
 
-    const [tags, setTags] = useState<Tag[]>([
-        { id: 1, color: '#FFB3A7', createdAt: new Date(), label: 'Work', updatedAt: new Date(), userId: 1 }, // Soft Coral
-        { id: 2, color: '#A7D7FF', createdAt: new Date(), label: 'Personal', updatedAt: new Date(), userId: 1 }, // Light Sky Blue
-        { id: 3, color: '#A7FFD4', createdAt: new Date(), label: 'Study', updatedAt: new Date(), userId: 1 }, // Mint Green
-    ]);
-
     // --- 데이터 연결 ---
-    // 1. ScheduleContext에서 진짜 데이터, 로딩 상태, 에러를 가져옵니다.
-    const { events: schedules, loading, error } = useSchedule();
+    // 1. ScheduleContext에서 진짜 데이터(일정, 태그), 로딩 상태, 에러를 가져옵니다.
+    const { events: schedules, tags, loading, error } = useSchedule();
 
-    // 1. activeTab의 초기값을 tags 배열의 첫 번째 아이템 라벨로 설정합니다.
-    const [activeTab, setActiveTab] = useState(tags[0]?.label || '');
+    // 2. 로드된 태그 목록의 첫 번째 탭을 기본으로 활성화합니다.
+    const [activeTab, setActiveTab] = useState('');
 
-    // --- 모든 Hook과 핸들러 함수를 조건문 위로 이동 ---
+    useEffect(() => {
+        // 태그가 로드되고, 아직 활성 탭이 설정되지 않았다면 첫 번째 태그를 활성 탭으로 지정합니다.
+        if (tags.length > 0 && !activeTab) {
+            setActiveTab(tags[0].label);
+        }
+    }, [tags, activeTab]);
+
     const handleSheetChanges = useCallback((index: number) => {
         setSheetIndex(index);
     }, []);
@@ -60,7 +60,7 @@ export default function HomeScreen() {
         []
     );
 
-    // 2. 로딩 중일 때 보여줄 화면
+    // 3. 로딩 중일 때 보여줄 화면
     if (loading) {
         return (
             <View style={styles.centered}>
@@ -91,7 +91,7 @@ export default function HomeScreen() {
     const TabHandle = () => (
         <Pressable onPress={handleSheetToggle}>
             <MainToDoCategoryWarp>
-                {/* 2. tags 배열을 기반으로 탭을 동적으로 렌더링합니다. */}
+                {/* 4. Context에서 가져온 진짜 tags 배열을 기반으로 탭을 동적으로 렌더링합니다. */}
                 {tags.map(tag => (
                     <MainToDoCategory
                         key={tag.id}
@@ -115,7 +115,7 @@ export default function HomeScreen() {
                     <CalendarView
                         date={currentDate}
                         onDateChange={setCurrentDate}
-                        schedules={schedules} // 3. Context에서 가져온 'schedules'를 전달합니다.
+                        schedules={schedules} // Context에서 가져온 'schedules'를 전달합니다.
                         tags={tags}
                         // CalendarView가 요구하는 onSchedulesChange prop을 임시로 전달합니다.
                         onSchedulesChange={() => {}}
@@ -132,9 +132,9 @@ export default function HomeScreen() {
                         backgroundColor: 'transparent',
                     }}
                 >
-                    {/* 3. 탭 UI가 핸들로 이동했으므로, 여기에는 콘텐츠만 남깁니다. */}
+                    {/* 5. BottomSheetContent에는 activeTab 정보만 넘겨줍니다. */}
                     <MainContentWrap>
-                        <BottomSheetContent schedules={schedules} tags={tags} activeTab={activeTab} /> 
+                        <BottomSheetContent activeTab={activeTab} />
                     </MainContentWrap>
                 </BottomSheet>
             </MainContainer>
