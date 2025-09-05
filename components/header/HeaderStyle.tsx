@@ -50,9 +50,6 @@ export const HIconWrap = styled.View`
     justify-content: space-between;
 `
 
-export const HIcon = styled.Text`
-    font-size: 20px;
-`
 export const HIconBell = styled(Octicons).attrs({})`
     padding: 5px;
     color: mediumslateblue;

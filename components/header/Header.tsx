@@ -2,7 +2,6 @@ import React from "react";
 import {
     HBottom,
     HContainer,
-    HIcon,
     HIconBell,
     HIconMail,
     HIconShare,
