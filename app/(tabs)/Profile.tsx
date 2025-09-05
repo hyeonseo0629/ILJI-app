@@ -1,4 +1,4 @@
-import { useSession } from '../_layout';
+import { useSession } from '@/hooks/useAuth'; // useAuth.ts에서 useSession 임포트
 import React, { useState } from 'react';
 import {
     View,

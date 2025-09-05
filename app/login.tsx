@@ -1,4 +1,4 @@
-import { useSession, SessionUser } from './_layout'; // Import SessionUser
+import { useSession, SessionUser } from '@/hooks/useAuth'; // Import SessionUser and useSession from useAuth.ts
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
