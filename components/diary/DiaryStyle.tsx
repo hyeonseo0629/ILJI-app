@@ -10,88 +10,70 @@ export const DiaryContainer = styled.View`
     background-color: #ffffff;
 `
 
-// ------- //
-// Profile //
-// ------- //
+// ---- //
+// Main //
+// ---- //
 
-export const PWrap = styled.View`
-    background-color: #ffffff;
+export const MWrap = styled.View`
+    width: 100%;
     padding: 20px;
 `
 
-export const PTop = styled.View`
+export const MTextWrap = styled.View`
     width: 100%;
     flex-direction: row;
+    padding: 0 20px;
 `
 
-export const PImage = styled.View`
-    width: 100px;
-    height: 100px;
-    border-radius: 50px;
-    background-color: lavender;
+export const MDateText = styled.Text`
+    font-size: 50px;
+    padding: 10px;
+`
+export const MTextLeftWrap = styled.View`
+    width: 70%;
+    padding: 25px 10px;
 `
 
-export const PTextWrap = styled.View`
+export const MWeekText = styled.Text`
+    font-size: 15px;
+    font-weight: bold;
 `
-
-export const PUserID = styled.Text`
-    color: mediumslateblue;
-    font-size: 18px;
-    padding: 15px 30px 10px;
-`
-
-export const PCountWrap = styled.View`
-    flex-direction: row;
-    width: 250px;
-    margin: 0 20px;
-`
-
-
-export const PCount = styled.View`
-    margin: 5px 20px;
-    align-items: center;
-`
-
-export const PBottom = styled.View`
-    width: 100%;
+export const MTextBottomWrap = styled.View`
+    width: 90%;
     flex-direction: row;
     justify-content: space-between;
 `
 
-export const PUserName = styled.Text`
-    font-size: 18px;
-    color: mediumslateblue;
-    padding: 20px 8px 0;
+export const MYearText = styled.Text`
+    font-weight: 300;
 `
 
-export const PEditButton = styled.Text`
-    width: 100px;
-    height: 30px;
-    margin: 20px 15px 0;
-    padding: 5px;
+export const MTimeText = styled.Text`
+    font-weight: 300;
+    color: #999999;
+    padding: 0 5px;
+`
+
+export const MImage = styled.Image`
+    width: 325px;
+    height: 350px;
+    margin: auto;
     border-radius: 20px;
-    font-size: 15px;
-    text-align: center;
-    background-color: mediumslateblue;
-    color: #ffffff;
+    background-color: #999999;
 `
-// ------- //
-// Top-Tab //
-// ------- //
 
-export const TopTabWrap = styled.View`
+export const MContentWrap = styled.View`
     width: 100%;
-    background-color: #ffffff;
-    border: 2px solid;
-    flex-direction: row;
-    justify-content: space-around;
+    padding: 20px;
 `
 
-export const TopTab = styled.Text`
-    width: 200px;
-    font-size: 15px;
-    padding: 10px;
-    text-align: center;
-    color: mediumslateblue;
-    background-color: lavender;
+export const MTitle = styled.Text`
+    font-size: 30px;
+    font-weight: bold;
+    padding: 0 10px;
+`
+
+export const MContent = styled.Text`
+    font-weight: normal;
+    padding: 10px 15px;
 `

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "292298493030",
+    "project_id": "flask-react-login",
+    "storage_bucket": "flask-react-login.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:292298493030:android:f5335d96b5e3e179c631a7",
+        "android_client_info": {
+          "package_name": "com.ilji.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "292298493030-22j6paogp17vgtqg3p1at3o6vstlqju4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ilji.android",
+            "certificate_hash": "ec897944bf0f2d4941256011c9a832bf38641b22"
+          }
+        },
+        {
+          "client_id": "292298493030-hd9mqh166896s35q8aeanc4rlah3ednt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_IR0xccWWjyMp3Q_cJ7V2Wla2LAGhe3g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "292298493030-hd9mqh166896s35q8aeanc4rlah3ednt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ilji.ios"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

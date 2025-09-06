@@ -2,11 +2,10 @@
   "expo": {
     "name": "ilji_app",
     "slug": "ilji_app",
-    "owner": "nostep_nolife",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "iljiapp",
+    "scheme": "dakkuyaki",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -17,12 +16,14 @@
       }
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.dakkuyaki.ilji"
+      "package": "com.ilji.android",
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",
@@ -41,10 +42,25 @@
         }
       ],
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3fe826ef-7486-4776-9466-f7b2709be4ab"
+      },
+      "GOOGLE_WEB_CLIENT_ID": "292298493030-hd9mqh166896s35q8aeanc4rlah3ednt.apps.googleusercontent.com",
+      "GOOGLE_IOS_CLIENT_ID": "292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7.apps.googleusercontent.com"
+    },
+    "owner": "choiayeong"
   }
 }
