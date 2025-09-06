@@ -10,9 +10,9 @@ export const DiaryContainer = styled.View`
     background-color: #ffffff;
 `
 
-    // ---- //
-    // Main //
-    // ---- //
+// ---- //
+// Main //
+// ---- //
 
 export const MWrap = styled.View`
     width: 100%;

@@ -29,7 +29,7 @@ export const HContainer = styled.View<HContainerProps>`
     padding-top: 10px;
 `;
 
-export const HTop = styled.View`
+export const HWrap = styled.View`
     padding: 0 10px;
     flex-direction: row;
     justify-content: space-between;
@@ -62,18 +62,4 @@ export const HIconMail = styled(Octicons).attrs({})`
 export const HIconShare = styled(Octicons).attrs({})`
     padding: 5px;
     color: mediumslateblue;
-`
-
-export const HBottom = styled.View`
-    padding: 4px 15px 25px;
-    flex-direction: row;
-    justify-content: space-around;
-`
-
-export const HRecentDiary = styled.View`
-    width: 55px;
-    height: 55px;
-    border-radius: 50px;
-    background-color: lavender;
-    border: 3px solid mediumslateblue;
 `

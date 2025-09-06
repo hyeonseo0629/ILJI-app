@@ -118,16 +118,18 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
             <S.MHeader>
                 <S.MMonthText>{format(date, 'MMMM yyyy')}</S.MMonthText>
                 <S.ViewModeContainer>
-                    <S.ViewModeButton $isActive={viewMode === 'month'}
+                    <S.ViewMonthButton $isActive={viewMode === 'month'}
                                       onPress={() => handleViewModeButtonPress('month')}>
                         <S.ButtonText $isActive={viewMode === 'month'}>M</S.ButtonText>
-                    </S.ViewModeButton>
-                    <S.ViewModeButton $isActive={viewMode === 'week'} onPress={() => handleViewModeButtonPress('week')}>
+                    </S.ViewMonthButton>
+                    <S.ViewWeekButton $isActive={viewMode === 'week'}
+                                      onPress={() => handleViewModeButtonPress('week')}>
                         <S.ButtonText $isActive={viewMode === 'week'}>W</S.ButtonText>
-                    </S.ViewModeButton>
-                    <S.ViewModeButton $isActive={viewMode === 'day'} onPress={() => handleViewModeButtonPress('day')}>
+                    </S.ViewWeekButton>
+                    <S.ViewDayButton $isActive={viewMode === 'day'}
+                                      onPress={() => handleViewModeButtonPress('day')}>
                         <S.ButtonText $isActive={viewMode === 'day'}>D</S.ButtonText>
-                    </S.ViewModeButton>
+                    </S.ViewDayButton>
                 </S.ViewModeContainer>
             </S.MHeader>
 
@@ -155,7 +157,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                             ref={monthFlatListRef}
                             data={months}
                             renderItem={({item}) => (
-                                <View style={{height: monthContainerHeight}}>
+                                <View style={{height: monthContainerHeight, margin: 5}}>
                                     <MonthView
                                         date={item}
                                         schedules={schedules}

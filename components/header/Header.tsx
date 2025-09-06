@@ -1,14 +1,12 @@
 import React from "react";
 import {
-    HBottom,
     HContainer,
     HIconBell,
     HIconMail,
     HIconShare,
     HIconWrap,
     HLogo,
-    HRecentDiary,
-    HTop,
+    HWrap,
 } from "@/components/header/HeaderStyle";
 import {usePathname} from "expo-router";
 import {TouchableOpacity, View} from "react-native";
@@ -31,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({sheetIndex}) => {
                    HContainer가 스스로 그림자와 z-index를 제어하도록 합니다.
             */}
                 <HContainer $isMain={isMain} $isSheetExpanded={isSheetExpanded}>
-                    <HTop>
+                    <HWrap>
                         <HLogo/>
                         <HIconWrap>
                             <TouchableOpacity>
@@ -44,27 +42,7 @@ const Header: React.FC<HeaderProps> = ({sheetIndex}) => {
                                 <HIconMail name="mail" size={25}/>
                             </TouchableOpacity>
                         </HIconWrap>
-                    </HTop>
-                    {/* 4. 현재 경로가 홈 화면('/')일 때만 HBottom을 렌더링합니다. */}
-                    {isMain && (
-                        <HBottom>
-                            <TouchableOpacity>
-                                <HRecentDiary/>
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <HRecentDiary/>
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <HRecentDiary/>
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <HRecentDiary/>
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <HRecentDiary/>
-                            </TouchableOpacity>
-                        </HBottom>
-                    )}
+                    </HWrap>
                 </HContainer>
         </>
     )

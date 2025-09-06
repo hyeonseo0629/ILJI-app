@@ -15,6 +15,7 @@ import {
 import * as S from './CalendarStyle';
 import { Schedule } from '@/components/calendar/types';
 import { Tag } from '@/components/ToDo/types';
+import {MDayOfTheWeek} from "./CalendarStyle";
 
 const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
 
@@ -66,7 +67,9 @@ const WeekView: React.FC<WeekViewProps> = ({ date, schedules = [], tags = [], on
     return (
         <View style={{ flex: 1 }}>
             {/* Day Headers */}
-            <S.MWeek style={{ marginLeft: 50, marginBottom: 0 }}>
+            {/* --- 주요 변경사항 --- */}
+            {/* MWeek의 flex: 1 스타일을 덮어쓰기 위해 flex: 0을 추가합니다. */}
+            <S.MDayOfTheWeek style={{ marginLeft: 50, marginBottom: 0, flex: 0 }}>
                 {weekDays.map((day) => {
                     const isCurrentDay = isToday(day);
                     return (
@@ -86,7 +89,7 @@ const WeekView: React.FC<WeekViewProps> = ({ date, schedules = [], tags = [], on
                         </S.MDayContainer>
                     );
                 })}
-            </S.MWeek>
+            </S.MDayOfTheWeek>
 
             <S.TimetableWrapper>
                 <ScrollView ref={scrollViewRef}>
