@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components/native';
+import Octicons from "react-native-vector-icons/Octicons";
 
 interface HContainerProps {
     $isMain?: boolean;
@@ -24,12 +25,12 @@ export const HContainer = styled.View<HContainerProps>`
     z-index: ${(props) => (props.$isSheetExpanded ? 0 : 1)};
 
     /* $isMain prop이 true일 때만 그림자 효과를 적용합니다. */
-    ${(props) => props.$isMain && mainHeaderStyles}
+    ${(props) => props.$isMain && mainHeaderStyles};
+    padding-top: 10px;
 `;
 
-export const HTop = styled.View`
-    margin-top: 45px;
-    padding: 10px;
+export const HWrap = styled.View`
+    padding: 0 10px;
     flex-direction: row;
     justify-content: space-between;
 `
@@ -37,30 +38,28 @@ export const HTop = styled.View`
 export const HLogo = styled.Image.attrs((props) => ({
     source: require('../../assets/images/logo.png'),
 }))`
-   width: 50px;
-   height: 50px;
- `;
+    width: 65px;
+    height: 65px;
+    margin: 0 5px;
+`;
 
 export const HIconWrap = styled.View`
     width: 30%;
-    margin: 10px;
+    margin: 15px 20px 0;
     flex-direction: row;
     justify-content: space-between;
 `
 
-export const HIcon = styled.Text`
-font-size: 20px;
+export const HIconBell = styled(Octicons).attrs({})`
+    padding: 5px;
+    color: mediumslateblue;
+`
+export const HIconMail = styled(Octicons).attrs({})`
+    padding: 5px;
+    color: mediumslateblue;
 `
 
-export const HBottom = styled.View`
-    padding: 15px;
-    flex-direction: row;
-    justify-content: space-around;
-`
-
-export const HRecentDiary = styled.View`
-    width: 55px;
-    height: 55px;
-    border-radius: 50px;
-    background-color: lavender;
+export const HIconShare = styled(Octicons).attrs({})`
+    padding: 5px;
+    color: mediumslateblue;
 `

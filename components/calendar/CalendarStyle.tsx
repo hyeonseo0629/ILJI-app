@@ -1,14 +1,19 @@
 import styled from 'styled-components/native';
 
-// Calendar Area
+// -------------- //
+// Calendar Area  //
+// -------------- //
+
 export const CContainer = styled.View`
     flex: 1; /* 남은 공간을 모두 차지하도록 설정 */
     background-color: #ffffff;
     width: 100%;
-    padding: 15px 30px;
+    padding: 15px 0;
 `
+// -------------------------- //
+// Monthly Calendar Component //
+// -------------------------- //
 
-// Monthly Calendar Component
 export const MContainer = styled.View`
     flex: 1; /* 부모 컨테이너(CContainer)의 공간을 모두 차지하도록 설정 */
     background-color: #ffffff;
@@ -24,39 +29,19 @@ export const MLoadingContainer = styled.View`
 
 export const MHeader = styled.View`
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
     padding-horizontal: 15px;
+    padding: 0 18px;
 `;
 
 export const MMonthText = styled.Text`
     font-size: 20px;
     font-weight: bold;
     color: #333;
-    width: 115px;
+    width: 35%;
 `;
-
-// --- Day/Week/Month 버튼 스타일 ---
-export const MViewModeContainer = styled.View`
-    flex-direction: row;
-    align-items: center;
-    gap: 5px; /* 버튼 사이에 간격을 줍니다 */
-`;
-
-export const MViewModeButton = styled.Pressable<{ isActive: boolean }>`
-    padding: 8px 10px; /* 버튼의 크기를 조절합니다 */
-    border-radius: 20px; /* 동그란 모양을 만듭니다 */
-    background-color: ${({ isActive }) => (isActive ? '#EAEAFB' : 'transparent')}; /* 활성화 시 연보라색 배경 */
-`;
-
-export const MViewModeButtonText = styled.Text<{ isActive: boolean }>`
-    font-size: 14px;
-    font-weight: 600;
-    color: ${({ isActive }) => (isActive ? '#5856D6' : '#000000')}; /* 활성화 시 진한 보라색 텍스트 */
-`;
-// --- 버튼 스타일 끝 ---
-
 
 export const MDayNameText = styled.Text.attrs({
     allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
@@ -69,9 +54,21 @@ export const MDayNameText = styled.Text.attrs({
 `;
 
 export const MWeek = styled.View`
+    flex: 1; /* 부모(MWeeksContainer)의 공간을 균등하게 나눕니다. */
     flex-direction: row;
-    height: 65px;
+    /* height 속성을 제거하여 flex가 높이를 결정하도록 합니다. */
 `;
+
+export const MDayOfTheWeekText = styled.Text`
+    flex-direction: row;
+    margin-bottom: 20px; /* 요일과 날짜 사이의 간격 */
+`
+
+export const MDayOfTheWeek = styled.View`
+    flex-direction: row;
+    height: 60px;
+    margin-bottom: 20px; /* 요일과 날짜 사이의 간격 */
+`
 
 interface MDayContainerProps {
     $isSelected?: boolean;
@@ -82,7 +79,7 @@ export const MDayContainer = styled.TouchableOpacity<MDayContainerProps>`
     flex-direction: column; /* 날짜와 제목을 세로로 쌓습니다. */
     align-items: center; /* 가로 중앙 정렬 */
     justify-content: flex-start; /* 세로 상단 정렬 */
-    padding: 10px;
+    padding: 5px;
     background-color: ${(props) => (props.$isSelected ? '#EFEFEF' : 'transparent')};
     border-radius: 8px;
 `;
@@ -112,10 +109,10 @@ export const MDayText = styled.Text.attrs({
 `;
 
 export const MDayCircle = styled.View`
-    width: 25px;
-    height: 25px;
+    width: 16px;
+    height: 16px;
     background-color: mediumslateblue;
-    border-radius: 12.5px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
+    border-radius: 15px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
     justify-content: center; /* 내부 텍스트를 세로 중앙에 정렬 */
     align-items: center; /* 내부 텍스트를 가로 중앙에 정렬 */
 `;
@@ -128,7 +125,7 @@ export const EventTitleText = styled.Text.attrs({
     numberOfLines: 1, // 텍스트를 한 줄로 제한합니다.
     ellipsizeMode: 'tail', // 길이가 길면 끝에 ...을 표시합니다.
 })<EventTitleTextProps>`
-    font-size: 8px; /* 월별 캘린더에 맞게 작은 글씨 크기 */
+    font-size: 10px; /* 월별 캘린더에 맞게 작은 글씨 크기 */
     text-align: center;
     margin-top: 2px;
     width: 100%; /* 컨테이너 너비에 맞춤 */
@@ -136,6 +133,18 @@ export const EventTitleText = styled.Text.attrs({
     padding: 1px 3px; /* 텍스트 주변에 약간의 여백을 줍니다. */
     color: #ffffff;
     background-color: ${(props) => props.color || 'gray'};
+`;
+
+export const MoreEventsText = styled.Text.attrs({
+    numberOfLines: 1,
+})`
+    font-size: 10px;
+    text-align: center;
+    margin-top: 2px;
+    width: 100%;
+    padding: 1px 3px;
+    color: #555; /* 눈에 띄도록 다른 색상 사용 */
+    font-weight: bold;
 `;
 
 export const MEventsContainer = styled.View`
@@ -221,30 +230,42 @@ export const EventBlockText = styled.Text`
     font-weight: 500;
 `;
 
-
 /**
  * CalendarView Styles
  */
 export const ViewModeContainer = styled.View`
-    margin: 0 20px;
-    padding: 0 10px;
+    padding: 0px;
+    border-radius: 20px;
     flex-direction: row;
     justify-content: center;
     padding-vertical: 10px;
     border-bottom-color: #eee;
+    background-color: lavender;
+    elevation: 10;
 `;
 
 interface ViewModeButtonProps {
     $isActive?: boolean;
 }
 
-export const ViewModeButton = styled.TouchableOpacity<ViewModeButtonProps>`
+export const ViewMonthButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
-    border-radius: 20px;
-    margin: 0 5px;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
     background-color: ${(props) => (props.$isActive ? 'mediumslateblue' : 'lavender')};
-    elevation: 10;
-`;
+`
+
+export const ViewWeekButton = styled.TouchableOpacity<ViewModeButtonProps>`
+    padding: 8px 18px;
+    background-color: ${(props) => (props.$isActive ? 'mediumslateblue' : 'lavender')};
+`
+
+export const ViewDayButton = styled.TouchableOpacity<ViewModeButtonProps>`
+    padding: 8px 18px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    background-color: ${(props) => (props.$isActive ? 'mediumslateblue' : 'lavender')};
+`
 
 export const ButtonText = styled.Text<ViewModeButtonProps>`
     font-weight: 500;

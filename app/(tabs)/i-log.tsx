@@ -10,7 +10,6 @@ export default function DiaryScreen() {
     return (
         <GestureHandlerRootView>
             <MainContainer>
-                <Header sheetIndex={sheetIndex}/>
                 <DiaryView/>
             </MainContainer>
         </GestureHandlerRootView>
