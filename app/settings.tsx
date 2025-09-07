@@ -6,7 +6,7 @@ import {
     Alert,
     ActivityIndicator
 } from 'react-native';
-import { useSession } from '@/hooks/useAuth'; // 경로 수정} from './_layout';
+import { useSession } from '@/hooks/useAuth';
 
 export default function SettingsScreen() {
     const { signOut } = useSession();

@@ -30,7 +30,7 @@ export function useSession() {
 }
 
 // Provider component that manages authentication state
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactElement }) {
   const [session, setSession] = useState<SessionUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -72,7 +72,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // This comment is added to force a re-write of the file.
   return (
     <AuthContext.Provider value={{ signIn, signOut, session, isLoading }}>
       {children}

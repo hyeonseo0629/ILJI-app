@@ -25,9 +25,10 @@ export default function TabLayout() {
                         paddingBottom: 25,
                     },
                     default: {
-                        height: 90,
+                        height: 65,
                         paddingTop: 5,
                         paddingBottom: 8,
+                        backgroundColor: 'lavender',
                     },
                 }),
             }}>

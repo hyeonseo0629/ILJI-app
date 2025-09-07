@@ -14,6 +14,7 @@ import {
     GoogleSignin,
     statusCodes,
 } from '@react-native-google-signin/google-signin';
+import { useRouter } from 'expo-router';
 
 const extra = Constants.expoConfig?.extra ?? {};
 const GOOGLE_WEB_CLIENT_ID = extra.GOOGLE_WEB_CLIENT_ID as string;
@@ -22,6 +23,7 @@ const GOOGLE_IOS_CLIENT_ID = extra.GOOGLE_IOS_CLIENT_ID as string;
 export default function LoginScreen(): React.JSX.Element {
     const { signIn } = useSession();
     const [busy, setBusy] = useState(false);
+    const router = useRouter();
 
     const config = useMemo(
         () => ({

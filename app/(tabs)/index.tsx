@@ -18,7 +18,6 @@ import {
 } from "@/components/MainStyle";
 import {BottomSheetContent} from "@/components/bottomSheet/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
-import {GestureHandlerRootView} from "react-native-gesture-handler";
 import { AnimationContext } from '@/components/common/AnimationContext';
 
 export default function HomeScreen() {
@@ -122,36 +121,34 @@ export default function HomeScreen() {
     );
 
     return (
-        <GestureHandlerRootView style={{flex: 1}}>
-            <AnimationContext.Provider value={{ animatedIndex }}>
-                <MainContainer>
-                    <Header />
-                    <CContainer>
-                        <CalendarView
-                            date={currentDate}
-                            onDateChange={setCurrentDate}
-                            schedules={schedules}
-                            tags={tags}
-                            onSchedulesChange={setSchedules}
-                        />
-                    </CContainer>
-                    <BottomSheet
-                        ref={bottomSheetRef}
-                        index={0}
-                        snapPoints={snapPoints}
-                        handleComponent={TabHandle}
-                        animatedIndex={animatedIndex}
-                        backdropComponent={renderBackdrop}
-                        backgroundStyle={{
-                            backgroundColor: 'transparent',
-                        }}
-                    >
-                        <MainContentWrap>
-                            <BottomSheetContent schedules={schedules} tags={tags} activeTab={activeTab} />
-                        </MainContentWrap>
-                    </BottomSheet>
-                </MainContainer>
-            </AnimationContext.Provider>
-        </GestureHandlerRootView>
+        <AnimationContext.Provider value={{ animatedIndex }}>
+            <MainContainer>
+                <Header />
+                <CContainer>
+                    <CalendarView
+                        date={currentDate}
+                        onDateChange={setCurrentDate}
+                        schedules={schedules}
+                        tags={tags}
+                        onSchedulesChange={setSchedules}
+                    />
+                </CContainer>
+                <BottomSheet
+                    ref={bottomSheetRef}
+                    index={0}
+                    snapPoints={snapPoints}
+                    handleComponent={TabHandle}
+                    animatedIndex={animatedIndex}
+                    backdropComponent={renderBackdrop}
+                    backgroundStyle={{
+                        backgroundColor: 'transparent',
+                    }}
+                >
+                    <MainContentWrap>
+                        <BottomSheetContent schedules={schedules} tags={tags} activeTab={activeTab} />
+                    </MainContentWrap>
+                </BottomSheet>
+            </MainContainer>
+        </AnimationContext.Provider>
     );
 }
