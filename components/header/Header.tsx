@@ -1,15 +1,7 @@
 import React from "react";
-import {
-    HContainer,
-    HIconBell,
-    HIconMail,
-    HIconShare,
-    HIconWrap,
-    HLogo,
-    HWrap,
-} from "@/components/style/HeaderStyle";
+import * as H from "@/components/style/HeaderStyle";
 import {usePathname} from "expo-router";
-import {TouchableOpacity, View} from "react-native";
+import {TouchableOpacity} from "react-native";
 interface HeaderProps {
     sheetIndex: number;
 }
@@ -28,22 +20,22 @@ const Header: React.FC<HeaderProps> = ({sheetIndex}) => {
             {/* 3. isMain과 isSheetExpanded 값을 prop으로 전달하여,
                    HContainer가 스스로 그림자와 z-index를 제어하도록 합니다.
             */}
-                <HContainer $isMain={isMain} $isSheetExpanded={isSheetExpanded}>
-                    <HWrap>
-                        <HLogo/>
-                        <HIconWrap>
-                            <TouchableOpacity>
-                                <HIconBell name="bell" size={25}/>
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <HIconShare name="share" size={25}/>
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <HIconMail name="mail" size={25}/>
-                            </TouchableOpacity>
-                        </HIconWrap>
-                    </HWrap>
-                </HContainer>
+            <H.Container $isMain={isMain} $isSheetExpanded={isSheetExpanded}>
+                <H.Wrap>
+                    <H.Logo/>
+                    <H.IconWrap>
+                        <TouchableOpacity>
+                            <H.IconBell name="bell" size={25}/>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <H.IconShare name="share" size={25}/>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <H.IconMail name="mail" size={25}/>
+                        </TouchableOpacity>
+                    </H.IconWrap>
+                </H.Wrap>
+            </H.Container>
         </>
     )
 }

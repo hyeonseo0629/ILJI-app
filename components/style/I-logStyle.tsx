@@ -4,7 +4,7 @@ import styled from "styled-components/native";
 // Container //
 // --------- //
 
-export const DiaryContainer = styled.View`
+export const Container = styled.View`
     width: 100%;
     height: 100%;
     background-color: #ffffff;
@@ -14,47 +14,47 @@ export const DiaryContainer = styled.View`
 // Main //
 // ---- //
 
-export const MWrap = styled.View`
+export const Wrap = styled.View`
     width: 100%;
     padding: 20px;
 `
 
-export const MTextWrap = styled.View`
+export const TextWrap = styled.View`
     width: 100%;
     flex-direction: row;
     padding: 0 20px;
 `
 
-export const MDateText = styled.Text`
+export const DateText = styled.Text`
     font-size: 50px;
     padding: 10px;
 `
-export const MTextLeftWrap = styled.View`
+export const TextLeftWrap = styled.View`
     width: 70%;
     padding: 25px 10px;
 `
 
-export const MWeekText = styled.Text`
+export const WeekText = styled.Text`
     font-size: 15px;
     font-weight: bold;
 `
-export const MTextBottomWrap = styled.View`
+export const TextBottomWrap = styled.View`
     width: 90%;
     flex-direction: row;
     justify-content: space-between;
 `
 
-export const MYearText = styled.Text`
+export const YearText = styled.Text`
     font-weight: 300;
 `
 
-export const MTimeText = styled.Text`
+export const TimeText = styled.Text`
     font-weight: 300;
     color: #999999;
     padding: 0 5px;
 `
 
-export const MImage = styled.Image`
+export const Image = styled.Image`
     width: 325px;
     height: 350px;
     margin: auto;
@@ -62,18 +62,18 @@ export const MImage = styled.Image`
     background-color: #999999;
 `
 
-export const MContentWrap = styled.View`
+export const ContentWrap = styled.View`
     width: 100%;
     padding: 20px;
 `
 
-export const MTitle = styled.Text`
+export const Title = styled.Text`
     font-size: 30px;
     font-weight: bold;
     padding: 0 10px;
 `
 
-export const MContent = styled.Text`
+export const Content = styled.Text`
     font-weight: normal;
     padding: 10px 15px;
 `

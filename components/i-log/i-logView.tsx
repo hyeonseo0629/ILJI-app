@@ -1,14 +1,5 @@
 import {Dimensions, ScrollView, StyleSheet, Text, useWindowDimensions, View} from "react-native";
-import {
-    DiaryContainer,
-    MWrap,
-    MDateText,
-    MTextWrap,
-    MWeekText,
-    MYearText,
-    MTimeText,
-    MTextLeftWrap, MTextBottomWrap, MImage, MContentWrap, MTitle, MContent,
-} from "@/components/style/I-logStyle";
+import * as I from "@/components/style/I-logStyle";
 import React, {useState} from "react";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {Gesture, GestureDetector, GestureHandlerRootView} from "react-native-gesture-handler";
@@ -179,25 +170,25 @@ const {width} = Dimensions.get("window");
 const DiaryPage = ({item}: { item: Diary }) => {
     return (
         <View style={{flex: 1}}>
-            <MWrap>
+            <I.Wrap>
                 <ScrollView>
-                    <MTextWrap>
-                        <MDateText>{item.date}</MDateText>
-                        <MTextLeftWrap>
-                            <MWeekText>{item.week}</MWeekText>
-                            <MTextBottomWrap>
-                                <MYearText>{item.year}</MYearText>
-                                <MTimeText>{item.time}</MTimeText>
-                            </MTextBottomWrap>
-                        </MTextLeftWrap>
-                    </MTextWrap>
-                    <MImage/>
-                    <MContentWrap>
-                        <MTitle>{item.title}</MTitle>
-                        <MContent>{item.content}</MContent>
-                    </MContentWrap>
+                    <I.TextWrap>
+                        <I.DateText>{item.date}</I.DateText>
+                        <I.TextLeftWrap>
+                            <I.WeekText>{item.week}</I.WeekText>
+                            <I.TextBottomWrap>
+                                <I.YearText>{item.year}</I.YearText>
+                                <I.TimeText>{item.time}</I.TimeText>
+                            </I.TextBottomWrap>
+                        </I.TextLeftWrap>
+                    </I.TextWrap>
+                    <I.Image/>
+                    <I.ContentWrap>
+                        <I.Title>{item.title}</I.Title>
+                        <I.Content>{item.content}</I.Content>
+                    </I.ContentWrap>
                 </ScrollView>
-            </MWrap>
+            </I.Wrap>
         </View>
     );
 };
@@ -307,7 +298,7 @@ const ILogView = () => {
     });
 
     return (
-        <DiaryContainer style={{paddingBottom: insets.bottom}}>
+        <I.Container style={{paddingBottom: insets.bottom}}>
             <GestureHandlerRootView style={{flex: 1}}>
                 <GestureDetector gesture={gesture}>
                     <View style={{flex: 1, justifyContent: "center"}}>
@@ -324,7 +315,7 @@ const ILogView = () => {
                     </View>
                 </GestureDetector>
             </GestureHandlerRootView>
-        </DiaryContainer>
+        </I.Container>
     )
 }
 
