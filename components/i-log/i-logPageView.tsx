@@ -1,170 +1,109 @@
-import {Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View} from "react-native";
+import { Dimensions, View, FlatList } from "react-native";
 import * as I from "@/components/style/I-logStyled";
-import React, {useState} from "react";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
-import {Gesture, GestureDetector, GestureHandlerRootView} from "react-native-gesture-handler";
-import Animated, {interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring} from "react-native-reanimated";
-import { Diary } from "@/app/(tabs)/i-log"; // 부모에게서 Diary 타입을 import 합니다.
+import React from "react";
+import { ILogData } from "@/app/(tabs)/i-log";
+import { format } from 'date-fns';
+import { AntDesign } from '@expo/vector-icons';
 
-const {width} = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
-// DiaryPage는 Diary 타입의 item을 받습니다.
-const DiaryPage = ({item}: { item: Diary }) => {
+// DiaryPage는 FlatList의 각 아이템을 렌더링하는 역할을 합니다.
+const DiaryPage = ({ item }: { item: ILogData }) => {
+    let parsedFriendTags: {id: number, name: string}[] = [];
+    try {
+        if (item.friend_tags) {
+            parsedFriendTags = JSON.parse(item.friend_tags);
+        }
+    } catch (e) {
+        console.error("Failed to parse friend_tags:", e);
+    }
+
     return (
-        <View style={{flex: 1}}>
-            <I.PageWrap>
-                <ScrollView>
-                    <I.PageTextWrap>
-                        <I.PageDateText>{item.date}</I.PageDateText>
-                        <I.PageTextLeftWrap>
-                            <I.PageTextTopWrap>
-                                <I.PageWeekText>{item.week}</I.PageWeekText>
-                            </I.PageTextTopWrap>
-                            <I.PageTextBottomWrap>
-                                <I.PageYearText>{item.year}</I.PageYearText>
-                                <I.PageTimeText>{item.time}</I.PageTimeText>
-                            </I.PageTextBottomWrap>
-                        </I.PageTextLeftWrap>
-                    </I.PageTextWrap>
-                    <I.PageImage/>
-                    <I.PageContentWrap>
-                        <I.PageTitle>{item.title}</I.PageTitle>
-                        <I.PageContent>{item.content}</I.PageContent>
-                    </I.PageContentWrap>
-                </ScrollView>
-            </I.PageWrap>
-        </View>
+        <I.PageWrap>
+            <I.PageScrollView showsVerticalScrollIndicator={false}>
+                <I.PageHeader>
+                    <I.PageDateInfo>
+                        <I.PageDateText>{format(item.i_log_date, 'yyyy.MM.dd')}</I.PageDateText>
+                        <I.PageTimeText>{format(item.created_at, 'HH:mm:ss')}</I.PageTimeText>
+                    </I.PageDateInfo>
+                </I.PageHeader>
+
+                {/* 요청하신 위치에 PageTitle 추가 */}
+                <I.PageTitle>{item.title}</I.PageTitle>
+
+                {item.img_url && (
+                    <I.PageImageContainer>
+                        <I.PageImage source={{ uri: item.img_url }} />
+                        <I.PageStatsContainer>
+                            <I.PageStatItem>
+                                <AntDesign name="heart" size={14} color="white" />
+                                <I.PageStatText>{item.like_count}</I.PageStatText>
+                            </I.PageStatItem>
+                            <I.PageStatItem>
+                                <AntDesign name="message1" size={14} color="white" />
+                                <I.PageStatText>{item.comment_count}</I.PageStatText>
+                            </I.PageStatItem>
+                        </I.PageStatsContainer>
+                    </I.PageImageContainer>
+                )}
+
+                {parsedFriendTags.length > 0 && (
+                    <I.PageFriendTagsContainer>
+                        {parsedFriendTags.map(tag => (
+                            <I.PageFriendTag key={tag.id}>
+                                <I.PageFriendTagText>@{tag.name}</I.PageFriendTagText>
+                            </I.PageFriendTag>
+                        ))}
+                    </I.PageFriendTagsContainer>
+                )}
+
+                <I.PageContent>{item.content}</I.PageContent>
+
+                {item.tags && (
+                    <I.PageTagsContainer>
+                        <I.PageTagsText>{item.tags}</I.PageTagsText>
+                    </I.PageTagsContainer>
+                )}
+            </I.PageScrollView>
+        </I.PageWrap>
     );
 };
 
-// ILogPageView는 diaries 배열을 props로 받습니다.
-const ILogPageView = ({ diaries }: { diaries: Diary[] }) => {
-    const insets = useSafeAreaInsets();
+// FlatList를 사용하여 페이지 뷰를 구현한 메인 컴포넌트
+const ILogPageView = ({ ilogs }: { ilogs: ILogData[] }) => {
 
-    const [pageIndex, setPageIndex] = useState(0);
-    const activeIndex = useSharedValue(0); // 애니메이션 전용 인덱스
+    if (!ilogs || ilogs.length === 0) {
+        return <View><I.PageContent>작성된 일지가 없습니다.</I.PageContent></View>;
+    }
 
-    const dragX = useSharedValue(0);
-    const THRESHOLD = 20;
+    // 각 페이지(아이템)를 렌더링하는 함수
+    const renderItem = ({ item }: { item: ILogData }) => (
+        <View style={{ width }}>
+            <DiaryPage item={item} />
+        </View>
+    );
 
-    const gesture = Gesture.Pan()
-        .activeOffsetX([-20, 20])
-        .failOffsetY([-15, 15])
-        .onUpdate((e) => {
-            dragX.value = e.translationX;
-        })
-        .onEnd(() => {
-            if (dragX.value < -THRESHOLD && activeIndex.value < diaries.length - 1) {
-                // 다음 페이지로
-                dragX.value = withSpring(-width, {stiffness: 150, damping: 18}, (isFinished) => {
-                    if (isFinished) {
-                        activeIndex.value = activeIndex.value + 1;
-                        dragX.value = 0;
-                        runOnJS(setPageIndex)(activeIndex.value);
-                    }
-                });
-            } else if (dragX.value > THRESHOLD && activeIndex.value > 0) {
-                // 이전 페이지로
-                dragX.value = withSpring(width, {stiffness: 150, damping: 18}, (isFinished) => {
-                    if (isFinished) {
-                        activeIndex.value = activeIndex.value - 1;
-                        dragX.value = 0;
-                        runOnJS(setPageIndex)(activeIndex.value);
-                    }
-                });
-            } else {
-                // 원위치
-                dragX.value = withSpring(0, {stiffness: 150, damping: 18});
-            }
-        });
-
-
-    // 현재 페이지
-    const animatedStyleCurrent = useAnimatedStyle(() => {
-        const rotateY =
-            dragX.value >= 0
-                ? interpolate(dragX.value, [0, width], [0, 150])
-                : interpolate(dragX.value, [-width, 0], [-150, 0]);
-
-        const shadowOpacity = interpolate(Math.abs(dragX.value), [0, width], [0.05, 0.3]);
-
-        return {
-            transform: [
-                {perspective: 1200},
-                {translateX: -width / 2},
-                {rotateY: `${rotateY}deg`},
-                {translateX: width / 2},
-            ],
-            backfaceVisibility: "hidden",
-            shadowOpacity,
-        };
-    });
-
-    // 이전 페이지
-    const animatedStylePrev = useAnimatedStyle(() => {
-        if (activeIndex.value === 0) return {opacity: 1};
-        const rotateY = dragX.value > 0 ? interpolate(dragX.value, [0, width], [-175, 0]) : -90;
-        const opacity = interpolate(dragX.value, [0, width / 2], [0, 1]);
-
-        return {
-            transform: [
-                {perspective: 1200},
-                {translateX: -width / 2},
-                {rotateY: `${rotateY}deg`},
-                {translateX: width / 2},
-            ],
-            backfaceVisibility: "hidden",
-            opacity,
-        };
-    });
-
-    // 다음 페이지
-    const animatedStyleNext = useAnimatedStyle(() => {
-        if (activeIndex.value === diaries.length - 1) return {opacity: 1};
-        const rotateY = dragX.value < 0 ? interpolate(dragX.value, [-width, 0], [0, 0]) : 90;
-
-        return {
-            transform: [
-                {perspective: 1200},
-                {translateX: -width / 2},
-                {rotateY: `${rotateY}deg`},
-                {translateX: width / 2},
-            ],
-            backfaceVisibility: "hidden",
-            opacity: 1,
-        };
+    // FlatList 성능 최적화를 위한 설정
+    const getItemLayout = (data: any, index: number) => ({
+        length: width,
+        offset: width * index,
+        index,
     });
 
     return (
-        <I.Container style={{paddingBottom: insets.bottom}}>
-            <GestureHandlerRootView style={{flex: 1}}>
-                <GestureDetector gesture={gesture}>
-                    <View style={{flex: 1, justifyContent: "center"}}>
-                        <Animated.View style={[styles.page, animatedStylePrev]}>
-                            <DiaryPage item={diaries[pageIndex > 0 ? pageIndex - 1 : 0]}/>
-                        </Animated.View>
-                        <Animated.View style={[styles.page, animatedStyleNext]}>
-                            <DiaryPage
-                                item={diaries[pageIndex < diaries.length - 1 ? pageIndex + 1 : diaries.length - 1]}/>
-                        </Animated.View>
-                        <Animated.View style={[styles.page, animatedStyleCurrent]}>
-                            <DiaryPage item={diaries[pageIndex]}/>
-                        </Animated.View>
-                    </View>
-                </GestureDetector>
-            </GestureHandlerRootView>
+        <I.Container>
+            <FlatList
+                data={ilogs}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id.toString()}
+                horizontal // 가로 스크롤
+                pagingEnabled // 페이지 단위로 스크롤
+                showsHorizontalScrollIndicator={false} // 스크롤바 숨김
+                getItemLayout={getItemLayout} // 성능 최적화
+                windowSize={2} // 메모리 관리
+            />
         </I.Container>
-    )
-}
-
-const styles = StyleSheet.create({
-    page: {
-        position: "absolute",
-        backgroundColor: "#ffffff",
-        zIndex: -999,
-        height: 765,
-        top: 0
-    },
-});
+    );
+};
 
 export default ILogPageView;
