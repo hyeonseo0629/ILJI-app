@@ -1,21 +1,20 @@
-// app/(tabs)/index.tsx
 import React, {useCallback, useMemo, useRef, useState, useEffect} from 'react';
 import {Pressable} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Header from "@/components/header/Header";
 import {set} from "date-fns";
-import {Schedule} from "@/components/calendar/types";
-import {Tag} from "@/components/ToDo/types";
-import {CContainer} from "@/components/calendar/CalendarStyle";
+import {Schedule} from "@/components/calendar/scheduleTypes";
+import {Tag} from "@/components/tag/TagTypes";
+import {CalendarContainer} from "@/components/style/CalendarStyled";
 import {
     MainContainer,
     MainContentWrap,
     MainToDoCategory,
     MainTodoCategoryText,
     MainToDoCategoryWarp
-} from "@/components/MainStyle";
-import {BottomSheetContent} from "@/components/bottomSheet/BottomSheet";
+} from "@/components/style/MainStyle";
+import {BottomSheetContent} from "@/components/common/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 
@@ -135,7 +134,7 @@ export default function HomeScreen() {
         <GestureHandlerRootView style={{flex: 1}}>
             <MainContainer>
                 <Header sheetIndex={sheetIndex} />
-                <CContainer>
+                <CalendarContainer>
                     <CalendarView
                         date={currentDate}
                         onDateChange={setCurrentDate}
@@ -143,7 +142,7 @@ export default function HomeScreen() {
                         tags={tags}
                         onSchedulesChange={setSchedules}
                     />
-                </CContainer>
+                </CalendarContainer>
                 <BottomSheet
                     ref={bottomSheetRef}
                     index={0}

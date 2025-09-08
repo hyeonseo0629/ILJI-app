@@ -1,5 +1,3 @@
-// C:/cay/Final-Project-Github/ilji-mobile/components/calendar/WeekView.tsx
-
 import React, { useMemo, useRef, useEffect } from 'react';
 import { View, ScrollView } from 'react-native';
 import {
@@ -12,14 +10,14 @@ import {
     differenceInMinutes,
     isSameWeek,
 } from 'date-fns';
-import * as S from './CalendarStyle';
-import { Schedule } from '@/components/calendar/types';
-import { Tag } from '@/components/ToDo/types';
-import {MDayOfTheWeek} from "./CalendarStyle";
+import * as CS from '../style/CalendarStyled';
+import { Schedule } from '@/components/calendar/scheduleTypes';
+import { Tag } from '@/components/tag/TagTypes';
+import {DayOfTheWeekText} from "../style/CalendarStyled";
 
 const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
 
-const calculateEventPosition = (event: Schedule) => {
+const calculateSchedulePosition = (event: Schedule) => {
     const startHour = event.startTime.getHours();
     const startMinute = event.startTime.getMinutes();
     const durationInMinutes = differenceInMinutes(event.endTime, event.startTime);
@@ -69,62 +67,62 @@ const WeekView: React.FC<WeekViewProps> = ({ date, schedules = [], tags = [], on
             {/* Day Headers */}
             {/* --- 주요 변경사항 --- */}
             {/* MWeek의 flex: 1 스타일을 덮어쓰기 위해 flex: 0을 추가합니다. */}
-            <S.MDayOfTheWeek style={{ marginLeft: 50, marginBottom: 0, flex: 0 }}>
+            <CS.DayOfTheWeek style={{ marginLeft: 50, marginBottom: 0, flex: 0 }}>
                 {weekDays.map((day) => {
                     const isCurrentDay = isToday(day);
                     return (
-                        <S.MDayContainer
+                        <CS.MonthDayContainer
                             key={day.toISOString()}
                             style={{ height: 'auto', padding: 5 }}
                             onPress={() => onDayPress?.(day)}
                         >
-                            <S.MDayNameText>{format(day, 'EEE')}</S.MDayNameText>
+                            <CS.DayOfTheWeekText>{format(day, 'EEE')}</CS.DayOfTheWeekText>
                             {isCurrentDay ? (
-                                <S.MDayCircle>
-                                    <S.MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</S.MDayText>
-                                </S.MDayCircle>
+                                <CS.MonthDayCircle>
+                                    <CS.MonthDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</CS.MonthDayText>
+                                </CS.MonthDayCircle>
                             ) : (
-                                <S.MDayText>{format(day, 'd')}</S.MDayText>
+                                <CS.MonthDayText>{format(day, 'd')}</CS.MonthDayText>
                             )}
-                        </S.MDayContainer>
+                        </CS.MonthDayContainer>
                     );
                 })}
-            </S.MDayOfTheWeek>
+            </CS.DayOfTheWeek>
 
-            <S.TimetableWrapper>
+            <CS.TimetableWrapper>
                 <ScrollView ref={scrollViewRef}>
-                    <S.TimetableGrid>
+                    <CS.TimetableGrid>
                         {/* Time Column */}
-                        <S.TimeColumn>
+                        <CS.TimeColumn>
                             {timeLabels.map(time => (
-                                <S.TimeLabelCell key={time}>
-                                    <S.TimeLabelText>{time}</S.TimeLabelText>
-                                </S.TimeLabelCell>
+                                <CS.TimeLabelCell key={time}>
+                                    <CS.TimeLabelText>{time}</CS.TimeLabelText>
+                                </CS.TimeLabelCell>
                             ))}
-                        </S.TimeColumn>
+                        </CS.TimeColumn>
 
                         {/* Days Columns */}
-                        <S.DaysContainer>
+                        <CS.TimeTableDaysContainer>
                             {weekDays.map((day) => (
-                                <S.DayColumn key={day.toISOString()} $isToday={isToday(day)}>
-                                    {timeLabels.map(time => <S.HourCell key={`${day.toISOString()}-${time}`} />)}
+                                <CS.TimeTableDayColumn key={day.toISOString()} $isToday={isToday(day)}>
+                                    {timeLabels.map(time => <CS.HourCell key={`${day.toISOString()}-${time}`} />)}
 
                                     {/* schedules for this day */}
                                     {schedules.filter(event => isSameDay(event.startTime, day)).map(event => {
                                         const eventColor = tagColorMap.get(event.tagId) || 'gray';
-                                        const { top, height } = calculateEventPosition(event);
+                                        const { top, height } = calculateSchedulePosition(event);
                                         return (
-                                            <S.EventBlock key={event.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(event)}>
-                                                <S.EventBlockText>{event.title}</S.EventBlockText>
-                                            </S.EventBlock>
+                                            <CS.ScheduleBlock key={event.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(event)}>
+                                                <CS.ScheduleBlockText>{event.title}</CS.ScheduleBlockText>
+                                            </CS.ScheduleBlock>
                                         );
                                     })}
-                                </S.DayColumn>
+                                </CS.TimeTableDayColumn>
                             ))}
-                        </S.DaysContainer>
-                    </S.TimetableGrid>
+                        </CS.TimeTableDaysContainer>
+                    </CS.TimetableGrid>
                 </ScrollView>
-            </S.TimetableWrapper>
+            </CS.TimetableWrapper>
         </View>
     );
 };

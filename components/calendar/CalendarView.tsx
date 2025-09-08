@@ -1,5 +1,5 @@
 import React, {useState, useMemo, useRef, useEffect} from 'react';
-import {View, Text, FlatList, Dimensions, Alert} from 'react-native';
+import {View, Text, FlatList} from 'react-native';
 import PagerView from 'react-native-pager-view';
 import {
     format,
@@ -7,15 +7,14 @@ import {
     sub,
     isValid,
     isSameDay,
-    set,
 } from 'date-fns';
-import * as S from './CalendarStyle';
+import * as CS from '../style/CalendarStyled';
 import MonthView from './MonthView';
 import WeekView from './WeekView';
 import DayView from './DayView';
-import DetailSchedule from '@/components/DetailSchedule/detail-schedule';
-import { Schedule } from '@/components/calendar/types';
-import { Tag } from '@/components/ToDo/types';
+import DetailSchedule from '@/components/schedule/detail-schedule';
+import { Schedule } from '@/components/calendar/scheduleTypes';
+import { Tag } from '@/components/tag/TagTypes';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface SixWeekCalendarProps {
@@ -65,9 +64,9 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
 
     if (!isValid(date)) {
         return (
-            <S.MLoadingContainer>
+            <CS.MonthLoadingContainer>
                 <Text>Loading...</Text>
-            </S.MLoadingContainer>
+            </CS.MonthLoadingContainer>
         );
     }
 
@@ -114,24 +113,24 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
     };
 
     return (
-        <S.MContainer style={{ paddingBottom: insets.bottom }}>
-            <S.MHeader>
-                <S.MMonthText>{format(date, 'MMMM yyyy')}</S.MMonthText>
-                <S.ViewModeContainer>
-                    <S.ViewMonthButton $isActive={viewMode === 'month'}
+        <CS.MonthContainer style={{ paddingBottom: insets.bottom }}>
+            <CS.MonthHeader>
+                <CS.MonthText>{format(date, 'MMMM yyyy')}</CS.MonthText>
+                <CS.ViewModeButtonContainer>
+                    <CS.ViewMonthButton $isActive={viewMode === 'month'}
                                       onPress={() => handleViewModeButtonPress('month')}>
-                        <S.ButtonText $isActive={viewMode === 'month'}>M</S.ButtonText>
-                    </S.ViewMonthButton>
-                    <S.ViewWeekButton $isActive={viewMode === 'week'}
+                        <CS.ViewModeButtonText $isActive={viewMode === 'month'}>M</CS.ViewModeButtonText>
+                    </CS.ViewMonthButton>
+                    <CS.ViewWeekButton $isActive={viewMode === 'week'}
                                       onPress={() => handleViewModeButtonPress('week')}>
-                        <S.ButtonText $isActive={viewMode === 'week'}>W</S.ButtonText>
-                    </S.ViewWeekButton>
-                    <S.ViewDayButton $isActive={viewMode === 'day'}
+                        <CS.ViewModeButtonText $isActive={viewMode === 'week'}>W</CS.ViewModeButtonText>
+                    </CS.ViewWeekButton>
+                    <CS.ViewDayButton $isActive={viewMode === 'day'}
                                       onPress={() => handleViewModeButtonPress('day')}>
-                        <S.ButtonText $isActive={viewMode === 'day'}>D</S.ButtonText>
-                    </S.ViewDayButton>
-                </S.ViewModeContainer>
-            </S.MHeader>
+                        <CS.ViewModeButtonText $isActive={viewMode === 'day'}>D</CS.ViewModeButtonText>
+                    </CS.ViewDayButton>
+                </CS.ViewModeButtonContainer>
+            </CS.MonthHeader>
 
             <PagerView
                 ref={pagerRef}
@@ -237,7 +236,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                 onUpdate={handleUpdateSchedule}
                 tags={tags}
             />
-        </S.MContainer>
+        </CS.MonthContainer>
     );
 };
 

@@ -1,16 +1,14 @@
-// C:/cay/Final-Project-Github/ilji-mobile/components/calendar/DayView.tsx
-
 import React, { useRef, useEffect, useMemo } from 'react';
 import { View, ScrollView } from 'react-native';
-import * as S from './CalendarStyle';
-import { Schedule } from '@/components/calendar/types';
-import { Tag } from '@/components/ToDo/types';
+import * as CS from '../style/CalendarStyled';
+import { Schedule } from '@/components/calendar/scheduleTypes';
+import { Tag } from '@/components/tag/TagTypes';
 import { differenceInMinutes, isToday, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
 
-const calculateEventPosition = (event: Schedule) => {
+const calculateSchedulePosition = (event: Schedule) => {
     const startHour = event.startTime.getHours(); // .start -> .startTime
     const startMinute = event.startTime.getMinutes(); // .start -> .startTime
     const durationInMinutes = differenceInMinutes(event.endTime, event.startTime); // .end, .start -> .endTime, .startTime
@@ -49,40 +47,40 @@ const DayView: React.FC<DayViewProps> = ({ date, schedules = [], tags = [], onEv
 
     return (
         <View style={{ flex: 1 }}>
-            <S.DayViewHeader>
-                <S.DayViewHeaderText>{format(date, 'yyyy년 M월 d일 EEEE', { locale: ko })}</S.DayViewHeaderText>
-            </S.DayViewHeader>
-            <S.TimetableWrapper>
+            <CS.DayHeader>
+                <CS.DayHeaderText>{format(date, 'yyyy년 M월 d일 EEEE', { locale: ko })}</CS.DayHeaderText>
+            </CS.DayHeader>
+            <CS.TimetableWrapper>
                 <ScrollView ref={scrollViewRef}>
-                    <S.TimetableGrid>
+                    <CS.TimetableGrid>
                         {/* Time Column */}
-                        <S.TimeColumn>
+                        <CS.TimeColumn>
                             {timeLabels.map(time => (
-                                <S.TimeLabelCell key={time}>
-                                    <S.TimeLabelText>{time}</S.TimeLabelText>
-                                </S.TimeLabelCell>
+                                <CS.TimeLabelCell key={time}>
+                                    <CS.TimeLabelText>{time}</CS.TimeLabelText>
+                                </CS.TimeLabelCell>
                             ))}
-                        </S.TimeColumn>
+                        </CS.TimeColumn>
 
                         {/* Single Day Column */}
-                        <S.DayColumn $isToday={isToday(date)}>
+                        <CS.TimeTableDayColumn $isToday={isToday(date)}>
                             {/* Background grid lines */}
-                            {timeLabels.map(time => <S.HourCell key={time} />)}
+                            {timeLabels.map(time => <CS.HourCell key={time} />)}
 
                             {/* schedules for this day */}
                             {schedules.map(event => {
                                 const eventColor = tagColorMap.get(event.tagId) || 'gray';
-                                const { top, height } = calculateEventPosition(event);
+                                const { top, height } = calculateSchedulePosition(event);
                                 return (
-                                    <S.EventBlock key={event.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(event)}>
-                                        <S.EventBlockText>{event.title}</S.EventBlockText>
-                                    </S.EventBlock>
+                                    <CS.ScheduleBlock key={event.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(event)}>
+                                        <CS.ScheduleBlockText>{event.title}</CS.ScheduleBlockText>
+                                    </CS.ScheduleBlock>
                                 );
                             })}
-                        </S.DayColumn>
-                    </S.TimetableGrid>
+                        </CS.TimeTableDayColumn>
+                    </CS.TimetableGrid>
                 </ScrollView>
-            </S.TimetableWrapper>
+            </CS.TimetableWrapper>
         </View>
     );
 };
