@@ -6,15 +6,17 @@ import * as S from '@/components/AddSchedule/AddScheduleStyle';
 import {Picker} from '@react-native-picker/picker';
 import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
-import {ASButtonWrap, ASCancelButtonText, ASHeader} from "@/components/AddSchedule/AddScheduleStyle";
+import {ASButtonWrap, ASCancelButtonText, ASHeader, ASTagHeaderRow, ASAddButton} from "@/components/AddSchedule/AddScheduleStyle";
 import BottomSheet, {BottomSheetBackdrop} from "@gorhom/bottom-sheet";
 import { useSchedule } from '@/src/context/ScheduleContext';
 import {GestureHandlerRootView} from "react-native-gesture-handler";
+import { AntDesign } from '@expo/vector-icons';
+import CreateTagModal from "@/components/AddTagModal/add-tagmodal";
 
 const AddScheduleScreen = () => {
     const router = useRouter();
     // Context에서 생성 함수, 태그 목록, 로딩 상태를 가져옵니다.
-    const { createSchedule, tags, loading } = useSchedule();
+    const { createSchedule, tags, loading, createTag } = useSchedule();
 
     const [title, setTitle] = useState('');
     const [tagId, setTagId] = useState<number>(0); // '태그 없음'을 기본값으로 설정
@@ -28,6 +30,9 @@ const AddScheduleScreen = () => {
     const [showPicker, setShowPicker] = useState(false);
     const [pickerTarget, setPickerTarget] = useState<'start' | 'end'>('start');
     const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date');
+
+    // 태그 생성 모달 상태
+    const [isTagModalVisible, setIsTagModalVisible] = useState(false);
 
     const onDateTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || (pickerTarget === 'start' ? startTime : endTime);
@@ -66,7 +71,6 @@ const AddScheduleScreen = () => {
             tagId: tagId,
             location: location.trim(),
             description: description.trim(),
-            userId: 4, // Context와 동일한 임시 사용자 ID
             startTime: startTime,
             endTime: endTime,
             isAllDay: isAllDay,
@@ -76,6 +80,20 @@ const AddScheduleScreen = () => {
 
         await createSchedule(newScheduleData); // Context의 함수를 호출해 서버에 저장
         router.back(); // 저장이 완료되면 이전 화면으로 돌아갑니다.
+    };
+
+    const handleSaveTag = async (name: string, color: string) => {
+        try {
+            // Context의 createTag 함수를 호출하고, 새로 생성된 태그 객체를 반환받습니다.
+            const newTag = await createTag({ label: name, color: color });
+            // 새로 생성된 태그를 현재 일정의 태그로 자동 선택합니다.
+            setTagId(newTag.id);
+            // 모달을 닫습니다.
+            setIsTagModalVisible(false);
+        } catch (error) {
+            console.error("Failed to create tag:", error);
+            Alert.alert('태그 생성 실패', '태그를 저장하는 중 오류가 발생했습니다.');
+        }
     };
 
     // 1. 선택된 tagId가 바뀔 때마다, 전체 tags 배열에서 해당 태그 객체를 찾습니다.
@@ -102,7 +120,7 @@ const AddScheduleScreen = () => {
 
     return (
         <GestureHandlerRootView>
-            <S.ASContainer contentContainerStyle={{paddingBottom: 40}}>
+            <S.ASContainer contentContainerStyle={{paddingBottom: 120}}>
                 <ASHeader>New Reminder</ASHeader>
                 <S.ASContentWrap>
 
@@ -157,7 +175,12 @@ const AddScheduleScreen = () => {
                     <S.ASLabel>Location</S.ASLabel>
                     <S.ASInput value={location} onChangeText={setLocation} placeholder="장소"/>
 
-                    <S.ASLabel>Tag</S.ASLabel>
+                    <ASTagHeaderRow>
+                        <S.ASLabel>Tag</S.ASLabel>
+                        <ASAddButton onPress={() => setIsTagModalVisible(true)}>
+                            <AntDesign name="pluscircleo" size={24} color="mediumslateblue" />
+                        </ASAddButton>
+                    </ASTagHeaderRow>
                     <S.ASPickerWrap>
                         {loading ? (
                             <ActivityIndicator size="small" color="mediumslateblue" />
@@ -195,6 +218,12 @@ const AddScheduleScreen = () => {
                     />
                 )}
 
+                <CreateTagModal
+                    visible={isTagModalVisible}
+                    onClose={() => setIsTagModalVisible(false)}
+                    onSave={handleSaveTag}
+                />
+
             </S.ASContainer>
             <BottomSheet
                 ref={bottomSheetRef}
@@ -216,7 +245,7 @@ const AddScheduleScreen = () => {
                 <Text>ASD</Text>
             </BottomSheet>
             <ASButtonWrap>
-                <S.ASSaveButton onPress={handleSave}>
+                <S.ASSaveButton onPress={handleSave} disabled={loading}>
                     <S.ASSaveButtonText>Save</S.ASSaveButtonText>
                 </S.ASSaveButton>
                 {/* Cancel 버튼은 단순히 이전 화면으로 돌아가도록 router.back()을 사용합니다. */}

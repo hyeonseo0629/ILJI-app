@@ -18,6 +18,7 @@ import {BottomSheetContent} from "@/components/bottomSheet/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import { useSchedule } from '@/src/context/ScheduleContext';
+import DetailSchedule from "@/components/DetailSchedule/detail-schedule";
 
 export default function HomeScreen() {
     const params = useLocalSearchParams();
@@ -27,19 +28,24 @@ export default function HomeScreen() {
     const [sheetIndex, setSheetIndex] = useState(0);
     const tabPressedRef = useRef(false);
 
+    // [추가] 상세 모달을 제어하기 위한 상태와 핸들러 함수들
+    const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+    const handleSchedulePress = useCallback((schedule: Schedule) => { setSelectedSchedule(schedule); }, []);
+    const handleCloseModal = useCallback(() => { setSelectedSchedule(null); }, []);
+
     // --- 데이터 연결 ---
     // 1. ScheduleContext에서 진짜 데이터(일정, 태그), 로딩 상태, 에러를 가져옵니다.
     const { events: schedules, tags, loading, error } = useSchedule();
 
-    // 2. 로드된 태그 목록의 첫 번째 탭을 기본으로 활성화합니다.
-    const [activeTab, setActiveTab] = useState('');
+    // [수정] 탭의 label을 상태로 관리하여 로직을 통일하고, 기본값을 'All'로 설정합니다.
+    const [activeTab, setActiveTab] = useState<string>('All');
 
-    useEffect(() => {
-        // 태그가 로드되고, 아직 활성 탭이 설정되지 않았다면 첫 번째 태그를 활성 탭으로 지정합니다.
-        if (tags.length > 0 && !activeTab) {
-            setActiveTab(tags[0].label);
-        }
-    }, [tags, activeTab]);
+    // [개선] 'All' 탭을 다른 태그들과 동일한 데이터 구조로 만들어 렌더링 로직을 통합합니다.
+    const displayTags = useMemo(() => {
+        // 'All' 탭을 위한 가상 태그 객체를 생성합니다.
+        const allTag = { id: 'all-tab', label: 'All', color: 'mediumslateblue' };
+        return [allTag, ...tags];
+    }, [tags]);
 
     const handleSheetChanges = useCallback((index: number) => {
         setSheetIndex(index);
@@ -91,15 +97,17 @@ export default function HomeScreen() {
     const TabHandle = () => (
         <Pressable onPress={handleSheetToggle}>
             <MainToDoCategoryWarp>
-                {/* 4. Context에서 가져온 진짜 tags 배열을 기반으로 탭을 동적으로 렌더링합니다. */}
-                {tags.map(tag => (
+                {/* [수정] 통합된 displayTags 배열을 사용해 모든 탭을 일관된 방식으로 렌더링합니다. */}
+                {displayTags.map(tag => (
                     <MainToDoCategory
                         key={tag.id}
                         $isActive={activeTab === tag.label}
                         activeColor={tag.color}
                         onPress={() => handleTabPress(tag.label)}
                     >
-                        <MainTodoCategoryText $isActive={activeTab === tag.label}>{tag.label}</MainTodoCategoryText>
+                        <MainTodoCategoryText $isActive={activeTab === tag.label}>
+                            {tag.label}
+                        </MainTodoCategoryText>
                     </MainToDoCategory>
                 ))}
             </MainToDoCategoryWarp>
@@ -117,8 +125,8 @@ export default function HomeScreen() {
                         onDateChange={setCurrentDate}
                         schedules={schedules} // Context에서 가져온 'schedules'를 전달합니다.
                         tags={tags}
-                        // CalendarView가 요구하는 onSchedulesChange prop을 임시로 전달합니다.
-                        onSchedulesChange={() => {}}
+                        // [수정] DayView/WeekView의 일정 클릭 시 모달을 열도록 함수를 연결하고, 불필요한 prop은 제거합니다.
+                        onEventPress={handleSchedulePress}
                     />
                 </CContainer>
                 <BottomSheet
@@ -138,6 +146,13 @@ export default function HomeScreen() {
                     </MainContentWrap>
                 </BottomSheet>
             </MainContainer>
+
+            {/* [추가] 상세 모달을 화면에 렌더링하고 상태와 연결합니다. */}
+            <DetailSchedule
+                visible={selectedSchedule !== null}
+                schedule={selectedSchedule}
+                onClose={handleCloseModal}
+            />
         </GestureHandlerRootView>
     );
 }

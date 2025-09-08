@@ -183,9 +183,12 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                                                 key={tag.id}
                                                 color={tag.color}
                                                 selected={formData.tagId === tag.id}
-                                                onPress={() => handleInputChange('tagId', tag.id)}
+                                                // [수정] 이미 선택된 태그를 누르면 해제(0), 아니면 해당 태그를 선택합니다.
+                                                onPress={() => handleInputChange('tagId', formData.tagId === tag.id ? 0 : tag.id)}
                                             >
-                                                <S.TagSelectorText selected={formData.tagId === tag.id}>#{tag.label}</S.TagSelectorText>
+                                                <S.TagSelectorText selected={formData.tagId === tag.id}>
+                                                    #{tag.label}
+                                                </S.TagSelectorText>
                                             </S.TagSelectorItem>
                                         ))}
                                     </S.TagSelectorContainer>

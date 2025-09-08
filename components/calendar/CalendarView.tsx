@@ -13,7 +13,6 @@ import * as S from './CalendarStyle';
 import MonthView from './MonthView';
 import WeekView from './WeekView';
 import DayView from './DayView';
-import DetailSchedule from '@/components/DetailSchedule/detail-schedule'; // 이 경로는 이미 올바르게 되어있을 수 있습니다.
 import { Schedule } from '@/components/calendar/types';
 import { Tag } from '@/components/ToDo/types';
 
@@ -22,10 +21,11 @@ interface SixWeekCalendarProps {
     onDateChange: (newDate: Date) => void;
     schedules: Schedule[];
     tags: Tag[];
-    onSchedulesChange: (schedules: Schedule[]) => void;
+    // [수정] onSchedulesChange는 Context로 대체되었으므로 제거합니다.
+    onEventPress?: (event: Schedule) => void; // [추가] 부모로부터 클릭 이벤트를 받을 함수
 }
 
-const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, schedules, tags, onSchedulesChange}) => {
+const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, schedules, tags, onEventPress}) => {
     // Refs for controlling pagers and lists
     const pagerRef = useRef<PagerView>(null);
     const monthFlatListRef = useRef<FlatList>(null);
@@ -36,10 +36,6 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
     const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
     const [selectedDate, setSelectedDate] = useState(date);
     const [monthContainerHeight, setMonthContainerHeight] = useState(0);
-
-    // State for event detail modal
-    const [isModalVisible, setModalVisible] = useState(false);
-    const [selectedEvent, setSelectedEvent] = useState<Schedule | null>(null);
 
     // Data sources for vertical swiping in each view
     const [months, setMonths] = useState([sub(date, {months: 1}), date, add(date, {months: 1})]);
@@ -94,26 +90,6 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
         setSelectedDate(day);
         // Pager를 Day View(인덱스 2)로 전환합니다.
         pagerRef.current?.setPage(2);
-    };
-
-    const handleEventPress = (event: Schedule) => {
-        setSelectedEvent(event);
-        setModalVisible(true);
-    };
-
-    const handleCloseModal = () => {
-        setModalVisible(false);
-        // A short delay before clearing the event to prevent content from disappearing during the closing animation
-        setTimeout(() => setSelectedEvent(null), 300);
-    };
-
-    const handleDeleteEvent = () => {
-        if (!selectedEvent) return;
-        // 선택된 일정을 제외한 새 배열을 만듭니다.
-        const newSchedules = schedules.filter(schedule => schedule.id !== selectedEvent.id);
-        // 부모에게 "일정 목록이 이걸로 바뀌었어!" 라고 알립니다.
-        onSchedulesChange(newSchedules);
-        handleCloseModal();
     };
 
     const viewModes: ('month' | 'week' | 'day')[] = ['month', 'week', 'day'];
@@ -205,7 +181,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                                     schedules={timedSchedules}
                                     tags={tags}
                                     onDayPress={handleDayPress}
-                                    onEventPress={handleEventPress}
+                                    onEventPress={onEventPress}
                                 />
                             </View>
                         ))}
@@ -234,21 +210,13 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                                     date={dayDate}
                                     schedules={timedSchedules.filter(schedule => isSameDay(schedule.startTime, dayDate))}
                                     tags={tags}
-                                    onEventPress={handleEventPress}
+                                    onEventPress={onEventPress}
                                 />
                             </View>
                         ))}
                     </PagerView>
                 </View>
             </PagerView>
-
-            <DetailSchedule
-                schedule={selectedEvent}
-                visible={isModalVisible}
-                onClose={handleCloseModal}
-                onDelete={handleDeleteEvent}
-                tags={tags}
-            />
         </S.MContainer>
     );
 };

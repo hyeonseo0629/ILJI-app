@@ -14,7 +14,7 @@ import {Tag} from "@/components/ToDo/types";
 import {useSchedule} from "@/src/context/ScheduleContext";
 
 interface BottomSheetContentProps {
-    activeTab: string; // e.g., "Work", "Personal", "Study"
+    activeTab: string; // e.g., "All", "Work", "Personal", "Study"
 }
 
 export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab}) => {
@@ -28,17 +28,20 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
         {label: "priority", value: "priority"},
     ];
 
-    // 1. activeTab(태그 라벨)에 해당하는 스케줄만 필터링합니다.
+    // [개선] '전체' 탭이 선택된 경우와 특정 태그가 선택된 경우를 모두 처리하도록 로직을 개선합니다.
     const filteredSchedules = useMemo(() => {
-        // 현재 활성화된 탭의 라벨과 일치하는 태그를 찾습니다.
+        // '전체' 탭이 활성화된 경우, 필터링 없이 모든 스케줄을 반환합니다.
+        if (activeTab === 'All') {
+            return schedules;
+        }
+
+        // 특정 태그 탭이 활성화된 경우, 기존 로직대로 해당 태그의 스케줄만 필터링합니다.
         const currentTag = tags.find(tag => tag.label === activeTab);
 
-        // 해당 태그가 없으면 빈 배열을 반환합니다.
         if (!currentTag) {
             return [];
         }
 
-        // 찾은 태그의 ID와 일치하는 스케줄만 필터링합니다.
         return schedules.filter(schedule => schedule.tagId === currentTag.id);
     }, [activeTab, schedules, tags]);
 
