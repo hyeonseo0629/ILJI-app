@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, FlatList } from 'react-native';
-import * as S from './SortByPickerStyled';
-import {PickerMaterialIcons, PickerAntDesign} from "./SortByPickerStyled";
+import * as S from '../style/SortByPickerStyled';
+import {PickerMaterialIcons, PickerAntDesign} from "../style/SortByPickerStyled";
 
 
 interface PickerItem {

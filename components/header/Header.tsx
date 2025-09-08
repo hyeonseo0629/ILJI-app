@@ -7,7 +7,7 @@ import {
     HIconWrap,
     HLogo,
     HWrap,
-} from "@/components/header/HeaderStyle";
+} from "@/components/style/HeaderStyle";
 import {usePathname} from "expo-router";
 import {TouchableOpacity, View} from "react-native";
 interface HeaderProps {

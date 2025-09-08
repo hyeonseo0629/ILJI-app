@@ -8,7 +8,7 @@ import {
     MYearText,
     MTimeText,
     MTextLeftWrap, MTextBottomWrap, MImage, MContentWrap, MTitle, MContent,
-} from "@/components/diary/DiaryStyle";
+} from "@/components/style/I-logStyle";
 import React, {useState} from "react";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {Gesture, GestureDetector, GestureHandlerRootView} from "react-native-gesture-handler";
@@ -202,7 +202,7 @@ const DiaryPage = ({item}: { item: Diary }) => {
     );
 };
 
-const DiaryView = () => {
+const ILogView = () => {
     const insets = useSafeAreaInsets();
 
     const [pageIndex, setPageIndex] = useState(0);
@@ -338,4 +338,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default DiaryView;
+export default ILogView;
