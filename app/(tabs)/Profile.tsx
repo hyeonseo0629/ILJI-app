@@ -19,7 +19,7 @@ export default function ProfileScreen(): React.JSX.Element {
 
     const navigateToSettings = () => {
         setMenuVisible(false);
-        router.push('/(settings)');
+        router.push('/settings-main');
     };
 
     const navigateToProfileEdit = () => {

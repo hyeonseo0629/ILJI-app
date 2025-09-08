@@ -12,7 +12,7 @@ import {
     IUserID,
     IUserName,
     IEditButtonText
-} from "@/components/iLog/ILogStyle";
+} from "@/components/iLog/ILogStyled";
 import {ILogContents} from "./ILogContents";
 import {useRouter} from "expo-router";
 

@@ -17,7 +17,8 @@ module.exports = function(api) {
             '.tsx',
           ]
         }
-      ]
+      ],
+      ['styled-components', { ssr: true, displayName: true, preprocess: false }]
     ]
   };
 };

@@ -5,23 +5,27 @@ import * as SecureStore from 'expo-secure-store';
 const COLOR_SCHEME_KEY = 'user_color_scheme';
 
 export function useColorScheme() {
-  const systemColorScheme = useSystemColorScheme(); // 'light' | 'dark' | undefined
+  const systemColorScheme = useSystemColorScheme();
   const [userColorScheme, setUserColorScheme] = useState<'light' | 'dark' | null>(null);
+  const [isColorSchemeLoading, setIsColorSchemeLoading] = useState(true);
 
-  // Load user preference on mount
   useEffect(() => {
     const loadColorScheme = async () => {
       try {
         const storedScheme = await SecureStore.getItemAsync(COLOR_SCHEME_KEY);
         if (storedScheme === 'light' || storedScheme === 'dark') {
           setUserColorScheme(storedScheme);
+          console.log('Loaded color scheme from SecureStore:', storedScheme); // 추가
         } else {
-          // If no user preference, use system preference, converting undefined to null
-          setUserColorScheme(systemColorScheme === 'light' || systemColorScheme === 'dark' ? systemColorScheme : null);
+          const initialScheme = systemColorScheme === 'light' || systemColorScheme === 'dark' ? systemColorScheme : 'light';
+          setUserColorScheme(initialScheme);
+          console.log('No stored scheme, using system/default:', initialScheme); // 추가
         }
       } catch (e) {
         console.error("Failed to load color scheme from SecureStore", e);
-        setUserColorScheme(systemColorScheme === 'light' || systemColorScheme === 'dark' ? systemColorScheme : null); // Fallback to system
+        setUserColorScheme(systemColorScheme === 'light' || systemColorScheme === 'dark' ? systemColorScheme : 'light');
+      } finally {
+        setIsColorSchemeLoading(false);
       }
     };
     loadColorScheme();
@@ -32,8 +36,10 @@ export function useColorScheme() {
   const toggleColorScheme = async () => {
     const newScheme = isDarkColorScheme ? 'light' : 'dark';
     setUserColorScheme(newScheme);
+    console.log('Toggling color scheme to:', newScheme); // 추가
     try {
       await SecureStore.setItemAsync(COLOR_SCHEME_KEY, newScheme);
+      console.log('Saved color scheme to SecureStore:', newScheme); // 추가
     } catch (e) {
       console.error("Failed to save color scheme to SecureStore", e);
     }
@@ -42,7 +48,7 @@ export function useColorScheme() {
   return {
     isDarkColorScheme,
     toggleColorScheme,
-    // Expose the actual userColorScheme state if needed for other purposes
     colorScheme: userColorScheme,
+    isColorSchemeLoading,
   };
 }

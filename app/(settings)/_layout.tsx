@@ -1,36 +1,46 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import React from 'react';
+import { TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@react-navigation/native';
+
+// A custom back button that uses the router to go back
+const CustomBackButton = () => {
+  const router = useRouter();
+  const theme = useTheme();
+  return (
+    <TouchableOpacity onPress={() => router.back()} style={{ paddingHorizontal: 15 }}>
+      <Ionicons name="chevron-back" size={24} color={theme.colors.text} />
+    </TouchableOpacity>
+  );
+};
 
 export default function SettingsStackLayout() {
   return (
     <Stack>
       <Stack.Screen
-        name="index" // Corresponds to app/(settings)/index.tsx (the main settings screen)
+        name="settings-main"
         options={{
           title: 'Settings',
-          headerBackTitle: '',
+          headerLeft: () => <CustomBackButton />,
         }}
       />
       <Stack.Screen
-        name="account-settings" // Corresponds to app/(settings)/account-settings.tsx
+        name="account-settings"
         options={{
           title: 'Account Settings',
-          headerBackTitle: '',
         }}
       />
       <Stack.Screen
-        name="profile-edit" // Corresponds to app/(settings)/profile-edit.tsx
+        name="profile-edit"
         options={{
           title: 'Edit Profile',
-          headerBackTitle: '',
         }}
       />
       <Stack.Screen
-        name="notification-settings" // Corresponds to app/(settings)/notification-settings.tsx
+        name="notification-settings"
         options={{
           title: 'Notification Settings',
-          headerBackTitle: '',
-          presentation: 'modal', // Keep modal presentation if desired
         }}
       />
     </Stack>

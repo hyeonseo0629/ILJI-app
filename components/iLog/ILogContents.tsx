@@ -7,7 +7,7 @@ import {
     ListItem,
     ListImage,
     ListTitle,
-} from '@/components/iLog/ILogStyle';
+} from '@/components/iLog/ILogStyled';
 import {Text} from 'react-native';
 
 // Mock data for demonstration

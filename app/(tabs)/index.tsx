@@ -1,24 +1,24 @@
-// app/(tabs)/index.tsx
 import React, {useCallback, useMemo, useRef, useState, useEffect} from 'react';
-import {Pressable} from 'react-native';
+import {Pressable, View, Text} from 'react-native'; // Added View and Text
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import { useSharedValue } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import Header from "@/components/header/Header";
+import Header from "@/components/header/Header"; // Changed to default import
 import {set} from "date-fns";
 import {Schedule} from "@/components/calendar/types";
 import {Tag} from "@/components/todo/types";
-import {CContainer} from "@/components/calendar/CalendarStyle";
+import {CContainer} from "@/components/calendar/CalendarStyled";
 import {
     MainContainer,
     MainContentWrap,
     MainToDoCategory,
     MainTodoCategoryText,
     MainToDoCategoryWarp
-} from "@/components/MainStyle";
+} from "@/components/MainStyled";
 import {BottomSheetContent} from "@/components/bottomSheet/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
 import { AnimationContext } from '@/components/common/AnimationContext';
+import { useTheme } from '@react-navigation/native'; // useTheme 훅 임포트
 
 export default function HomeScreen() {
     const params = useLocalSearchParams();
@@ -27,6 +27,7 @@ export default function HomeScreen() {
     const bottomSheetRef = useRef<BottomSheet>(null);
     const tabPressedRef = useRef(false);
     const animatedIndex = useSharedValue<number>(0);
+    const theme = useTheme(); // 테마 객체 가져오기
 
     const [tags, setTags] = useState<Tag[]>([
         { id: 1, color: '#FFB3A7', createdAt: new Date(), label: 'Work', updatedAt: new Date(), userId: 1 }, // Soft Coral
@@ -90,7 +91,7 @@ export default function HomeScreen() {
 
     const TabHandle = () => (
         <Pressable onPress={handleSheetToggle}>
-            <MainToDoCategoryWarp>
+            <MainToDoCategoryWarp theme={theme}> {/* theme prop 전달 */}
                 {tags.map(tag => (
                     <MainToDoCategory
                         key={tag.id}
@@ -98,7 +99,7 @@ export default function HomeScreen() {
                         activeColor={tag.color}
                         onPress={() => handleTabPress(tag.label)}
                     >
-                        <MainTodoCategoryText $isActive={activeTab === tag.label}>{tag.label}</MainTodoCategoryText>
+                        <MainTodoCategoryText $isActive={activeTab === tag.label} theme={theme}>{tag.label}</MainTodoCategoryText> {/* theme prop 전달 */}
                     </MainToDoCategory>
                 ))}
             </MainToDoCategoryWarp>
@@ -122,24 +123,24 @@ export default function HomeScreen() {
 
     return (
         <AnimationContext.Provider value={{ animatedIndex }}>
-            <MainContainer>
-                <Header />
-                <CContainer>
+            <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+                <Header theme={theme} /> {/* Pass theme prop to Header component */}
+                <CContainer theme={theme}> {/* Uncommented */}
                     <CalendarView
                         date={currentDate}
                         onDateChange={setCurrentDate}
                         schedules={schedules}
                         tags={tags}
                         onSchedulesChange={setSchedules}
+                        theme={theme}
                     />
-                </CContainer>
+                </CContainer> {/* Uncommented */}
                 <BottomSheet
                     ref={bottomSheetRef}
                     index={0}
                     snapPoints={snapPoints}
                     handleComponent={TabHandle}
                     animatedIndex={animatedIndex}
-                    backdropComponent={renderBackdrop}
                     backgroundStyle={{
                         backgroundColor: 'transparent',
                     }}
@@ -147,8 +148,8 @@ export default function HomeScreen() {
                     <MainContentWrap>
                         <BottomSheetContent schedules={schedules} tags={tags} activeTab={activeTab} />
                     </MainContentWrap>
-                </BottomSheet>
-            </MainContainer>
+                </BottomSheet> {/* Uncommented */}
+            </View>
         </AnimationContext.Provider>
     );
 }

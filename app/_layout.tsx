@@ -9,25 +9,28 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useSession } from '@/hooks/useAuth';
 
-// Component that handles the navigation logic based on auth state
+// This component handles the navigation logic based on auth state
 function Layout() {
   const { session, isLoading } = useSession();
+  const segments = useSegments();
   const router = useRouter();
+  const { isDarkColorScheme } = useColorScheme(); // useColorScheme 훅을 여기서도 사용
 
   useEffect(() => {
     if (isLoading) {
       return; // Wait until the session is loaded
     }
 
-    // When the session is ready, move to the right screen
-    if (!session) {
-      // User is not signed in, redirect to the login screen.
+    const inAuthGroup = segments[0] === 'login';
+
+    if (!session && !inAuthGroup) {
+      // User is not signed in and not in login screen, redirect to login
       router.replace('/login');
-    } else {
-      // User is signed in, redirect to the main app screen.
+    } else if (session && inAuthGroup) {
+      // User is signed in but in login screen, redirect to home
       router.replace('/(tabs)');
     }
-  }, [session, isLoading]); // React to session changes
+  }, [session, isLoading, segments]);
 
   if (isLoading) {
     return (
@@ -38,23 +41,29 @@ function Layout() {
   }
 
   return (
-      <Stack>
+      // isDarkColorScheme 값에 따라 key를 변경하여 Stack 강제 재렌더링
+      <Stack key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}>
         <Stack.Screen name="login" options={{ headerShown: false }}/>
         <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '' }} />
         <Stack.Screen name="add-schedule" options={{ title: 'New Schedule', presentation: 'modal' }} />
-        <Stack.Screen name="(settings)" options={{ headerShown: false }} />
+        <Stack.Screen 
+          name="(settings)" 
+          options={{ 
+            headerShown: false
+          }} 
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
   );
 }
 
 export default function RootLayout() {
-  const { isDarkColorScheme } = useColorScheme();
+  const { isDarkColorScheme, isColorSchemeLoading } = useColorScheme(); // isColorSchemeLoading 추가
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  if (!loaded) {
+  if (!loaded || isColorSchemeLoading) { // 로딩 조건 추가
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator />

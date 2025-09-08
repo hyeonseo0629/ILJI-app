@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Modal, Pressable, View, Alert, Switch, Platform } from 'react-native';
 import { format, set } from 'date-fns';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
-import * as S from '@/components/detailSchedule/DetailScheduleStyle';
+import * as S from '@/components/detailSchedule/DetailScheduleStyled';
 import { Schedule } from '@/components/calendar/types';
 import { Tag } from '@/components/todo/types';
 import DateTimePicker from '@react-native-community/datetimepicker';

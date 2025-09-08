@@ -9,13 +9,14 @@ import {
     isSameDay,
     set,
 } from 'date-fns';
-import * as S from './CalendarStyle';
+import * as S from './CalendarStyled';
 import MonthView from './MonthView';
 import WeekView from './WeekView';
 import DayView from './DayView';
 import DetailSchedule from '@/components/detailSchedule/detail-schedule'; // 이 경로는 이미 올바르게 되어있을 수 있습니다.
 import { Schedule } from '@/components/calendar/types';
 import { Tag } from '@/components/todo/types';
+import { Theme } from '@react-navigation/native'; // Import Theme
 
 interface SixWeekCalendarProps {
     date: Date;
@@ -23,9 +24,10 @@ interface SixWeekCalendarProps {
     schedules: Schedule[];
     tags: Tag[];
     onSchedulesChange: (schedules: Schedule[]) => void;
+    theme: Theme; // Add theme prop
 }
 
-const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, schedules, tags, onSchedulesChange}) => {
+const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, schedules, tags, onSchedulesChange, theme}) => {
     // Refs for controlling pagers and lists
     const pagerRef = useRef<PagerView>(null);
     const monthFlatListRef = useRef<FlatList>(null);

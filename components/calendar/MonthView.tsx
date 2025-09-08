@@ -12,7 +12,7 @@ import {
     isToday,
     isSameDay,
 } from 'date-fns';
-import * as S from './CalendarStyle';
+import * as S from './CalendarStyled';
 import { Schedule } from '@/components/calendar/types';
 import { Tag } from '@/components/todo/types';
 

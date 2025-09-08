@@ -11,10 +11,6 @@ export const BSContainer = styled.View`
     padding: 10px;
 `
 
-// ------ //
-// Header //
-// ------ //
-
 export const BSHeader = styled.View`
     width: 100%;
     flex-direction: row;
@@ -39,10 +35,6 @@ export const BSToDoAddButton = styled(AntDesign).attrs({})`
     margin-left: 10px;
     padding: 10px 5px;
 `
-
-// ------- //
-// Content //
-// ------- //
 
 export const BSContentWrap = styled.View`
     position: relative;
@@ -74,10 +66,8 @@ export const BSToDoState = styled.Text`
 `
 
 export const BSToDoCheckBox = styled(MaterialIcons).attrs({
-    // 체크박스의 기본 크기를 설정합니다.
     size: 28,
 })`
-    /* 체크박스의 색상을 지정합니다. */
     color: mediumslateblue;
 `
 
