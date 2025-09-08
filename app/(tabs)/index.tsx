@@ -13,7 +13,7 @@ import {
     MainToDoCategory,
     MainTodoCategoryText,
     MainToDoCategoryWarp
-} from "@/components/style/MainStyle";
+} from "@/components/style/MainStyled";
 import {BottomSheetContent} from "@/components/common/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
 import {GestureHandlerRootView} from "react-native-gesture-handler";

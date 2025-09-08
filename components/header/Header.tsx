@@ -1,5 +1,5 @@
 import React from "react";
-import * as H from "@/components/style/HeaderStyle";
+import * as H from "@/components/style/HeaderStyled";
 import {usePathname} from "expo-router";
 import {TouchableOpacity} from "react-native";
 interface HeaderProps {

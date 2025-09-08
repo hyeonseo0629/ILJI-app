@@ -1,5 +1,5 @@
 import {Dimensions, ScrollView, StyleSheet, Text, useWindowDimensions, View} from "react-native";
-import * as I from "@/components/style/I-logStyle";
+import * as I from "@/components/style/I-logStyled";
 import React, {useState} from "react";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {Gesture, GestureDetector, GestureHandlerRootView} from "react-native-gesture-handler";
@@ -193,7 +193,7 @@ const DiaryPage = ({item}: { item: Diary }) => {
     );
 };
 
-const ILogView = () => {
+const ILogPageView = () => {
     const insets = useSafeAreaInsets();
 
     const [pageIndex, setPageIndex] = useState(0);
@@ -329,4 +329,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ILogView;
+export default ILogPageView;
