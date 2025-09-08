@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Alert } from 'react-native';
+import ColorPicker from 'react-native-wheel-color-picker';
 import * as S from './AddTagModalStyled';
-
-// 사용자가 선택할 수 있는 미리 정의된 색상 목록입니다.
-const PREDEFINED_COLORS = [
-    '#FF6B6B', '#FFD166', '#06D6A0', '#118AB2', '#7678ed',
-    '#E07A5F', '#3D405B', '#81B29A', '#F2CC8F', '#6c757d'
-];
 
 interface CreateTagModalProps {
     visible: boolean;
@@ -17,7 +12,7 @@ interface CreateTagModalProps {
 
 const CreateTagModal: React.FC<CreateTagModalProps> = ({ visible, onClose, onSave }) => {
     const [name, setName] = useState('');
-    const [selectedColor, setSelectedColor] = useState(PREDEFINED_COLORS[0]);
+    const [selectedColor, setSelectedColor] = useState('#FF6B6B'); // 기본 색상
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {
@@ -30,7 +25,7 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({ visible, onClose, onSav
             await onSave(name.trim(), selectedColor);
             // 성공적으로 저장되면, 다음 사용을 위해 상태를 초기화합니다.
             setName('');
-            setSelectedColor(PREDEFINED_COLORS[0]);
+            setSelectedColor('#FF6B6B');
         } finally {
             setIsSaving(false);
         }
@@ -39,7 +34,7 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({ visible, onClose, onSav
     const handleClose = () => {
         // 모달이 닫힐 때도 상태를 초기화합니다.
         setName('');
-        setSelectedColor(PREDEFINED_COLORS[0]);
+        setSelectedColor('#FF6B6B');
         onClose();
     }
 
@@ -61,17 +56,16 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({ visible, onClose, onSav
                         placeholder="예: 업무, 운동, 스터디"
                     />
 
-                    <S.InputLabel>색상 선택</S.InputLabel>
-                    <S.ColorPalette>
-                        {PREDEFINED_COLORS.map(color => (
-                            <S.ColorDot
-                                key={color}
-                                color={color}
-                                isSelected={selectedColor === color}
-                                onPress={() => setSelectedColor(color)}
-                            />
-                        ))}
-                    </S.ColorPalette>
+                    <S.ColorPickerHeader>
+                        <S.InputLabel>색상 선택</S.InputLabel>
+                        <S.ColorPreview color={selectedColor} />
+                    </S.ColorPickerHeader>
+                    <S.ColorPickerWrapper>
+                        <ColorPicker
+                            color={selectedColor}
+                            onColorChangeComplete={setSelectedColor}
+                        />
+                    </S.ColorPickerWrapper>
 
                     <S.ButtonContainer>
                         <S.ActionButton onPress={handleClose}>

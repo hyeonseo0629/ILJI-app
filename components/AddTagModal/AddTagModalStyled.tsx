@@ -38,21 +38,23 @@ export const StyledInput = styled.TextInput`
     margin-bottom: 15px;
 `;
 
-export const ColorPalette = styled.View`
+export const ColorPickerHeader = styled.View`
     flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    margin-bottom: 25px;
+    justify-content: space-between;
+    align-items: center;
 `;
 
-export const ColorDot = styled.TouchableOpacity<{ color: string; isSelected: boolean }>`
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
+export const ColorPreview = styled.View<{ color: string }>`
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
     background-color: ${props => props.color};
-    margin: 5px;
-    border-width: ${props => (props.isSelected ? '3px' : '0px')};
-    border-color: mediumslateblue;
+    border: 1px solid #ddd;
+`;
+
+export const ColorPickerWrapper = styled.View`
+    height: 250px; /* 컬러 피커의 높이를 지정해줍니다. */
+    margin-bottom: 25px;
 `;
 
 export const ButtonContainer = styled.View`
