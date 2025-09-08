@@ -5,7 +5,6 @@ import {
     endOfMonth,
     startOfWeek,
     endOfWeek,
-    addDays,
     format,
     isSameMonth,
     isToday,
@@ -14,7 +13,6 @@ import {
 import * as S from './CalendarStyle';
 import {Schedule} from '@/components/calendar/types';
 import {Tag} from '@/components/ToDo/types';
-import {MDayOfTheWeek} from "./CalendarStyle";
 
 interface MonthViewProps {
     date: Date;
@@ -30,22 +28,15 @@ const MonthView: React.FC<MonthViewProps> = ({date, schedules = [], tags = [], o
         const monthEnd = endOfMonth(date);
         const weekStartsOn = 0; // 0 for Sunday
 
-        // --- 주요 변경사항 시작 ---
-        // 달력 그리드의 시작일 (해당 월의 첫 날이 포함된 주의 일요일)
         const startDate = startOfWeek(monthStart, {weekStartsOn});
-        // 달력 그리드의 마지막일 (해당 월의 마지막 날이 포함된 주의 토요일)
         const endDate = endOfWeek(monthEnd, {weekStartsOn});
 
-        // 시작일부터 마지막일까지의 모든 날짜를 배열로 생성합니다.
         const days = eachDayOfInterval({start: startDate, end: endDate});
 
         const weeksArray = [];
-        // 전체 날짜 배열을 7일씩 나누어 주(week) 배열로 만듭니다.
         for (let i = 0; i < days.length; i += 7) {
             weeksArray.push(days.slice(i, i + 7));
         }
-        // --- 주요 변경사항 끝 ---
-
         return weeksArray;
     }, [date]);
 
@@ -61,7 +52,7 @@ const MonthView: React.FC<MonthViewProps> = ({date, schedules = [], tags = [], o
     return (
         <>
             {/* 요일 이름 행은 flex 분배에서 제외하고 고정 높이를 유지합니다. */}
-            <S.MWeek style={{flex: 0}}>
+            <S.MWeek $isHeader>
                 {dayNames.map(name => <S.MDayNameText key={name}>{name}</S.MDayNameText>)}
             </S.MWeek>
 

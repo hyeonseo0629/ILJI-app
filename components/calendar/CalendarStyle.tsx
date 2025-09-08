@@ -8,7 +8,7 @@ export const CContainer = styled.View`
     flex: 1; /* 남은 공간을 모두 차지하도록 설정 */
     background-color: #ffffff;
     width: 100%;
-    padding: 15px 0;
+    padding: 15px 10px;
 `
 // -------------------------- //
 // Monthly Calendar Component //
@@ -53,10 +53,11 @@ export const MDayNameText = styled.Text.attrs({
     text-align: center;
 `;
 
-export const MWeek = styled.View`
-    flex: 1; /* 부모(MWeeksContainer)의 공간을 균등하게 나눕니다. */
+export const MWeek = styled.View<{ $isHeader?: boolean }>`
     flex-direction: row;
-    /* height 속성을 제거하여 flex가 높이를 결정하도록 합니다. */
+    ${(props) => props.$isHeader ?
+            `height: 50px;` : `flex: 1;`
+    }
 `;
 
 export const MDayOfTheWeekText = styled.Text`
@@ -101,10 +102,10 @@ export const MDayText = styled.Text.attrs({
     font-size: 12px;
     text-align: center;
     color: ${(props) => {
-    if (props.$isSelected) return '#FFFFFF';
-    if (props.$isNotInMonth) return '#D1D1D6';
-    return '#333';
-}};
+        if (props.$isSelected) return '#FFFFFF';
+        if (props.$isNotInMonth) return '#D1D1D6';
+        return '#333';
+    }};
     font-weight: ${(props) => (props.$isToday && !props.$isSelected ? 'bold' : 'normal')};
 `;
 
@@ -148,10 +149,10 @@ export const MoreEventsText = styled.Text.attrs({
 `;
 
 export const MEventsContainer = styled.View`
-     flex: 1; /* 날짜 텍스트를 제외한 나머지 세로 공간을 모두 차지합니다. */
-     width: 100%; /* 부모 컨테이너의 너비에 맞춥니다. */
-     overflow: hidden; /* 이 컨테이너의 크기를 벗어나는 자식 요소(일정)를 숨깁니다. */
- `;
+    flex: 1; /* 날짜 텍스트를 제외한 나머지 세로 공간을 모두 차지합니다. */
+    width: 100%; /* 부모 컨테이너의 너비에 맞춥니다. */
+    overflow: hidden; /* 이 컨테이너의 크기를 벗어나는 자식 요소(일정)를 숨깁니다. */
+`;
 
 
 /**
@@ -190,7 +191,7 @@ export const DayText = styled.Text`
     padding: 10px;
     text-align: center;
     font-size: 20px;
-    border-bottom-width: 1px ;
+    border-bottom-width: 1px;
     border-bottom-color: #f0f0f0;
 `
 
@@ -277,15 +278,15 @@ export const ButtonText = styled.Text<ViewModeButtonProps>`
  * Day View Header Styles
  */
 export const DayViewHeader = styled.View`
-     padding: 10px 20px;
-     background-color: #f8f8f8;
-     border-bottom-width: 1px;
-     border-bottom-color: #eee;
- `;
+    padding: 10px 20px;
+    background-color: #f8f8f8;
+    border-bottom-width: 1px;
+    border-bottom-color: #eee;
+`;
 
 export const DayViewHeaderText = styled.Text`
-     font-size: 16px;
-     font-weight: 600;
-     color: #333;
-     text-align: center;
- `;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+`;
