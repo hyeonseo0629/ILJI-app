@@ -2,7 +2,7 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {Alert, Switch, Platform, Text, View} from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import {Schedule} from '@/components/calendar/scheduleTypes';
-import {Tag} from '@/components/Tag\'/TagTypes';
+import {Tag} from '@/components/tag/TagTypes';
 import * as S from '@/components/schedule/AddScheduleStyle';
 import {Picker} from '@react-native-picker/picker';
 import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
