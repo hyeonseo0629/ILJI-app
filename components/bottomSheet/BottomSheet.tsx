@@ -13,6 +13,7 @@ import {ToDo} from "@/components/ToDo/ToDo";
 import {Schedule} from "@/components/calendar/types";
 import {Tag} from "@/components/ToDo/types";
 import {useSchedule} from "@/src/context/ScheduleContext";
+import EditTagModal from "@/components/EditTagModal/edit-tagmodal";
 
 interface BottomSheetContentProps {
     activeTab: string; // e.g., "All", "Work", "Personal", "Study"
@@ -23,6 +24,9 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
     // [수정] Context에서 'events'를 가져와 'schedules'라는 별명으로 사용합니다.
     const { events: schedules, tags } = useSchedule();
     const [sortBy, setSortBy] = useState('latest');
+    // 태그 편집 모달의 표시 상태를 관리합니다.
+    const [isEditTagModalVisible, setIsEditTagModalVisible] = useState(false);
+
     const pickerItems = [
         {label: "latest", value: "latest"},
         {label: "oldest", value: "oldest"},
@@ -58,7 +62,7 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
                     <TouchableOpacity onPress={() => router.push('/add-schedule')}>
                         <BSToDoAddButton name="pluscircleo" size={20}/>
                     </TouchableOpacity>
-                    <TagEditBTN>
+                    <TagEditBTN onPress={() => setIsEditTagModalVisible(true)}>
                         <MaterialCommunityIcons name="book-edit-outline" size={24} color="mediumslateblue" />
                     </TagEditBTN>
                 </BSHeaderRight>
@@ -71,6 +75,11 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
                     ))}
                 </BSContentWrap>
             </BottomSheetScrollView>
+            {/* 태그 편집 모달 */}
+            <EditTagModal
+                visible={isEditTagModalVisible}
+                onClose={() => setIsEditTagModalVisible(false)}
+            />
         </BSContainer>
     );
 }

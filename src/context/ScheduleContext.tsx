@@ -36,6 +36,8 @@ interface ScheduleContextType {
     createSchedule: (newScheduleData: Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
     deleteSchedule: (scheduleId: number) => Promise<void>;
     createTag: (tagData: { label: string; color: string }) => Promise<Tag>;
+    updateTag: (tagToUpdate: Tag) => Promise<void>;
+    deleteTag: (tagId: number) => Promise<void>;
 }
 
 // --- Context 생성 ---
@@ -238,6 +240,51 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         }
     }, []);
 
+    const updateTag = useCallback(async (tagToUpdate: Tag) => {
+        try {
+            // createSchedule, updateSchedule처럼 userId를 명시적으로 포함시켜줍니다.
+            // 백엔드에서 수정을 위해 사용자 식별이 필요할 수 있습니다.
+            const payload = { ...tagToUpdate, userId: 4 };
+
+            // 서버에 수정된 태그 정보와 사용자 ID를 함께 전송합니다.
+            const response = await api.put<Tag>(`/tags/${tagToUpdate.id}`, payload);
+            const updatedTag = response.data;
+            setTags(prevTags =>
+                prevTags.map(tag => (tag.id === updatedTag.id ? updatedTag : tag))
+            );
+        } catch (err) {
+            console.error("태그 업데이트 실패:", err);
+            Alert.alert("업데이트 실패", "태그를 수정하는 중 오류가 발생했습니다.");
+            throw err;
+        }
+    }, []);
+
+    const deleteTag = useCallback(async (tagId: number) => {
+        try {
+            // createTag/updateTag와의 일관성을 위해, 삭제 시에도 userId를 보내
+            // 어떤 사용자의 태그를 삭제하는지 식별하도록 합니다.
+            // Axios에서 DELETE 요청에 본문을 보내려면 { data: payload } 형식을 사용합니다.
+            // 서버의 @DeleteMapping에서 @RequestBody로 userId를 받을 것으로 예상됩니다.
+            await api.delete(`/tags/${tagId}`, { data: { userId: 4 } });
+
+            // 1. Context의 태그 목록에서 해당 태그를 제거합니다.
+            setTags(prevTags => prevTags.filter(tag => tag.id !== tagId));
+
+            // 2. 이 태그를 사용하던 모든 일정을 '태그 없음'(tagId: 0)으로 업데이트합니다.
+            //    이렇게 해야 화면에 표시된 일정들이 삭제된 태그 ID를 참조하지 않게 됩니다.
+            setEvents(prevEvents =>
+                prevEvents.map(event =>
+                    event.tagId === tagId ? { ...event, tagId: 0 } : event
+                )
+            );
+
+        } catch (err) {
+            console.error("태그 삭제 실패:", err);
+            Alert.alert("삭제 실패", "태그를 삭제하는 중 오류가 발생했습니다.");
+            throw err;
+        }
+    }, []);
+
     const value = {
         events,
         tags, // [추가] Context 값에 태그 목록 포함
@@ -248,6 +295,8 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         createSchedule,
         deleteSchedule,
         createTag,
+        updateTag,
+        deleteTag,
     };
 
     return (

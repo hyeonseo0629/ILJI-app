@@ -47,17 +47,17 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({ visible, onClose, onSav
         >
             <S.ModalOverlay>
                 <S.ModalContainer>
-                    <S.ModalHeader>새로운 태그 만들기</S.ModalHeader>
+                    <S.ModalHeader>New Tag</S.ModalHeader>
 
-                    <S.InputLabel>태그 이름</S.InputLabel>
+                    <S.InputLabel>Tag Name</S.InputLabel>
                     <S.StyledInput
                         value={name}
                         onChangeText={setName}
-                        placeholder="예: 업무, 운동, 스터디"
+                        placeholder="ex: work, exercise, study"
                     />
 
                     <S.ColorPickerHeader>
-                        <S.InputLabel>색상 선택</S.InputLabel>
+                        <S.InputLabel>Tag Color</S.InputLabel>
                         <S.ColorPreview color={selectedColor} />
                     </S.ColorPickerHeader>
                     <S.ColorPickerWrapper>
@@ -69,10 +69,10 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({ visible, onClose, onSav
 
                     <S.ButtonContainer>
                         <S.ActionButton onPress={handleClose}>
-                            <S.ButtonText>취소</S.ButtonText>
+                            <S.ButtonText>Cancel</S.ButtonText>
                         </S.ActionButton>
                         <S.ActionButton primary onPress={handleSave} disabled={isSaving}>
-                            <S.ButtonText primary>{isSaving ? '저장 중...' : '저장'}</S.ButtonText>
+                            <S.ButtonText primary>{isSaving ? 'Save...' : 'Save'}</S.ButtonText>
                         </S.ActionButton>
                     </S.ButtonContainer>
                 </S.ModalContainer>

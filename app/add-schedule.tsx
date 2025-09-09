@@ -242,7 +242,10 @@ const AddScheduleScreen = () => {
                     margin:10,
                 }}
             >
-                <Text>ASD</Text>
+                {/* BottomSheet 내부에 표시될 내용을 여기에 추가합니다. */}
+                <S.ASContentWrap>
+                    <Text>바텀시트 내용</Text>
+                </S.ASContentWrap>
             </BottomSheet>
             <ASButtonWrap>
                 {/* Cancel 버튼은 단순히 이전 화면으로 돌아가도록 router.back()을 사용합니다. */}
