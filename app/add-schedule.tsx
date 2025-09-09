@@ -244,7 +244,6 @@ const AddScheduleScreen = () => {
             >
                 {/* BottomSheet 내부에 표시될 내용을 여기에 추가합니다. */}
                 <S.ASContentWrap>
-                    <Text>바텀시트 내용</Text>
                 </S.ASContentWrap>
             </BottomSheet>
             <ASButtonWrap>

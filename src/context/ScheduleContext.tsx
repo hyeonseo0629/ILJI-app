@@ -267,23 +267,17 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             // 서버의 @DeleteMapping에서 @RequestBody로 userId를 받을 것으로 예상됩니다.
             await api.delete(`/tags/${tagId}`, { data: { userId: 4 } });
 
-            // 1. Context의 태그 목록에서 해당 태그를 제거합니다.
-            setTags(prevTags => prevTags.filter(tag => tag.id !== tagId));
-
-            // 2. 이 태그를 사용하던 모든 일정을 '태그 없음'(tagId: 0)으로 업데이트합니다.
-            //    이렇게 해야 화면에 표시된 일정들이 삭제된 태그 ID를 참조하지 않게 됩니다.
-            setEvents(prevEvents =>
-                prevEvents.map(event =>
-                    event.tagId === tagId ? { ...event, tagId: 0 } : event
-                )
-            );
+            // [개선] 태그 삭제 후, 서버의 데이터와 정합성을 맞추기 위해 전체 데이터를 다시 불러옵니다.
+            // 서버에서 해당 태그를 사용하던 일정들의 tagId를 null로 변경했을 것이므로,
+            // 최신 데이터를 받아오는 것이 가장 안전하고 간단한 방법입니다.
+            await fetchSchedules();
 
         } catch (err) {
             console.error("태그 삭제 실패:", err);
             Alert.alert("삭제 실패", "태그를 삭제하는 중 오류가 발생했습니다.");
             throw err;
         }
-    }, []);
+    }, [fetchSchedules]);
 
     const value = {
         events,

@@ -25,7 +25,7 @@ export const ModalHeader = styled.Text`
 `;
 
 export const TagList = styled(
-  FlatList as new (props: FlatListProps<Tag>) => FlatList<Tag>
+    FlatList as new (props: FlatListProps<Tag>) => FlatList<Tag>
 )``;
 
 export const TagItem = styled.TouchableOpacity`
