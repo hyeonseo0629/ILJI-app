@@ -9,13 +9,14 @@ import {
     isSameDay,
     set,
 } from 'date-fns';
-import * as S from './CalendarStyled';
+import * as CS from '../style/CalendarStyled';
 import MonthView from './MonthView';
 import WeekView from './WeekView';
 import DayView from './DayView';
-import DetailSchedule from '@/components/detailSchedule/detail-schedule'; // 이 경로는 이미 올바르게 되어있을 수 있습니다.
-import { Schedule } from '@/components/calendar/types';
-import { Tag } from '@/components/todo/types';
+import DetailSchedule from '@/components/schedule/detail-schedule';
+import { Schedule } from '@/components/calendar/scheduleTypes';
+import { Tag } from '@/components/tag/TagTypes';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Theme } from '@react-navigation/native'; // Import Theme
 
 interface SixWeekCalendarProps {
@@ -28,40 +29,34 @@ interface SixWeekCalendarProps {
 }
 
 const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, schedules, tags, onSchedulesChange, theme}) => {
-    // Refs for controlling pagers and lists
     const pagerRef = useRef<PagerView>(null);
     const monthFlatListRef = useRef<FlatList>(null);
     const weekPagerRef = useRef<PagerView>(null);
     const dayPagerRef = useRef<PagerView>(null);
 
-    // State for different views and selections
     const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
     const [selectedDate, setSelectedDate] = useState(date);
     const [monthContainerHeight, setMonthContainerHeight] = useState(0);
 
-    // State for event detail modal
     const [isModalVisible, setModalVisible] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Schedule | null>(null);
 
-    // Data sources for vertical swiping in each view
     const [months, setMonths] = useState([sub(date, {months: 1}), date, add(date, {months: 1})]);
     const [weeks, setWeeks] = useState([sub(date, {weeks: 1}), date, add(date, {weeks: 1})]);
     const [days, setDays] = useState([sub(date, {days: 1}), date, add(date, {days: 1})]);
 
-    // WeekView와 DayView에 표시할 '시간 지정' 일정만 필터링합니다.
-    // `schedules`가 변경될 때마다 이 목록이 다시 계산되어 삭제/수정이 반영됩니다.
     const timedSchedules = useMemo(() => {
         return schedules.filter(schedule => !schedule.isAllDay);
     }, [schedules])
 
-    // When the central date changes, update all data sources and reset inner pagers
+    const insets = useSafeAreaInsets();
+
     useEffect(() => {
         if (isValid(date)) {
             setMonths([sub(date, {months: 1}), date, add(date, {months: 1})]);
             setWeeks([sub(date, {weeks: 1}), date, add(date, {weeks: 1})]);
             setDays([sub(date, {days: 1}), date, add(date, {days: 1})]);
 
-            // Use setTimeout to ensure the UI has updated before scrolling
             setTimeout(() => {
                 monthFlatListRef.current?.scrollToIndex({index: 1, animated: false});
                 weekPagerRef.current?.setPageWithoutAnimation(1);
@@ -70,16 +65,14 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
         }
     }, [date]);
 
-    // Loading state for invalid dates
     if (!isValid(date)) {
         return (
-            <S.MLoadingContainer>
+            <CS.MonthLoadingContainer>
                 <Text>Loading...</Text>
-            </S.MLoadingContainer>
+            </CS.MonthLoadingContainer>
         );
     }
 
-    // Handlers
     const handleMonthScrollEnd = (event: any) => {
         const offsetY = event.nativeEvent.contentOffset.y;
         const containerHeight = event.nativeEvent.layoutMeasurement.height;
@@ -89,12 +82,8 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
     };
 
     const handleDayPress = (day: Date) => {
-        // Day View로 전환하기 전에, 앱의 중앙 날짜를 클릭된 날짜로 업데이트합니다.
-        // 이렇게 해야 Day View가 올바른 날짜의 데이터를 가지고 렌더링될 수 있습니다.
         onDateChange(day);
-        // selectedDate 상태도 동기화해줍니다.
         setSelectedDate(day);
-        // Pager를 Day View(인덱스 2)로 전환합니다.
         pagerRef.current?.setPage(2);
     };
 
@@ -105,21 +94,17 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
 
     const handleCloseModal = () => {
         setModalVisible(false);
-        // A short delay before clearing the event to prevent content from disappearing during the closing animation
         setTimeout(() => setSelectedEvent(null), 300);
     };
 
     const handleUpdateSchedule = (updatedSchedule: Schedule) => {
         const newSchedules = schedules.map(s => s.id === updatedSchedule.id ? updatedSchedule : s);
         onSchedulesChange(newSchedules);
-        // 수정 후 모달을 닫지 않고, DetailSchedule 컴포넌트가 직접 뷰를 전환하도록 합니다.
     };
 
     const handleDeleteEvent = () => {
         if (!selectedEvent) return;
-        // 선택된 일정을 제외한 새 배열을 만듭니다.
         const newSchedules = schedules.filter(schedule => schedule.id !== selectedEvent.id);
-        // 부모에게 "일정 목록이 이걸로 바뀌었어!" 라고 알립니다.
         onSchedulesChange(newSchedules);
         handleCloseModal();
     };
@@ -131,24 +116,25 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
     };
 
     return (
-        <S.MContainer>
-            <S.MHeader>
-                <S.MMonthText>{format(date, 'MMMM yyyy')}</S.MMonthText>
-                <S.ViewModeContainer>
-                    <S.ViewModeButton $isActive={viewMode === 'month'}
+        <CS.MonthContainer style={{ paddingBottom: insets.bottom }}>
+            <CS.MonthHeader>
+                <CS.MonthText>{format(date, 'MMMM yyyy')}</CS.MonthText>
+                <CS.ViewModeButtonContainer>
+                    <CS.ViewMonthButton $isActive={viewMode === 'month'}
                                       onPress={() => handleViewModeButtonPress('month')}>
-                        <S.ButtonText $isActive={viewMode === 'month'}>M</S.ButtonText>
-                    </S.ViewModeButton>
-                    <S.ViewModeButton $isActive={viewMode === 'week'} onPress={() => handleViewModeButtonPress('week')}>
-                        <S.ButtonText $isActive={viewMode === 'week'}>W</S.ButtonText>
-                    </S.ViewModeButton>
-                    <S.ViewModeButton $isActive={viewMode === 'day'} onPress={() => handleViewModeButtonPress('day')}>
-                        <S.ButtonText $isActive={viewMode === 'day'}>D</S.ButtonText>
-                    </S.ViewModeButton>
-                </S.ViewModeContainer>
-            </S.MHeader>
+                        <CS.ViewModeButtonText $isActive={viewMode === 'month'}>M</CS.ViewModeButtonText>
+                    </CS.ViewMonthButton>
+                    <CS.ViewWeekButton $isActive={viewMode === 'week'}
+                                      onPress={() => handleViewModeButtonPress('week')}>
+                        <CS.ViewModeButtonText $isActive={viewMode === 'week'}>W</CS.ViewModeButtonText>
+                    </CS.ViewWeekButton>
+                    <CS.ViewDayButton $isActive={viewMode === 'day'}
+                                      onPress={() => handleViewModeButtonPress('day')}>
+                        <CS.ViewModeButtonText $isActive={viewMode === 'day'}>D</CS.ViewModeButtonText>
+                    </CS.ViewDayButton>
+                </CS.ViewModeButtonContainer>
+            </CS.MonthHeader>
 
-            {/* Outer Pager for Month/Week/Day view switching (Horizontal) */}
             <PagerView
                 ref={pagerRef}
                 style={{flex: 1}}
@@ -159,7 +145,6 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                     setViewMode(newViewMode);
                 }}
             >
-                {/* Page 1: Month View */}
                 <View
                     key="1"
                     style={{ flex: 1 }}
@@ -174,7 +159,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                             ref={monthFlatListRef}
                             data={months}
                             renderItem={({item}) => (
-                                <View style={{height: monthContainerHeight}}>
+                                <View style={{height: monthContainerHeight, margin: 5}}>
                                     <MonthView
                                         date={item}
                                         schedules={schedules}
@@ -193,7 +178,6 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                     )}
                 </View>
 
-                {/* Page 2: Week View */}
                 <View key="2">
                     <PagerView
                         ref={weekPagerRef}
@@ -220,7 +204,6 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                     </PagerView>
                 </View>
 
-                {/* Page 3: Day View */}
                 <View key="3">
                     <PagerView
                         ref={dayPagerRef}
@@ -229,9 +212,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                         initialPage={1}
                         onPageSelected={(e) => {
                             if (e.nativeEvent.position !== 1) {
-                                // For day view, swiping changes the main date
                                 onDateChange(days[e.nativeEvent.position]);
-                                // Also update selectedDate to keep them in sync
                                 setSelectedDate(days[e.nativeEvent.position]);
                             }
                         }}
@@ -258,7 +239,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                 onUpdate={handleUpdateSchedule}
                 tags={tags}
             />
-        </S.MContainer>
+        </CS.MonthContainer>
     );
 };
 

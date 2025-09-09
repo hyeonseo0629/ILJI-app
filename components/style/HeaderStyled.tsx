@@ -2,9 +2,11 @@ import styled, { css } from 'styled-components/native';
 import Animated from 'react-native-reanimated';
 import { Theme } from '@react-navigation/native'; // Theme 타입 임포트
 import { View } from 'react-native'; // Import View from react-native
+import Octicons from "react-native-vector-icons/Octicons";
 
 interface HContainerProps {
     $isMain?: boolean;
+    $isSheetExpanded?: boolean;
 }
 
 interface ThemeProps { // ThemeProps 인터페이스 정의
@@ -22,11 +24,17 @@ export const HContainer = styled(View)<HContainerProps & ThemeProps>` // Changed
     width: 100%;
     background-color: ${(props) => props.theme?.colors?.background || '#ffffff'};
     ${(props) => props.$isMain && mainHeaderStyles}
+    background-color: #ffffff;
+    /* 바텀 시트가 확장되면 zIndex를 0으로, 아닐 때는 1로 설정합니다. */
+    z-index: ${(props) => (props.$isSheetExpanded ? 0 : 1)};
+
+    /* $isMain prop이 true일 때만 그림자 효과를 적용합니다. */
+    ${(props) => props.$isMain && mainHeaderStyles};
+    padding-top: 10px;
 `;
 
-export const HTop = styled.View`
-    margin-top: 45px;
-    padding: 10px;
+export const HWrap = styled.View`
+    padding: 0 10px;
     flex-direction: row;
     justify-content: space-between;
 `;
@@ -34,13 +42,14 @@ export const HTop = styled.View`
 export const HLogo = styled.Image.attrs((props) => ({
     source: require('../../assets/images/logo.png'),
 }))`
-   width: 50px;
-   height: 50px;
- `;
+    width: 65px;
+    height: 65px;
+    margin: 0 5px;
+`;
 
 export const HIconWrap = styled.View`
     width: 30%;
-    margin: 10px;
+    margin: 15px 20px 0;
     flex-direction: row;
     justify-content: space-between;
 `;
@@ -62,3 +71,17 @@ export const HRecentDiary = styled.View<ThemeProps>` // ThemeProps 추가
     border-radius: 50px;
     background-color: ${(props) => props.theme?.colors?.card || 'lavender'};
 `;
+
+export const HIconBell = styled(Octicons).attrs({})`
+    padding: 5px;
+    color: mediumslateblue;
+`
+export const HIconMail = styled(Octicons).attrs({})`
+    padding: 5px;
+    color: mediumslateblue;
+`
+
+export const HIconShare = styled(Octicons).attrs({})`
+    padding: 5px;
+    color: mediumslateblue;
+`

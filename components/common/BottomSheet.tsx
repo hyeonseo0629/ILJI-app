@@ -1,16 +1,13 @@
 import {TouchableOpacity} from "react-native";
 import React, {useMemo, useState} from "react";
 import { useRouter } from "expo-router";
-import {
-    BSContainer, BSContentWrap, BSHeader, BSHeaderLeft, BSHeaderRight, BSTodayText,
-    BSToDoAddButton
-} from "@/components/bottomSheet/BottomSheetStyled";
+import * as BS from "@/components/style/BottomSheetStyled";
 import SortByPicker from "@/components/common/SortByPicker";
 import {format} from "date-fns";
 import {BottomSheetScrollView} from "@gorhom/bottom-sheet";
-import {ToDo} from "@/components/todo/ToDo";
-import {Schedule} from "@/components/calendar/types";
-import {Tag} from "@/components/todo/types";
+import {TaggedSchedule} from "@/components/tag/TaggedSchedule";
+import {Schedule} from "@/components/calendar/scheduleTypes";
+import {Tag} from "@/components/tag/TagTypes";
 
 interface BottomSheetContentProps {
     schedules: Schedule[];
@@ -42,30 +39,30 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({schedules
     }, [activeTab, schedules, tags]);
 
     return (
-        <BSContainer>
-            <BSHeader>
-                <BSHeaderLeft>
+        <BS.Container>
+            <BS.Header>
+                <BS.HeaderLeft>
                     <SortByPicker
                         items={pickerItems}
                         selectedValue={sortBy}
                         onValueChange={setSortBy}
                     />
-                </BSHeaderLeft>
-                <BSHeaderRight>
-                    <BSTodayText>{format(new Date(), "yyyy-MM-dd")}</BSTodayText>
+                </BS.HeaderLeft>
+                <BS.HeaderRight>
+                    <BS.TodayText>{format(new Date(), "yyyy-MM-dd")}</BS.TodayText>
                     <TouchableOpacity onPress={() => router.push({ pathname: '/add-schedule', params: { tags: JSON.stringify(tags) } })}>
-                        <BSToDoAddButton name="pluscircleo" size={20}/>
+                        <BS.ScheduleAddButton name="pluscircleo" size={20}/>
                     </TouchableOpacity>
-                </BSHeaderRight>
-            </BSHeader>
+                </BS.HeaderRight>
+            </BS.Header>
             <BottomSheetScrollView style={{flex:1}}>
-                <BSContentWrap>
+                <BS.ContentWrap>
                     {/* 2. 필터링된 스케줄 목록을 화면에 렌더링합니다. */}
                     {filteredSchedules.map(schedule => (
-                        <ToDo key={schedule.id} item={schedule} />
+                        <TaggedSchedule key={schedule.id} item={schedule} />
                     ))}
-                </BSContentWrap>
+                </BS.ContentWrap>
             </BottomSheetScrollView>
-        </BSContainer>
+        </BS.Container>
     );
 }

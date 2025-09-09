@@ -1,10 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Modal, Pressable, View, Alert, Switch, Platform } from 'react-native';
 import { format, set } from 'date-fns';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
-import * as S from '@/components/detailSchedule/DetailScheduleStyled';
-import { Schedule } from '@/components/calendar/types';
-import { Tag } from '@/components/todo/types';
+import { Feather } from '@expo/vector-icons';
+import * as DS from '../style/DetailScheduleStyle';
+import { Schedule } from '@/components/calendar/scheduleTypes';
+import { Tag } from '@/components/tag/TagTypes';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface DetailScheduleProps {
@@ -110,131 +110,131 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, tags, visible
             visible={visible}
             onRequestClose={onClose}
         >
-            <S.ModalOverlay onPress={onClose}>
+            <DS.ModalOverlay onPress={onClose}>
                 {/* Pressable로 감싸서 모달 내부 클릭 시 닫히는 것을 방지 */}
                 <Pressable>
-                    <S.DSContainer>
+                    <DS.Container>
                         {isEditMode ? (
-                            <S.DSHeaderInput value={formData.title} onChangeText={(text) => handleInputChange('title', text)} />
+                            <DS.HeaderInput value={formData.title} onChangeText={(text) => handleInputChange('title', text)} />
                         ) : (
-                            <S.DSHeader>{formData.title}</S.DSHeader>
+                            <DS.Header>{formData.title}</DS.Header>
                         )}
-                        <S.DSContentWrap>
+                        <DS.ContentWrap>
                             {isEditMode ? (
                                 <>
-                                    <S.AllDayRow>
-                                        <S.DSLabel>All Day</S.DSLabel>
+                                    <DS.AllDayRow>
+                                        <DS.Label>All Day</DS.Label>
                                         <Switch
                                             trackColor={{ false: "#767577", true: "mediumslateblue" }}
                                             thumbColor={"#f4f3f4"}
                                             onValueChange={(value) => handleInputChange('isAllDay', value)}
                                             value={formData.isAllDay}
                                         />
-                                    </S.AllDayRow>
-                                    <S.DateTimePickerButton onPress={() => setShowDatePicker(true)}>
-                                        <S.DateTimePickerButtonText>{format(formData.startTime, 'yyyy. MM. dd')}</S.DateTimePickerButtonText>
-                                    </S.DateTimePickerButton>
+                                    </DS.AllDayRow>
+                                    <DS.DateTimePickerButton onPress={() => setShowDatePicker(true)}>
+                                        <DS.DateTimePickerButtonText>{format(formData.startTime, 'yyyy. MM. dd')}</DS.DateTimePickerButtonText>
+                                    </DS.DateTimePickerButton>
                                     {!formData.isAllDay && (
-                                        <S.DateTimePickersRow style={{ marginTop: 15 }}>
-                                            <S.DateTimePickerButton onPress={() => setShowStartTimePicker(true)} style={{ marginRight: 10 }}>
-                                                <S.DateTimePickerButtonText>{format(formData.startTime, 'HH:mm')}</S.DateTimePickerButtonText>
-                                            </S.DateTimePickerButton>
-                                            <S.DateTimePickerButton onPress={() => setShowEndTimePicker(true)}>
-                                                <S.DateTimePickerButtonText>{format(formData.endTime, 'HH:mm')}</S.DateTimePickerButtonText>
-                                            </S.DateTimePickerButton>
-                                        </S.DateTimePickersRow>
+                                        <DS.DateTimePickersRow style={{ marginTop: 15 }}>
+                                            <DS.DateTimePickerButton onPress={() => setShowStartTimePicker(true)} style={{ marginRight: 10 }}>
+                                                <DS.DateTimePickerButtonText>{format(formData.startTime, 'HH:mm')}</DS.DateTimePickerButtonText>
+                                            </DS.DateTimePickerButton>
+                                            <DS.DateTimePickerButton onPress={() => setShowEndTimePicker(true)}>
+                                                <DS.DateTimePickerButtonText>{format(formData.endTime, 'HH:mm')}</DS.DateTimePickerButtonText>
+                                            </DS.DateTimePickerButton>
+                                        </DS.DateTimePickersRow>
                                     )}
                                 </>
                             ) : (
-                                <S.DateTimeInfoRow>
-                                    <S.DateTimeInfo>
-                                        <S.CalendarIcon name="event" size={40} color="#888" />
-                                        <S.DateTimeTexts>
-                                            <S.DateText>{format(formData.startTime, 'yyyy. MM. dd')}</S.DateText>
+                                <DS.DateTimeInfoRow>
+                                    <DS.DateTimeInfo>
+                                        <DS.CalendarIcon name="event" size={40} color="#888" />
+                                        <DS.DateTimeTexts>
+                                            <DS.DateText>{format(formData.startTime, 'yyyy. MM. dd')}</DS.DateText>
                                             {formData.isAllDay ? (
-                                                <S.TimeText>ALL DAY</S.TimeText>
+                                                <DS.TimeText>ALL DAY</DS.TimeText>
                                             ) : (
-                                                <S.TimeText>
+                                                <DS.TimeText>
                                                     {format(formData.startTime, 'HH:mm')} ~ {format(formData.endTime, 'HH:mm')}
-                                                </S.TimeText>
+                                                </DS.TimeText>
                                             )}
-                                        </S.DateTimeTexts>
-                                    </S.DateTimeInfo>
-                                    <S.DeleteButton onPress={handleDeletePress}>
+                                        </DS.DateTimeTexts>
+                                    </DS.DateTimeInfo>
+                                    <DS.DeleteButton onPress={handleDeletePress}>
                                         <Feather name="trash-2" size={30} color="#D25A5A" />
-                                    </S.DeleteButton>
-                                </S.DateTimeInfoRow>
+                                    </DS.DeleteButton>
+                                </DS.DateTimeInfoRow>
                             )}
 
                             {/* Tag 섹션을 이 위치로 이동합니다. */}
                             {isEditMode ? (
                                 <>
-                                    <S.DSLabel>Tag</S.DSLabel>
-                                    <S.TagSelectorContainer>
+                                    <DS.Label>Tag</DS.Label>
+                                    <DS.TagSelectorContainer>
                                         {tags.map(tag => (
-                                            <S.TagSelectorItem
+                                            <DS.TagSelectorItem
                                                 key={tag.id}
                                                 color={tag.color}
                                                 selected={formData.tagId === tag.id}
                                                 onPress={() => handleInputChange('tagId', tag.id)}
                                             >
-                                                <S.TagSelectorText selected={formData.tagId === tag.id}>#{tag.label}</S.TagSelectorText>
-                                            </S.TagSelectorItem>
+                                                <DS.TagSelectorText selected={formData.tagId === tag.id}>#{tag.label}</DS.TagSelectorText>
+                                            </DS.TagSelectorItem>
                                         ))}
-                                    </S.TagSelectorContainer>
+                                    </DS.TagSelectorContainer>
                                 </>
                             ) : selectedTag && (
-                                <S.DSSelectedTagWrap>
-                                    <S.DSSelectedTag color={selectedTag.color || 'gray'}>
-                                        <S.DSSelectedTagText>#{selectedTag.label}</S.DSSelectedTagText>
-                                    </S.DSSelectedTag>
-                                </S.DSSelectedTagWrap>
+                                <DS.SelectedTagWrap>
+                                    <DS.SelectedTag color={selectedTag.color || 'gray'}>
+                                        <DS.SelectedTagText>#{selectedTag.label}</DS.SelectedTagText>
+                                    </DS.SelectedTag>
+                                </DS.SelectedTagWrap>
                             )}
 
-                            <S.DSLabel>Memo</S.DSLabel>
+                            <DS.Label>Memo</DS.Label>
                             {isEditMode ? (
-                                <S.DSValueInput
+                                <DS.ValueInput
                                     value={formData.description || ''}
                                     onChangeText={(text) => handleInputChange('description', text)}
                                     multiline
                                 />
                             ) : (
-                                <S.DSValueText>{formData.description || '메모 없음'}</S.DSValueText>
+                                <DS.ValueText>{formData.description || '메모 없음'}</DS.ValueText>
                             )}
 
-                            <S.DSLabel>Location</S.DSLabel>
+                            <DS.Label>Location</DS.Label>
                             {isEditMode ? (
-                                <S.DSValueInput
+                                <DS.ValueInput
                                     value={formData.location || ''}
                                     onChangeText={(text) => handleInputChange('location', text)}
                                 />
                             ) : (
-                                <S.DSValueText>{formData.location || '장소 없음'}</S.DSValueText>
+                                <DS.ValueText>{formData.location || '장소 없음'}</DS.ValueText>
                             )}
 
-                        </S.DSContentWrap>
+                        </DS.ContentWrap>
                         {isEditMode ? (
-                            <S.DSButtonArea>
-                                <S.DSActionButton onPress={() => setIsEditMode(false)}>
-                                    <S.DSActionButtonText>Cancel</S.DSActionButtonText>
-                                </S.DSActionButton>
-                                <S.DSButtonSeparator />
-                                <S.DSActionButton primary onPress={handleUpdatePress}>
-                                    <S.DSActionButtonText primary>Save</S.DSActionButtonText>
-                                </S.DSActionButton>
-                            </S.DSButtonArea>
+                            <DS.ButtonArea>
+                                <DS.ActionButton onPress={() => setIsEditMode(false)}>
+                                    <DS.ActionButtonText>Cancel</DS.ActionButtonText>
+                                </DS.ActionButton>
+                                <DS.ButtonSeparator />
+                                <DS.ActionButton primary onPress={handleUpdatePress}>
+                                    <DS.ActionButtonText primary>Save</DS.ActionButtonText>
+                                </DS.ActionButton>
+                            </DS.ButtonArea>
                         ) : (
-                            <S.DSButtonArea>
-                                <S.DSActionButton onPress={onClose}>
-                                    <S.DSActionButtonText>Close</S.DSActionButtonText>
-                                </S.DSActionButton>
-                                <S.DSButtonSeparator />
-                                <S.DSActionButton primary onPress={() => setIsEditMode(true)}>
-                                    <S.DSActionButtonText primary>Edit</S.DSActionButtonText>
-                                </S.DSActionButton>
-                            </S.DSButtonArea>
+                            <DS.ButtonArea>
+                                <DS.ActionButton onPress={onClose}>
+                                    <DS.ActionButtonText>Close</DS.ActionButtonText>
+                                </DS.ActionButton>
+                                <DS.ButtonSeparator />
+                                <DS.ActionButton primary onPress={() => setIsEditMode(true)}>
+                                    <DS.ActionButtonText primary>Edit</DS.ActionButtonText>
+                                </DS.ActionButton>
+                            </DS.ButtonArea>
                         )}
-                    </S.DSContainer>
+                    </DS.Container>
                 </Pressable>
                 {/* DateTimePicker 모달들 */}
                 {showDatePicker && (
@@ -262,7 +262,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, tags, visible
                         minimumDate={formData.startTime} // 시작 시간보다 이전은 선택 불가
                     />
                 )}
-            </S.ModalOverlay>
+            </DS.ModalOverlay>
         </Modal>
     );
 };
