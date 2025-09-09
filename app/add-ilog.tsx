@@ -1,10 +1,11 @@
-import React, {useState, useEffect, useMemo} from 'react';
-import {Button, Alert, View, ScrollView, Keyboard} from 'react-native';
+import React, {useState, useEffect, useMemo, useRef} from 'react';
+import { Alert, View, ScrollView, Keyboard, TouchableOpacity } from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as I from "@/components/style/I-logStyled";
-import {AntDesign} from '@expo/vector-icons';
+import {AntDesign, SimpleLineIcons } from '@expo/vector-icons';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
+import {AddImagePickerText} from "@/components/style/I-logStyled";
 
 export default function AddILogScreen() {
     const isnets = useSafeAreaInsets();
@@ -17,6 +18,7 @@ export default function AddILogScreen() {
     const [content, setContent] = useState('');
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [selectedTags, setSelectedTags] = useState<string[]>([]); // 선택된 태그 목록
+    const [textAreaHeight, setTextAreaHeight] = useState(200); // AddTextArea의 동적 높이 상태
 
     // 해시태그 제안 기능 관련 상태
     const allTags = useMemo(() => {
@@ -55,6 +57,31 @@ export default function AddILogScreen() {
         };
     }, []);
 
+    // --- Text Area 자동 스크롤 로직 ---
+    // add-ilog.tsx
+
+
+    const scrollViewRef = useRef<ScrollView>(null);
+    const isCursorAtEnd = useRef(true);
+
+    const handleContentSizeChange = (e: any) => {
+        setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height));
+
+        // 상태(state) 대신 ref를 사용하여 조건을 확인합니다.
+        if (isCursorAtEnd.current) {
+            setTimeout(() => {
+                scrollViewRef.current?.scrollToEnd({ animated: true });
+            }, 100);
+        }
+    };
+
+    const handleTextAreaFocus = () => {
+        // 약간의 시간차를 두고 스크롤해야 키보드가 올라온 후 정확히 동작합니다.
+        setTimeout(() => {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+    };
+
     // --- 이미지 선택 로직 ---
     const pickImage = async () => {
         const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -75,35 +102,48 @@ export default function AddILogScreen() {
 
     // --- 해시태그 제안 및 관리 로직 ---
     const handleContentChange = (text: string) => {
+        // 먼저, 사용자가 입력한 내용을 즉시 UI에 반영합니다.
         setContent(text);
 
-        const textBeforeCursor = text.substring(0, cursorPosition);
-        const lastHashIndex = textBeforeCursor.lastIndexOf('#');
-        const lastSpaceIndex = textBeforeCursor.lastIndexOf(' ');
+        // --- 태그 확정 로직 (스페이스 또는 줄바꿈 입력 시) ---
+        if (text.endsWith(' ')) {
+            // 마지막으로 입력된 단어를 찾습니다.
+            const lastWord = text.slice(0, -1).split(/[\s\n]/).pop();
 
-        if (lastHashIndex !== -1 && lastHashIndex > lastSpaceIndex || text.endsWith('#')) {
-            const currentTagCandidate = textBeforeCursor.substring(lastHashIndex);
-            setCurrentTypingTag(currentTagCandidate);
+            // 해당 단어가 유효한 태그인지 확인합니다. (#으로 시작하고, #외에 글자가 더 있어야 함)
+            if (lastWord && lastWord.startsWith('#') && lastWord.length > 1) {
+                const newTag = lastWord;
+                // 중복된 태그가 아닐 경우에만 추가합니다.
+                if (!selectedTags.includes(newTag)) {
+                    setSelectedTags(prev => [...prev, newTag]);
+
+                    // 입력창에서 방금 추가된 태그를 지우고, 일관성을 위해 공백을 하나 남깁니다.
+                    const newContent = text.substring(0, text.lastIndexOf(newTag)) + '';
+                    setContent(newContent);
+
+                    // 태그가 확정되었으므로 제안 창을 닫고 함수를 종료합니다.
+                    setSuggestions([]);
+                    return;
+                }
+            }
+        }
+
+        // --- 태그 제안 로직 ---
+        // (태그가 확정되지 않았을 경우에만 실행됩니다)
+        const lastHashIndex = text.lastIndexOf('#');
+        const lastSeparatorIndex = Math.max(text.lastIndexOf(' '), text.lastIndexOf('\n'));
+
+        // 마지막 '#' 기호가 마지막 공백/줄바꿈보다 뒤에 있다면, 태그를 입력 중인 것으로 간주합니다.
+        if (lastHashIndex > lastSeparatorIndex) {
+            const currentTagCandidate = text.substring(lastHashIndex);
 
             const filtered = allTags.filter((tag: string) =>
-                tag.startsWith(currentTagCandidate) && !selectedTags.includes(tag)
+                tag.toLowerCase().startsWith(currentTagCandidate.toLowerCase()) && !selectedTags.includes(tag)
             );
             setSuggestions(filtered);
         } else {
+            // 그렇지 않다면 제안 창을 닫습니다.
             setSuggestions([]);
-        }
-
-        if (text.endsWith(' ')) {
-            const potentialTagMatch = text.substring(0, text.length - 1).match(/#(\S+)$/);
-            if (potentialTagMatch) {
-                const confirmedTag = potentialTagMatch[0];
-                if (confirmedTag.length > 1 && !selectedTags.includes(confirmedTag)) {
-                    setSelectedTags(prev => [...prev, confirmedTag]);
-                    const newContent = text.substring(0, text.length - confirmedTag.length - 1).trim();
-                    setContent(newContent);
-                    setSuggestions([]);
-                }
-            }
         }
     };
 
@@ -162,61 +202,93 @@ export default function AddILogScreen() {
     };
 
     return (
-        <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
-            <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
+        <I.ScreenContainer $paddingBottom={isnets.bottom} $paddingTop={isnets.top}>
+            <View style={{flex: 1}}>
                 <I.Container>
-                    <I.AddWrap contentContainerStyle={{paddingBottom: 40}}>
-                        <I.AddHeader>새 일기 작성</I.AddHeader>
+                    <I.AddWrap
+                        contentContainerStyle={{paddingBottom: 40 + keyboardHeight}}
+                        stickyHeaderIndices={[0]}
+                        ref={scrollViewRef}
+                    >
+                        <I.AddHeader>
+                            <I.AddInput
+                                placeholder="New I-Log..."
+                                value={title}
+                                onChangeText={setTitle}
+                                autoFocus={true}
+                            />
+                        </I.AddHeader>
 
-                        <I.AddImagePickerButton onPress={pickImage}>
-                            <I.AddImagePickerText>이미지 선택</I.AddImagePickerText>
-                        </I.AddImagePickerButton>
-
-                        {imageUri && <I.AddImagePreview source={{uri: imageUri}}/>}
-
-                        <I.AddInput
-                            placeholder="제목을 입력하세요..."
-                            value={title}
-                            onChangeText={setTitle}
-                        />
-                        <I.AddTextArea
-                            placeholder="오늘의 이야기를 #해시태그 와 함께 들려주세요..."
-                            value={content}
-                            onChangeText={handleContentChange}
-                            onSelectionChange={e => setCursorPosition(e.nativeEvent.selection.start)}
-                            multiline
-                        />
-
-                        {/* 선택된 태그 뱃지 UI */}
-                        {selectedTags.length > 0 && (
-                            <I.AddTagBadgeContainer>
-                                {selectedTags.map((tag, index) => (
-                                    <I.AddTagBadge key={index}>
-                                        <I.AddTagBadgeText>{tag}</I.AddTagBadgeText>
-                                        <AntDesign name="closecircle" size={14} color="white"
-                                                   onPress={() => handleRemoveTag(tag)}/>
-                                    </I.AddTagBadge>
-                                ))}
-                            </I.AddTagBadgeContainer>
-                        )}
-
-                        <Button title="저장하기" onPress={handleSave}/>
+                        <I.AddContentContainer>
+                            {/* Image Picker and Preview */}
+                            {imageUri ? (
+                                <View>
+                                    <TouchableOpacity onPress={pickImage}>
+                                        <I.AddImagePreview source={{uri: imageUri}}/>
+                                    </TouchableOpacity>
+                                    <I.AddImageRemoveButton
+                                        onPress={() => setImageUri(null)}
+                                    >
+                                        <AntDesign name="closecircle" size={30} color="white"/>
+                                    </I.AddImageRemoveButton>
+                                </View>
+                            ) : (
+                                <I.AddImagePlaceholder onPress={pickImage}>
+                                    <SimpleLineIcons name="picture" size={150} color="#ddd" />
+                                    <AddImagePickerText>Add a picture...</AddImagePickerText>
+                                </I.AddImagePlaceholder>
+                            )}
+                            {/* 선택된 태그 뱃지 UI */}
+                            {selectedTags.length > 0 && (
+                                <I.AddTagBadgeContainer>
+                                    {selectedTags.map((tag) => (
+                                        <I.AddTagBadge key={tag}> {/* key={tag}로 변경 */}
+                                            <I.AddTagBadgeText>{tag}</I.AddTagBadgeText>
+                                            <AntDesign name="closecircle" size={14} color="white"
+                                                       onPress={() => handleRemoveTag(tag)}/>
+                                        </I.AddTagBadge>
+                                    ))}
+                                </I.AddTagBadgeContainer>
+                            )}
+                            <I.AddTextArea
+                                placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...\n\n (#을 입력하고 원하는 태그를 입력해보세요.)
+                                `}
+                                value={content}
+                                onChangeText={handleContentChange}
+                                onSelectionChange={e => {
+                                    const { selection } = e.nativeEvent;
+                                    setCursorPosition(selection.start);
+                                    // 커서가 글의 맨 끝에 있는지 여부를 ref에 저장합니다.
+                                    isCursorAtEnd.current = selection.start >= content.length;
+                                }}
+                                multiline
+                                height={textAreaHeight} // 동적으로 조절된 높이 적용
+                                onFocus={handleTextAreaFocus}
+                                onContentSizeChange={handleContentSizeChange} // 수정된 핸들러를 연결합니다.
+                            />
+                        </I.AddContentContainer>
                     </I.AddWrap>
-
-                    {/* 해시태그 제안 UI - ScrollView 바깥으로 이동 및 동적 위치 설정 */}
-                    {suggestions.length > 0 && (
-                        <I.AddSuggestionContainer style={{bottom: keyboardHeight}}>
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                {suggestions.map((tag, index) => (
-                                    <I.AddSuggestionButton key={index} onPress={() => handleSuggestionTap(tag)}>
-                                        <I.AddSuggestionButtonText>{tag}</I.AddSuggestionButtonText>
-                                    </I.AddSuggestionButton>
-                                ))}
-                            </ScrollView>
-                        </I.AddSuggestionContainer>
-                    )}
                 </I.Container>
+
+                <I.AddSuggestionContainer $bottom={keyboardHeight}>
+                    <I.AddButtonWrap>
+                        <I.AddCancelButton onPress={() => router.back()}>
+                            <I.AddButtonText>Cancel</I.AddButtonText>
+                        </I.AddCancelButton>
+                        <I.AddSaveButton onPress={handleSave}>
+                            <I.AddButtonText>Save</I.AddButtonText>
+                        </I.AddSaveButton>
+                    </I.AddButtonWrap>
+                    {/* 해시태그 제안 UI - ScrollView 바깥으로 이동 및 동적 위치 설정 */}
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{borderWidth: 1, borderColor: 'mediumslateblue'}}>
+                        {suggestions.map((tag) => (
+                            <I.AddSuggestionButton key={tag} onPress={() => handleSuggestionTap(tag)}>
+                                <I.AddSuggestionButtonText>{tag}</I.AddSuggestionButtonText>
+                            </I.AddSuggestionButton>
+                        ))}
+                    </ScrollView>
+                </I.AddSuggestionContainer>
             </View>
-        </View>
+        </I.ScreenContainer>
     );
 }

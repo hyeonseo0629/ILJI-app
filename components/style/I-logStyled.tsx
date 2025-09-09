@@ -1,10 +1,19 @@
 import styled from "styled-components/native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import React from 'react';
+import { ScrollView, ScrollViewProps } from 'react-native';
 
 
 // --------- //
 // Container //
 // --------- //
+
+export const ScreenContainer = styled.View<{ $paddingTop?: number; $paddingBottom?: number; }>`
+    flex: 1;
+    background-color: lavender;
+    padding-top: ${props => props.$paddingTop || 0}px;
+    padding-bottom: ${props => props.$paddingBottom || 0}px;
+`;
 
 export const Container = styled.View`
     flex: 1;
@@ -244,71 +253,122 @@ export const PageScrollView = styled.ScrollView``;
 // Add I-Log View  //
 // ----------------- //
 
-export const AddWrap = styled.ScrollView`
-    padding: 20px;
+// --- AddWrap 정의 변경 ---
+const AddWrapComponent = (props: ScrollViewProps, ref: React.Ref<ScrollView>) => (
+    <ScrollView {...props} ref={ref} />
+);
+const ForwardedAddWrap = React.forwardRef(AddWrapComponent);
+export const AddWrap = styled(ForwardedAddWrap)`
+    width: 100%;
 `;
 
-export const AddHeader = styled.Text`
-    font-size: 24px;
-    font-weight: bold;
+export const AddContentContainer = styled.View`
+    padding-horizontal: 20px;
+`;
+
+export const AddHeader = styled.View`
+    padding: 15px;
     margin-bottom: 20px;
-`;
-
-export const AddInput = styled.TextInput`
-    border-width: 1px;
-    border-color: #ccc;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    font-size: 16px;
-    background-color: #fff;
-`;
-
-export const AddTextArea = styled(AddInput)`
-    height: 250px;
-    text-align-vertical: top;
-`;
-
-export const AddImagePickerButton = styled.TouchableOpacity`
-    background-color: #e0e0e0;
-    padding: 15px;
-    border-radius: 8px;
+    background-color: #fff; /* 배경색 추가 */
+    justify-content: start;
     align-items: center;
-    margin-bottom: 15px;
+`;
+
+export const AddInput = styled.TextInput.attrs({
+    placeholderTextColor: '#9f9ff0',
+    cursorColor: 'mediumslateblue'
+})`
+    width: 95%;
+    border-color: mediumslateblue;
+    border-bottom-width: 2px;
+    padding: 15px;
+    font-size: 30px;
+    background-color: #fff;
+    color: mediumslateblue;
+`;
+
+export const AddTextArea = styled(AddInput)<{ height?: number }>`
+    height: ${props => props.height || 200}px; /* 기본 높이 300px로 변경 */
+    text-align-vertical: top;
+    font-size: 15px;
+    border-color: #B5B5E9;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 75px;
+    position: relative;
 `;
 
 export const AddImagePickerText = styled.Text`
-    font-size: 16px;
-    color: #333;
+    position: absolute;
+    padding: 5px 10px;
+    bottom: 15px;
+    left: 15px;
+    font-size: 15px;
+    opacity: 0.8;
+    color: #fff;
+    background-color: #ccc;
+    border-radius: 10px;
+    /* iOS Shadow */
+    shadow-color: #000;
+    shadow-offset-width: 0;
+    shadow-offset-height: 2px;
+    shadow-opacity: 0.25;
+    shadow-radius: 3.84px;
+
+    /* Android Shadow (기존 코드) */
+    elevation: 5;
+
 `;
 
 export const AddImagePreview = styled.Image`
     width: 100%;
-    height: 200px;
+    height: 375px;
     border-radius: 8px;
     margin-bottom: 15px;
 `;
 
-export const AddSuggestionContainer = styled.View`
+export const AddImagePlaceholder = styled.TouchableOpacity`
+    width: 100%;
+    height: 375px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    background-color: #f0f0f0;
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed #ccc;
+`;
+
+export const AddImageRemoveButton = styled.TouchableOpacity`
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 15px;
+    padding: 2px;
+`;
+
+export const AddSuggestionContainer = styled.View<{ $bottom?: number }>`
     position: absolute; /* 절대 위치로 변경 */
     left: 0;
     right: 0;
-    background-color: #f9f9f9;
-    border-top-width: 1px;
-    border-top-color: #eee;
-    padding: 10px 0;
+    background-color: lavender;
     z-index: 10; /* 다른 요소 위에 표시 */
+    bottom: ${props => props.$bottom || 0}px; /* $bottom prop 적용 */
 `;
 
 export const AddSuggestionButton = styled.TouchableOpacity`
-    background-color: #eef2fa;
+    background-color: #fff;
+    border: 1px solid mediumslateblue;
     padding: 8px 12px;
-    border-radius: 15px;
-    margin-right: 8px;
+    border-radius: 50px;
+    margin: 10px;
 `;
 
 export const AddSuggestionButtonText = styled.Text`
-    color: #4c669f;
+    color: mediumslateblue;
     font-weight: bold;
 `;
 
@@ -317,8 +377,7 @@ export const AddTagBadgeContainer = styled.View`
     flex-wrap: wrap;
     padding: 10px 0;
     margin-bottom: 10px;
-    border-top-width: 1px;
-    border-top-color: #eee;
+    width: 100%;
 `;
 
 export const AddTagBadge = styled.View`
@@ -336,4 +395,29 @@ export const AddTagBadgeText = styled.Text`
     margin-right: 5px;
 `;
 
-export const AddTagBadgeDeleteButton = styled.TouchableOpacity``;
+export const AddButtonWrap = styled.View`
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: #fff;
+`
+
+
+export const AddSaveButton = styled.TouchableOpacity`
+    width: 50%;
+    border: 2px solid lavender;
+`
+
+export const AddCancelButton = styled.TouchableOpacity`
+    width: 50%;
+    border: 2px solid lavender;
+    border-right-width: 0;
+    
+`
+
+export const AddButtonText = styled.Text`
+    font-size: 25px;
+    text-align: center;
+    padding: 15px;
+    color: mediumslateblue;
+`
