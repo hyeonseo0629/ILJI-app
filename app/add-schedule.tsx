@@ -189,7 +189,7 @@ const AddScheduleScreen = () => {
                                     onValueChange={(itemValue) => setTagId(itemValue)}
                                     style={{ color: 'mediumslateblue' }}
                             >
-                                <Picker.Item label="-- 태그 없음 --" value={0} />
+                                <Picker.Item label="-- No Tag --" value={0} />
                                 {tags && tags.map((tag) => (
                                     <Picker.Item key={tag.id} label={tag.label} value={tag.id}/>
                                 ))}
@@ -245,13 +245,13 @@ const AddScheduleScreen = () => {
                 <Text>ASD</Text>
             </BottomSheet>
             <ASButtonWrap>
-                <S.ASSaveButton onPress={handleSave} disabled={loading}>
-                    <S.ASSaveButtonText>Save</S.ASSaveButtonText>
-                </S.ASSaveButton>
                 {/* Cancel 버튼은 단순히 이전 화면으로 돌아가도록 router.back()을 사용합니다. */}
                 <S.ASCancelButton onPress={() => router.back()}>
                     <ASCancelButtonText>Cancel</ASCancelButtonText>
                 </S.ASCancelButton>
+                <S.ASSaveButton onPress={handleSave} disabled={loading}>
+                    <S.ASSaveButtonText>Save</S.ASSaveButtonText>
+                </S.ASSaveButton>
             </ASButtonWrap>
         </GestureHandlerRootView>
     );

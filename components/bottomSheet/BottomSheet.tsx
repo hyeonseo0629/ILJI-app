@@ -1,9 +1,10 @@
 import {Text, TouchableOpacity} from "react-native";
 import React, {useMemo, useState} from "react";
 import { useRouter } from "expo-router";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
-    BSContainer, BSContentWrap, BSHeader, BSHeaderLeft, BSHeaderRight, BSTodayText,
-    BSToDoAddButton
+    BSContainer, BSContentWrap, BSHeader, BSHeaderLeft, BSHeaderRight, TagEditBTN, BSTodayText,
+    BSToDoAddButton,
 } from "@/components/bottomSheet/BottomSheetStyled";
 import SortByPicker from "@/components/common/SortByPicker";
 import {format} from "date-fns";
@@ -49,17 +50,17 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
         <BSContainer>
             <BSHeader>
                 <BSHeaderLeft>
-                    <SortByPicker
-                        items={pickerItems}
-                        selectedValue={sortBy}
-                        onValueChange={setSortBy}
-                    />
+                    {/* 정렬 피커를 다시 헤더 왼쪽으로 이동시켰습니다. */}
+                    <SortByPicker items={pickerItems} selectedValue={sortBy} onValueChange={setSortBy} />
                 </BSHeaderLeft>
                 <BSHeaderRight>
                     <BSTodayText>{format(new Date(), "yyyy-MM-dd")}</BSTodayText>
                     <TouchableOpacity onPress={() => router.push('/add-schedule')}>
                         <BSToDoAddButton name="pluscircleo" size={20}/>
                     </TouchableOpacity>
+                    <TagEditBTN>
+                        <MaterialCommunityIcons name="book-edit-outline" size={24} color="mediumslateblue" />
+                    </TagEditBTN>
                 </BSHeaderRight>
             </BSHeader>
             <BottomSheetScrollView style={{flex:1}}>

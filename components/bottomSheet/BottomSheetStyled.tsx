@@ -1,13 +1,10 @@
 import styled from "styled-components/native";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import AntDesign from "react-native-vector-icons/AntDesign";
-
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 
 export const BSContainer = styled.View`
     background-color: #ffffff;
     width: 100%;
     height: 100%;
-    align-items: center;
     padding: 10px;
 `
 
@@ -19,15 +16,23 @@ export const BSHeader = styled.View`
     width: 100%;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
 `
 
 export const BSHeaderLeft = styled.View`
-    padding: 5px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 20px; /* 아이콘 좌측 여백 추가 */
+`
+
+export const TagEditBTN = styled.TouchableOpacity`
+    padding: 10px;
 `
 
 export const BSHeaderRight = styled.View`
     padding: 5px;
     flex-direction: row;
+    align-items: center; /* 아이콘과 텍스트의 수직 정렬을 맞춥니다. */
 `
 
 export const BSTodayText = styled.Text`
@@ -35,9 +40,10 @@ export const BSTodayText = styled.Text`
     font-size: 15px;
 `
 
-export const BSToDoAddButton = styled(AntDesign).attrs({})`
+export const BSToDoAddButton = styled(AntDesign)`
     margin-left: 10px;
-    padding: 10px 5px;
+    padding: 10px 0; /* 터치 영역 확보 및 수직 정렬 */
+    color: mediumslateblue;
 `
 
 // ------- //

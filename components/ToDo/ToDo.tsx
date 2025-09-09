@@ -10,8 +10,7 @@ import {
     BSToDoDayWrap,
     BSToDoDate,
     BSToDoTime,
-    BSToDoTitle,
-    BSToDoIcon, BSToDoListWrap, BSToDoTextsWarp
+    BSToDoTitle, BSToDoListWrap, BSToDoTextsWarp
 } from "@/components/bottomSheet/BottomSheetStyled";
 import {Schedule} from "@/components/calendar/types";
 
@@ -24,10 +23,9 @@ interface ToDoMainContentProps {
     title: string;
     date: string;
     time: string;
-    icon: string;
 }
 
-export const ToDoMainContent: React.FC<ToDoMainContentProps> = ({title, date, time, icon}) => {
+export const ToDoMainContent: React.FC<ToDoMainContentProps> = ({title, date, time}) => {
     const [isChecked, setIsChecked] = useState(false);
 
     return (
@@ -46,7 +44,6 @@ export const ToDoMainContent: React.FC<ToDoMainContentProps> = ({title, date, ti
                     <BSToDoTitle $isChecked={isChecked}>{title}</BSToDoTitle>
                 </BSToDoTextWrap>
             </BSToDoLeftWrap>
-            <BSToDoIcon $isChecked={isChecked}>{icon}</BSToDoIcon>
         </BSToDoTextsWarp>
     );
 };
@@ -55,7 +52,6 @@ export const ToDo: React.FC<ToDoProps> = ({item}) => {
     // 'Schedule' 타입에는 'state'와 'icon' 속성이 없어, 임시 값을 사용합니다.
     // 추후 Schedule 타입에 해당 속성을 추가해야 할 수 있습니다.
     const state = "Planning"; // Placeholder
-    const icon = "📖"; // Placeholder
 
     return (
         <BSToDoWrap>
@@ -65,7 +61,6 @@ export const ToDo: React.FC<ToDoProps> = ({item}) => {
                     title={item.title}
                     date={format(item.startTime, "yyyy / MM / dd")}
                     time={format(item.startTime, "HH:mm")}
-                    icon={icon}
                 />
             </BSToDoListWrap>
         </BSToDoWrap>
