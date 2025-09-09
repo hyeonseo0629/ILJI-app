@@ -28,7 +28,6 @@ const DiaryPage = ({ item }: { item: ILogData }) => {
                     </I.PageDateInfo>
                 </I.PageHeader>
 
-                {/* 요청하신 위치에 PageTitle 추가 */}
                 <I.PageTitle>{item.title}</I.PageTitle>
 
                 {item.img_url && (
@@ -76,14 +75,12 @@ const ILogPageView = ({ ilogs }: { ilogs: ILogData[] }) => {
         return <View><I.PageContent>작성된 일지가 없습니다.</I.PageContent></View>;
     }
 
-    // 각 페이지(아이템)를 렌더링하는 함수
     const renderItem = ({ item }: { item: ILogData }) => (
         <View style={{ width }}>
             <DiaryPage item={item} />
         </View>
     );
 
-    // FlatList 성능 최적화를 위한 설정
     const getItemLayout = (data: any, index: number) => ({
         length: width,
         offset: width * index,
@@ -96,11 +93,11 @@ const ILogPageView = ({ ilogs }: { ilogs: ILogData[] }) => {
                 data={ilogs}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id.toString()}
-                horizontal // 가로 스크롤
-                pagingEnabled // 페이지 단위로 스크롤
-                showsHorizontalScrollIndicator={false} // 스크롤바 숨김
-                getItemLayout={getItemLayout} // 성능 최적화
-                windowSize={2} // 메모리 관리
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                getItemLayout={getItemLayout}
+                windowSize={2}
             />
         </I.Container>
     );

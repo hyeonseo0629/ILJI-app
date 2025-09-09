@@ -117,7 +117,6 @@ const AddScheduleScreen = () => {
             <View style={{flex: 1, paddingBottom: isnets.bottom,  backgroundColor: 'lavender'}}>
                 <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
                     <StatusBar style="dark"/>
-
                     <S.ASContainer contentContainerStyle={{paddingBottom: 40}}>
                         <ASHeader>New Reminder</ASHeader>
                         <S.ASContentWrap>

@@ -24,19 +24,18 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({schedules
         {label: "priority", value: "priority"},
     ];
 
-    // 1. activeTab(태그 라벨)에 해당하는 스케줄만 필터링합니다.
     const filteredSchedules = useMemo(() => {
-        // 현재 활성화된 탭의 라벨과 일치하는 태그를 찾습니다.
         const currentTag = tags.find(tag => tag.label === activeTab);
-
-        // 해당 태그가 없으면 빈 배열을 반환합니다.
         if (!currentTag) {
             return [];
         }
-
-        // 찾은 태그의 ID와 일치하는 스케줄만 필터링합니다.
         return schedules.filter(schedule => schedule.tagId === currentTag.id);
     }, [activeTab, schedules, tags]);
+
+    // 1. 핸들러 함수 분리
+    const handleAddSchedulePress = () => {
+        router.push({ pathname: '/add-schedule', params: { tags: JSON.stringify(tags) } });
+    };
 
     return (
         <BS.Container>
@@ -50,14 +49,14 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({schedules
                 </BS.HeaderLeft>
                 <BS.HeaderRight>
                     <BS.TodayText>{format(new Date(), "yyyy-MM-dd")}</BS.TodayText>
-                    <TouchableOpacity onPress={() => router.push({ pathname: '/add-schedule', params: { tags: JSON.stringify(tags) } })}>
+                    {/* 2. 분리된 핸들러 함수를 onPress에 적용 */}
+                    <TouchableOpacity onPress={handleAddSchedulePress}>
                         <BS.ScheduleAddButton name="pluscircleo" size={20}/>
                     </TouchableOpacity>
                 </BS.HeaderRight>
             </BS.Header>
             <BottomSheetScrollView style={{flex:1}}>
                 <BS.ContentWrap>
-                    {/* 2. 필터링된 스케줄 목록을 화면에 렌더링합니다. */}
                     {filteredSchedules.map(schedule => (
                         <TaggedSchedule key={schedule.id} item={schedule} />
                     ))}

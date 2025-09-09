@@ -22,7 +22,6 @@ const ListItem = ({ item }: { item: ILogData }) => {
             <I.ListMainContent>
                 <I.ListHeader>
                     <I.ListDateText>{format(item.i_log_date, 'yyyy.MM.dd')}</I.ListDateText>
-                    {/* 요청하신대로 우측 상단에 작성 시간 추가 */}
                     <I.ListTimeText>{format(item.created_at, 'HH:mm:ss')}</I.ListTimeText>
                 </I.ListHeader>
 

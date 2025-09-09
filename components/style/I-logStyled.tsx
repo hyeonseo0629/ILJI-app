@@ -1,4 +1,6 @@
 import styled from "styled-components/native";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+
 
 // --------- //
 // Container //
@@ -8,6 +10,22 @@ export const Container = styled.View`
     flex: 1;
     background-color: #ffffff;
 `;
+
+export const ButtonIconWrap = styled.TouchableOpacity`
+     position: absolute;
+     bottom: 15px;
+     right: 15px;
+ `
+
+ export const ButtonIcon = styled(MaterialCommunityIcons).attrs({
+     size: 40
+ })`
+     background-color: rgba(230, 230, 250, 0.7);
+     border-radius: 50px;
+     padding: 15px;
+     margin: 5px;
+     border: 2px solid #7B68EE;
+ `;
 
 // --- //
 // Tab //
@@ -221,3 +239,101 @@ export const PageTagsText = styled.Text`
 `;
 
 export const PageScrollView = styled.ScrollView``;
+
+// ----------------- //
+// Add I-Log View  //
+// ----------------- //
+
+export const AddWrap = styled.ScrollView`
+    padding: 20px;
+`;
+
+export const AddHeader = styled.Text`
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+`;
+
+export const AddInput = styled.TextInput`
+    border-width: 1px;
+    border-color: #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    background-color: #fff;
+`;
+
+export const AddTextArea = styled(AddInput)`
+    height: 250px;
+    text-align-vertical: top;
+`;
+
+export const AddImagePickerButton = styled.TouchableOpacity`
+    background-color: #e0e0e0;
+    padding: 15px;
+    border-radius: 8px;
+    align-items: center;
+    margin-bottom: 15px;
+`;
+
+export const AddImagePickerText = styled.Text`
+    font-size: 16px;
+    color: #333;
+`;
+
+export const AddImagePreview = styled.Image`
+    width: 100%;
+    height: 200px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+`;
+
+export const AddSuggestionContainer = styled.View`
+    position: absolute; /* 절대 위치로 변경 */
+    left: 0;
+    right: 0;
+    background-color: #f9f9f9;
+    border-top-width: 1px;
+    border-top-color: #eee;
+    padding: 10px 0;
+    z-index: 10; /* 다른 요소 위에 표시 */
+`;
+
+export const AddSuggestionButton = styled.TouchableOpacity`
+    background-color: #eef2fa;
+    padding: 8px 12px;
+    border-radius: 15px;
+    margin-right: 8px;
+`;
+
+export const AddSuggestionButtonText = styled.Text`
+    color: #4c669f;
+    font-weight: bold;
+`;
+
+export const AddTagBadgeContainer = styled.View`
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 10px 0;
+    margin-bottom: 10px;
+    border-top-width: 1px;
+    border-top-color: #eee;
+`;
+
+export const AddTagBadge = styled.View`
+    flex-direction: row;
+    align-items: center;
+    background-color: #7B68EE;
+    border-radius: 15px;
+    padding: 6px 10px;
+    margin: 4px;
+`;
+
+export const AddTagBadgeText = styled.Text`
+    color: #fff;
+    font-weight: bold;
+    margin-right: 5px;
+`;
+
+export const AddTagBadgeDeleteButton = styled.TouchableOpacity``;
