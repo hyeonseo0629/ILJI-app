@@ -1,12 +1,12 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Modal, Pressable, View, Alert, Switch, Platform } from 'react-native';
+import { Modal, Pressable, View, Switch, Platform } from 'react-native';
 import { format, set } from 'date-fns';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import * as S from './DetailScheduleStyle';
 import { Schedule } from '@/components/calendar/types';
-import { Tag } from '@/components/ToDo/types';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useSchedule } from '@/src/context/ScheduleContext'; // 🚨 경로를 네 프로젝트에 맞게 수정했습니다.
+import { useSchedule } from '@/src/context/ScheduleContext';
+import ConfirmModal from '@/components/ConfirmModal/ConfirmModal'; // [추가] 커스텀 확인 모달 import
 
 interface DetailScheduleProps {
     schedule: Schedule | null;
@@ -16,22 +16,21 @@ interface DetailScheduleProps {
 
 const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onClose }) => {
     const [isEditMode, setIsEditMode] = useState(false);
-    // [수정] Context에서 deleteSchedule 함수도 가져옵니다.
     const { updateSchedule, deleteSchedule, tags } = useSchedule();
     const [formData, setFormData] = useState<Schedule | null>(schedule);
     // Date & Time Picker 상태
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+    // [추가] 삭제 확인 모달의 표시 상태를 관리합니다.
+    const [isConfirmModalVisible, setConfirmModalVisible] = useState(false);
 
     const selectedTag = useMemo(() => {
-        // 수정 후 바로 반영되도록 formData를 기준으로 태그를 찾습니다.
         if (!formData) return null;
         return tags.find(tag => tag.id === formData.tagId);
     }, [formData, tags]);
 
     useEffect(() => {
-        // 모달이 열리거나 스케줄이 변경될 때 폼 데이터를 초기화하고, 수정 모드를 끕니다.
         setFormData(schedule);
         if (!visible) {
             setIsEditMode(false);
@@ -39,36 +38,27 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
     }, [schedule, visible]);
 
     if (!schedule || !formData) {
-        return null; // 스케줄이 없으면 아무것도 렌더링하지 않음
+        return null;
     }
 
+    // [수정] 쓰레기통 아이콘 클릭 시, 커스텀 모달을 띄웁니다.
     const handleDeletePress = () => {
-        Alert.alert(
-            "일정 삭제",
-            `'${schedule.title}' 일정을 정말 삭제하시겠습니까?`,
-            [
-                {
-                    text: "취소",
-                    style: "cancel"
-                },
-                {
-                    text: "삭제",
-                    onPress: async () => {
-                        // [수정] Context의 deleteSchedule 함수를 호출합니다.
-                        await deleteSchedule(schedule.id);
-                        // 삭제 후 모달을 닫습니다.
-                        onClose();
-                    },
-                    style: "destructive",
-                }
-            ]
-        );
+        setConfirmModalVisible(true);
+    };
+
+    // [추가] 커스텀 모달에서 '확인'을 눌렀을 때 실행될 함수입니다.
+    const handleConfirmDelete = async () => {
+        if (schedule) {
+            await deleteSchedule(schedule.id);
+            setConfirmModalVisible(false); // 확인 모달 닫기
+            onClose(); // 상세 정보 모달 닫기
+        }
     };
 
     const handleUpdatePress = () => {
         if (formData) {
-            updateSchedule(formData); // Context의 update 함수를 직접 호출합니다.
-            setIsEditMode(false); // 수정 후 디테일 뷰로 전환
+            updateSchedule(formData);
+            setIsEditMode(false);
         }
     };
 
@@ -89,7 +79,6 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
         setShowStartTimePicker(Platform.OS === 'ios');
         if (selectedTime) {
             const newStartTime = set(formData.startTime, { hours: selectedTime.getHours(), minutes: selectedTime.getMinutes() });
-            // 시작 시간이 종료 시간보다 늦어지지 않도록 보정
             if (newStartTime > formData.endTime) {
                 setFormData(prev => prev ? { ...prev, startTime: newStartTime, endTime: newStartTime } : null);
             } else {
@@ -118,9 +107,9 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
             onRequestClose={onClose}
         >
             <S.ModalOverlay onPress={onClose}>
-                {/* Pressable로 감싸서 모달 내부 클릭 시 닫히는 것을 방지 */}
                 <Pressable>
                     <S.DSContainer>
+                        {/* ... 기존 렌더링 코드 ... */}
                         {isEditMode ? (
                             <S.DSHeaderInput value={formData.title} onChangeText={(text) => handleInputChange('title', text)} />
                         ) : (
@@ -173,7 +162,6 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                                 </S.DateTimeInfoRow>
                             )}
 
-                            {/* Tag 섹션을 이 위치로 이동합니다. */}
                             {isEditMode ? (
                                 <>
                                     <S.DSLabel>Tag</S.DSLabel>
@@ -183,7 +171,6 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                                                 key={tag.id}
                                                 color={tag.color}
                                                 selected={formData.tagId === tag.id}
-                                                // [수정] 이미 선택된 태그를 누르면 해제(0), 아니면 해당 태그를 선택합니다.
                                                 onPress={() => handleInputChange('tagId', formData.tagId === tag.id ? 0 : tag.id)}
                                             >
                                                 <S.TagSelectorText selected={formData.tagId === tag.id}>
@@ -246,7 +233,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                         )}
                     </S.DSContainer>
                 </Pressable>
-                {/* DateTimePicker 모달들 */}
+                {/* ... DateTimePicker 모달들 ... */}
                 {showDatePicker && (
                     <DateTimePicker
                         value={formData.startTime}
@@ -273,6 +260,14 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                     />
                 )}
             </S.ModalOverlay>
+            {/* [추가] 커스텀 확인 모달을 렌더링합니다. */}
+            <ConfirmModal
+                visible={isConfirmModalVisible}
+                title="Delete Schedule"
+                message={`'${schedule.title}' 일정을 정말 삭제하시겠습니까?`}
+                onClose={() => setConfirmModalVisible(false)}
+                onConfirm={handleConfirmDelete}
+            />
         </Modal>
     );
 };

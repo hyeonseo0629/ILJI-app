@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import {
     eachDayOfInterval,
@@ -11,6 +10,12 @@ import {
     isSameMonth,
     isToday,
     isSameDay,
+    isWithinInterval,
+    startOfDay,
+    endOfDay,
+    differenceInCalendarDays,
+    max,
+    min,
 } from 'date-fns';
 import * as S from './CalendarStyle';
 import { Schedule } from '@/components/calendar/types';
@@ -25,19 +30,13 @@ interface MonthViewProps {
 
 const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], tags = [], onDayPress }) => {
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
     const weeks = useMemo(() => {
         const monthStart = startOfMonth(date);
         const weekStartsOn = 0; // 0 for Sunday
-
-        // 달력 그리드의 시작일 (해당 월의 첫 날이 포함된 주의 일요일)
         const startDate = startOfWeek(monthStart, { weekStartsOn });
-
-        // 6주(42일) 후의 날짜를 계산합니다. addDays는 새로운 Date 객체를 반환하여 안전합니다.
         const endDate = addDays(startDate, 41);
-
-        // 6주(42일)치 날짜를 생성하여 그리드를 만듭니다.
         const days = eachDayOfInterval({ start: startDate, end: endDate });
-
         const weeksArray = [];
         for (let i = 0; i < 6; i++) {
             weeksArray.push(days.slice(i * 7, (i + 1) * 7));
@@ -45,12 +44,13 @@ const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], tags = [], 
         return weeksArray;
     }, [date]);
 
-    // tags 배열이 변경될 때만 색상 맵을 다시 생성하여 성능을 최적화합니다.
     const tagColorMap = useMemo(() => {
         const map = new Map<number, string>();
-        tags.forEach(tag => {
-            map.set(tag.id, tag.color);
-        });
+        if (tags) {
+            tags.forEach(tag => {
+                map.set(tag.id, tag.color);
+            });
+        }
         return map;
     }, [tags]);
 
@@ -65,29 +65,70 @@ const MonthView: React.FC<MonthViewProps> = ({ date, schedules = [], tags = [], 
                         if (!day) return <S.MEmptyDayContainer key={`empty-${j}`} />;
                         const isCurrentMonth = isSameMonth(day, date);
                         const isCurrentDay = isToday(day);
-                        const daySchedules = schedules.filter(schedule => isSameDay(schedule.startTime, day));
+                        
+                        const daySchedules = schedules.filter(schedule => 
+                            isWithinInterval(day, {
+                                start: startOfDay(schedule.startTime),
+                                end: endOfDay(schedule.endTime)
+                            })
+                        );
+
+                        // [추가] 세로 정렬 문제를 해결하기 위한 정렬 로직
+                        daySchedules.sort((a, b) => {
+                            const aIsMultiDay = !isSameDay(a.startTime, a.endTime);
+                            const bIsMultiDay = !isSameDay(b.startTime, b.endTime);
+
+                            if (aIsMultiDay !== bIsMultiDay) {
+                                return aIsMultiDay ? -1 : 1; // 장기 일정을 항상 위로
+                            }
+                            return a.startTime.getTime() - b.startTime.getTime(); // 그 외에는 시작 시간 순
+                        });
 
                         return (
                             <S.MDayContainer
                                 key={day.toISOString()}
                                 onPress={() => onDayPress?.(day)}
                             >
-                                {isCurrentDay ? ( // '오늘' 날짜는 파란색 원으로 감쌉니다.
-                                    <S.MDayCircle $isCurrentMonth={isCurrentMonth}>
-                                        {/* 원 안의 텍스트는 MDayText로 감싸고, 선택된 스타일(흰색)을 적용합니다. */}
-                                        <S.MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</S.MDayText>
-                                    </S.MDayCircle>
-                                ) : ( // 다른 날짜들은 텍스트만 표시합니다.
-                                    <S.MDayText $isNotInMonth={!isCurrentMonth} $isToday={isCurrentDay}>{format(day, 'd')}</S.MDayText>
-                                )}
+                                <S.DayNumberWrapper>
+                                    {isCurrentDay ? (
+                                        <S.MDayCircle $isCurrentMonth={isCurrentMonth}>
+                                            <S.MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</S.MDayText>
+                                        </S.MDayCircle>
+                                    ) : (
+                                        <S.MDayText $isNotInMonth={!isCurrentMonth} $isToday={isCurrentDay}>{format(day, 'd')}</S.MDayText>
+                                    )}
+                                </S.DayNumberWrapper>
                                 <S.MEventsContainer>
-                                    {/* 해당 날짜의 모든 일정을 순회하며 표시합니다. */}
-                                    {daySchedules.map(schedule => {
+                                    {daySchedules.map((schedule, index) => {
                                         const eventColor = tagColorMap.get(schedule.tagId) || 'gray';
+                                        
+                                        const isMultiDay = !isSameDay(schedule.startTime, schedule.endTime);
+                                        const isStart = isSameDay(day, schedule.startTime);
+                                        const isEnd = isSameDay(day, schedule.endTime);
+
+                                        let position: 'start' | 'middle' | 'end' | 'single' = 'middle';
+                                        if (!isMultiDay) {
+                                            position = 'single';
+                                        } else if (isStart) {
+                                            position = 'start';
+                                        } else if (isEnd) {
+                                            position = 'end';
+                                        }
+
+                                        const topPosition = index * 14;
+
                                         return (
-                                            <S.EventTitleText key={schedule.id} color={eventColor} $isCurrentMonth={isCurrentMonth}>
-                                                {schedule.title}
-                                            </S.EventTitleText>
+                                            <S.EventBar 
+                                                key={schedule.id} 
+                                                color={eventColor} 
+                                                $position={position}
+                                                $isCurrentMonth={isCurrentMonth}
+                                                $top={topPosition}
+                                            >
+                                                <S.EventBarText>
+                                                    {position === 'start' || position === 'single' ? schedule.title : ''}
+                                                </S.EventBarText>
+                                            </S.EventBar>
                                         );
                                     })}
                                 </S.MEventsContainer>

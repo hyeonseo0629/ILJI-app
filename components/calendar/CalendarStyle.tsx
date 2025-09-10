@@ -47,19 +47,19 @@ export const MViewModeContainer = styled.View`
 export const MViewModeButton = styled.Pressable<{ isActive: boolean }>`
     padding: 8px 10px; /* 버튼의 크기를 조절합니다 */
     border-radius: 20px; /* 동그란 모양을 만듭니다 */
-    background-color: ${({ isActive }) => (isActive ? '#EAEAFB' : 'transparent')}; /* 활성화 시 연보라색 배경 */
+    background-color: ${({ isActive }) => (isActive ? '#EAEAFB' : 'transparent')};
 `;
 
 export const MViewModeButtonText = styled.Text<{ isActive: boolean }>`
     font-size: 14px;
     font-weight: 600;
-    color: ${({ isActive }) => (isActive ? '#5856D6' : '#000000')}; /* 활성화 시 진한 보라색 텍스트 */
+    color: ${({ isActive }) => (isActive ? '#5856D6' : '#000000')};
 `;
 // --- 버튼 스타일 끝 ---
 
 
 export const MDayNameText = styled.Text.attrs({
-    allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
+    allowFontScaling: false,
 })`
     flex: 1;
     font-size: 12px;
@@ -79,17 +79,19 @@ interface MDayContainerProps {
 
 export const MDayContainer = styled.TouchableOpacity<MDayContainerProps>`
     flex: 1;
-    flex-direction: column; /* 날짜와 제목을 세로로 쌓습니다. */
-    align-items: center; /* 가로 중앙 정렬 */
-    justify-content: flex-start; /* 세로 상단 정렬 */
-    padding: 10px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 5px 0;
+    gap: 4px;
+    margin: 0 1px;
     background-color: ${(props) => (props.$isSelected ? '#EFEFEF' : 'transparent')};
     border-radius: 8px;
 `;
 
 export const MEmptyDayContainer = styled.View`
     flex: 1;
-    height: 10px; /* MDayContainer와 높이를 통일하여 레이아웃 깨짐 방지 */
+    height: 10px;
 `;
 
 interface MDayTextProps {
@@ -99,7 +101,7 @@ interface MDayTextProps {
 }
 
 export const MDayText = styled.Text.attrs({
-    allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
+    allowFontScaling: false,
 })<MDayTextProps>`
     font-size: 12px;
     text-align: center;
@@ -115,36 +117,52 @@ export const MDayCircle = styled.View<{$isCurrentMonth?: boolean}>`
     width: 25px;
     height: 25px;
     background-color: mediumslateblue;
-    border-radius: 12.5px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
-    justify-content: center; /* 내부 텍스트를 세로 중앙에 정렬 */
-    align-items: center; /* 내부 텍스트를 가로 중앙에 정렬 */
+    border-radius: 12.5px;
+    justify-content: center;
+    align-items: center;
     opacity: ${({ $isCurrentMonth = true }) => $isCurrentMonth ? 1 : 0.3};
 `;
 
-interface EventTitleTextProps {
-    color?: string;
-    $isCurrentMonth?: boolean;
-}
+export const DayNumberWrapper = styled.View`
+    height: 25px;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+`;
 
-export const EventTitleText = styled.Text.attrs({
-    numberOfLines: 1, // 텍스트를 한 줄로 제한합니다.
-    ellipsizeMode: 'tail', // 길이가 길면 끝에 ...을 표시합니다.
-})<EventTitleTextProps>`
-    font-size: 8px; /* 월별 캘린더에 맞게 작은 글씨 크기 */
-    text-align: center;
-    margin-top: 2px;
-    width: 100%; /* 컨테이너 너비에 맞춤 */
-    border-radius: 4px;
-    padding: 1px 3px; /* 텍스트 주변에 약간의 여백을 줍니다. */
-    color: #ffffff;
-    background-color: ${(props) => props.color || 'gray'};
+export const EventBar = styled.View<{
+    color: string;
+    $isCurrentMonth: boolean;
+    $position: 'start' | 'middle' | 'end' | 'single';
+    $top: number;
+}>`
+    background-color: ${props => props.color || 'gray'};
     opacity: ${({ $isCurrentMonth = true }) => $isCurrentMonth ? 1 : 0.4};
+    height: 12px;
+    justify-content: center;
+    padding: 0 3px;
+    position: absolute;
+    top: ${props => props.$top}px;
+    left: ${props => (props.$position === 'middle' || props.$position === 'end') ? '-1px' : '0px'};
+    right: ${props => (props.$position === 'start' || props.$position === 'middle') ? '-1px' : '0px'};
+    border-top-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '4px' : '0px'};
+    border-bottom-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '4px' : '0px'};
+    border-top-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '4px' : '0px'};
+    border-bottom-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '4px' : '0px'};
+`;
+
+export const EventBarText = styled.Text.attrs({
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
+})`
+    font-size: 8px;
+    color: #ffffff;
 `;
 
 export const MEventsContainer = styled.View`
-     flex: 1; /* 날짜 텍스트를 제외한 나머지 세로 공간을 모두 차지합니다. */
-     width: 100%; /* 부모 컨테이너의 너비에 맞춥니다. */
-     overflow: hidden; /* 이 컨테이너의 크기를 벗어나는 자식 요소(일정)를 숨깁니다. */
+     position: relative;
+     flex: 1;
+     width: 100%;
  `;
 
 
@@ -168,7 +186,7 @@ export const TimeColumn = styled.View`
 `;
 
 export const TimeLabelCell = styled.View`
-    height: 60px; /* 1시간의 높이 */
+    height: 60px;
     justify-content: flex-start;
     align-items: center;
 `;
@@ -176,7 +194,7 @@ export const TimeLabelCell = styled.View`
 export const TimeLabelText = styled.Text`
     font-size: 12px;
     color: #8e8e93;
-    transform: translateY(-8px); /* 선의 중앙에 오도록 미세 조정 */
+    transform: translateY(-8px);
 `;
 
 export const DayText = styled.Text`
@@ -201,7 +219,7 @@ export const DayColumn = styled.View<{ $isToday?: boolean }>`
 `;
 
 export const HourCell = styled.View`
-    height: 60px; /* 1시간의 높이 */
+    height: 60px;
     border-bottom-width: 1px;
     border-bottom-color: #f0f0f0;
 `;

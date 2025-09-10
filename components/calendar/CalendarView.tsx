@@ -8,6 +8,7 @@ import {
     isValid,
     isSameDay,
     set,
+    differenceInCalendarDays
 } from 'date-fns';
 import * as S from './CalendarStyle';
 import MonthView from './MonthView';
@@ -41,10 +42,15 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
     const [weeks, setWeeks] = useState([sub(date, {weeks: 1}), date, add(date, {weeks: 1})]);
     const [days, setDays] = useState([sub(date, {days: 1}), date, add(date, {days: 1})]);
 
-    // WeekView와 DayView에 표시할 '시간 지정' 일정만 필터링합니다.
-    // `schedules`가 변경될 때마다 이 목록이 다시 계산되어 삭제/수정이 반영됩니다.
+    // [수정] WeekView와 DayView에 표시할 단기(하루 미만) 일정만 필터링합니다.
     const timedSchedules = useMemo(() => {
-        return schedules.filter(schedule => !schedule.isAllDay);
+        return schedules.filter(schedule => {
+            // 조건 1: '종일' 일정이 아니어야 함
+            const isNotAllDay = !schedule.isAllDay;
+            // 조건 2: 시작일과 종료일이 같은 날이어야 함 (하루 안에 끝나는 일정)
+            const isSingleDay = differenceInCalendarDays(schedule.endTime, schedule.startTime) < 1;
+            return isNotAllDay && isSingleDay;
+        });
     }, [schedules])
 
     // When the central date changes, update all data sources and reset inner pagers
@@ -142,7 +148,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                                 <View style={{height: monthContainerHeight}}>
                                     <MonthView
                                         date={item}
-                                        schedules={schedules}
+                                        schedules={schedules} // MonthView는 모든 일정을 그대로 받습니다.
                                         tags={tags}
                                         onDayPress={handleDayPress}
                                     />
@@ -175,7 +181,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                             <View key={index}>
                                 <WeekView
                                     date={weekDate}
-                                    schedules={timedSchedules}
+                                    schedules={timedSchedules} // WeekView는 필터링된 일정을 받습니다.
                                     tags={tags}
                                     onDayPress={handleDayPress}
                                     onEventPress={onEventPress}
