@@ -38,6 +38,8 @@ interface ScheduleContextType {
     createTag: (tagData: { label: string; color: string }) => Promise<Tag>;
     updateTag: (tagToUpdate: Tag) => Promise<void>;
     deleteTag: (tagId: number) => Promise<void>;
+    selectedDate: Date; // [추가] 사용자가 선택한 날짜
+    setSelectedDate: (date: Date) => void; // [추가] 날짜를 변경하는 함수
 }
 
 // --- Context 생성 ---
@@ -63,6 +65,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const [tags, setTags] = useState<Tag[]>([]); // [추가] 태그 상태
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
+    const [selectedDate, setSelectedDate] = useState(new Date()); // [추가] 선택된 날짜 상태. 기본값은 오늘.
 
     // 백엔드 데이터를 캘린더 형식으로 변환하는 함수 (useCallback으로 감싸서 안정성 확보)
     const formatRawSchedule = useCallback((rawEvent: RawScheduleEvent): Schedule => {
@@ -291,6 +294,8 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         createTag,
         updateTag,
         deleteTag,
+        selectedDate, // [추가]
+        setSelectedDate, // [추가]
     };
 
     return (

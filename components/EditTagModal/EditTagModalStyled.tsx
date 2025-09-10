@@ -99,7 +99,7 @@ export const ColorPreview = styled.View<{ color: string }>`
 `;
 
 export const ColorPickerWrapper = styled.View`
-    height: 200px;
+    height: 300px;
     margin-bottom: 20px;
 `;
 

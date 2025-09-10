@@ -15,6 +15,12 @@ import CreateTagModal from "@/components/AddTagModal/add-tagmodal";
 
 const AddScheduleScreen = () => {
     const router = useRouter();
+    // [추가] 라우터 파라미터에서 initialDate를 가져옵니다.
+    const { initialDate } = useLocalSearchParams<{ initialDate: string }>();
+
+    // [수정] 파라미터로 받은 날짜가 있으면 그 날짜를, 없으면 오늘 날짜를 기본값으로 사용합니다.
+    const initialDateFromParams = initialDate ? new Date(initialDate) : new Date();
+
     // Context에서 생성 함수, 태그 목록, 로딩 상태를 가져옵니다.
     const { createSchedule, tags, loading, createTag } = useSchedule();
 
@@ -23,8 +29,9 @@ const AddScheduleScreen = () => {
     const [location, setLocation] = useState('');
     const [description, setDescription] = useState('');
     const [isAllDay, setIsAllDay] = useState(false);
-    const [startTime, setStartTime] = useState(new Date());
-    const [endTime, setEndTime] = useState(new Date(new Date().getTime() + 60 * 60 * 1000)); // 기본 1시간 뒤
+    // [수정] 상태 초기값으로 initialDateFromParams를 사용합니다.
+    const [startTime, setStartTime] = useState(initialDateFromParams);
+    const [endTime, setEndTime] = useState(new Date(initialDateFromParams.getTime() + 60 * 60 * 1000)); // 기본 1시간 뒤
 
     // DateTimePicker 상태 관리
     const [showPicker, setShowPicker] = useState(false);

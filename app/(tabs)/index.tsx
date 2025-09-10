@@ -34,8 +34,14 @@ export default function HomeScreen() {
     const handleCloseModal = useCallback(() => { setSelectedSchedule(null); }, []);
 
     // --- 데이터 연결 ---
-    // 1. ScheduleContext에서 진짜 데이터(일정, 태그), 로딩 상태, 에러를 가져옵니다.
-    const { events: schedules, tags, loading, error } = useSchedule();
+    // 1. ScheduleContext에서 필요한 모든 것을 가져옵니다.
+    const { events: schedules, tags, loading, error, setSelectedDate } = useSchedule();
+
+    // [추가] 날짜가 변경될 때 로컬 상태와 전역(Context) 상태를 모두 업데이트하는 함수
+    const handleDateChange = (newDate: Date) => {
+        setCurrentDate(newDate); // 캘린더 뷰의 날짜를 업데이트
+        setSelectedDate(newDate); // 앱의 전역 선택 날짜를 업데이트
+    };
 
     // [수정] 탭의 label을 상태로 관리하여 로직을 통일하고, 기본값을 'All'로 설정합니다.
     const [activeTab, setActiveTab] = useState<string>('All');
@@ -122,7 +128,7 @@ export default function HomeScreen() {
                 <CContainer>
                     <CalendarView
                         date={currentDate}
-                        onDateChange={setCurrentDate}
+                        onDateChange={handleDateChange} // [수정] 새로 만든 핸들러 함수를 전달
                         schedules={schedules} // Context에서 가져온 'schedules'를 전달합니다.
                         tags={tags}
                         // [수정] DayView/WeekView의 일정 클릭 시 모달을 열도록 함수를 연결하고, 불필요한 prop은 제거합니다.

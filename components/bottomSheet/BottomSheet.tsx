@@ -21,8 +21,8 @@ interface BottomSheetContentProps {
 
 export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab}) => {
     const router = useRouter();
-    // [수정] Context에서 'events'를 가져와 'schedules'라는 별명으로 사용합니다.
-    const { events: schedules, tags } = useSchedule();
+    // [수정] Context에서 selectedDate를 추가로 가져옵니다.
+    const { events: schedules, tags, selectedDate } = useSchedule();
     const [sortBy, setSortBy] = useState('latest');
     // 태그 편집 모달의 표시 상태를 관리합니다.
     const [isEditTagModalVisible, setIsEditTagModalVisible] = useState(false);
@@ -50,6 +50,14 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
         return schedules.filter(schedule => schedule.tagId === currentTag.id);
     }, [activeTab, schedules, tags]);
 
+    const handleAddPress = () => {
+        router.push({
+            pathname: '/add-schedule',
+            // Date 객체를 문자열로 변환하여 파라미터로 전달
+            params: { initialDate: selectedDate.toISOString() },
+        });
+    };
+
     return (
         <BSContainer>
             <BSHeader>
@@ -58,8 +66,10 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
                     <SortByPicker items={pickerItems} selectedValue={sortBy} onValueChange={setSortBy} />
                 </BSHeaderLeft>
                 <BSHeaderRight>
-                    <BSTodayText>{format(new Date(), "yyyy-MM-dd")}</BSTodayText>
-                    <TouchableOpacity onPress={() => router.push('/add-schedule')}>
+                    {/* [수정] 하드코딩된 new Date() 대신, Context에서 가져온 selectedDate를 사용합니다. */}
+                    <BSTodayText>{format(selectedDate, "yyyy-MM-dd")}</BSTodayText>
+                    {/* [수정] '+' 버튼 클릭 시 handleAddPress 함수를 호출합니다. */}
+                    <TouchableOpacity onPress={handleAddPress}>
                         <BSToDoAddButton name="pluscircleo" size={20}/>
                     </TouchableOpacity>
                     <TagEditBTN onPress={() => setIsEditTagModalVisible(true)}>
