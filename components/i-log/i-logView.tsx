@@ -13,6 +13,8 @@ import React, {useState} from "react";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {Gesture, GestureDetector, GestureHandlerRootView} from "react-native-gesture-handler";
 import Animated, {interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring} from "react-native-reanimated";
+import { useColorScheme } from "@/hooks/_useColorScheme";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 type Diary = {
     id: string;
@@ -176,25 +178,25 @@ const diaries: Diary[] = [
 
 const {width} = Dimensions.get("window");
 
-const DiaryPage = ({item}: { item: Diary }) => {
+const DiaryPage = ({item, theme}: { item: Diary, theme: any }) => {
     return (
         <View style={{flex: 1}}>
             <MWrap>
                 <ScrollView>
                     <MTextWrap>
-                        <MDateText>{item.date}</MDateText>
+                        <MDateText theme={theme}>{item.date}</MDateText>
                         <MTextLeftWrap>
-                            <MWeekText>{item.week}</MWeekText>
+                            <MWeekText theme={theme}>{item.week}</MWeekText>
                             <MTextBottomWrap>
-                                <MYearText>{item.year}</MYearText>
-                                <MTimeText>{item.time}</MTimeText>
+                                <MYearText theme={theme}>{item.year}</MYearText>
+                                <MTimeText theme={theme}>{item.time}</MTimeText>
                             </MTextBottomWrap>
                         </MTextLeftWrap>
                     </MTextWrap>
-                    <MImage/>
+                    <MImage theme={theme}/>
                     <MContentWrap>
-                        <MTitle>{item.title}</MTitle>
-                        <MContent>{item.content}</MContent>
+                        <MTitle theme={theme}>{item.title}</MTitle>
+                        <MContent theme={theme}>{item.content}</MContent>
                     </MContentWrap>
                 </ScrollView>
             </MWrap>
@@ -204,6 +206,14 @@ const DiaryPage = ({item}: { item: Diary }) => {
 
 const ILogView = () => {
     const insets = useSafeAreaInsets();
+    const { colorScheme } = useColorScheme();
+    const theme = {
+        colors: {
+            background: useThemeColor({ light: "#ffffff", dark: "#000000" }, "background"),
+            text: useThemeColor({ light: "#000000", dark: "#ffffff" }, "text"),
+            card: useThemeColor({ light: "#f2f2f2", dark: "#333333" }, "card"),
+        }
+    };
 
     const [pageIndex, setPageIndex] = useState(0);
     const activeIndex = useSharedValue(0); // 애니메이션 전용 인덱스
@@ -307,19 +317,19 @@ const ILogView = () => {
     });
 
     return (
-        <DiaryContainer style={{paddingBottom: insets.bottom}}>
+        <DiaryContainer style={{paddingBottom: insets.bottom}} theme={theme}>
             <GestureHandlerRootView style={{flex: 1}}>
                 <GestureDetector gesture={gesture}>
                     <View style={{flex: 1, justifyContent: "center"}}>
-                        <Animated.View style={[styles.page, animatedStylePrev]}>
-                            <DiaryPage item={diaries[pageIndex > 0 ? pageIndex - 1 : 0]}/>
+                        <Animated.View style={[styles(theme).page, animatedStylePrev]}>
+                            <DiaryPage item={diaries[pageIndex > 0 ? pageIndex - 1 : 0]} theme={theme}/>
                         </Animated.View>
-                        <Animated.View style={[styles.page, animatedStyleNext]}>
+                        <Animated.View style={[styles(theme).page, animatedStyleNext]}>
                             <DiaryPage
-                                item={diaries[pageIndex < diaries.length - 1 ? pageIndex + 1 : diaries.length - 1]}/>
+                                item={diaries[pageIndex < diaries.length - 1 ? pageIndex + 1 : diaries.length - 1]} theme={theme}/>
                         </Animated.View>
-                        <Animated.View style={[styles.page, animatedStyleCurrent]}>
-                            <DiaryPage item={diaries[pageIndex]}/>
+                        <Animated.View style={[styles(theme).page, animatedStyleCurrent]}>
+                            <DiaryPage item={diaries[pageIndex]} theme={theme}/>
                         </Animated.View>
                     </View>
                 </GestureDetector>
@@ -328,10 +338,10 @@ const ILogView = () => {
     )
 }
 
-const styles = StyleSheet.create({
+const styles = (theme: any) => StyleSheet.create({
     page: {
         position: "absolute",
-        backgroundColor: "#ffffff",
+        backgroundColor: theme.colors.background,
         zIndex: -999,
         height: 765,
         top: 0

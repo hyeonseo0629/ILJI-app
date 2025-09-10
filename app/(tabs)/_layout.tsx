@@ -12,24 +12,19 @@ import {GestureHandlerRootView} from "react-native-gesture-handler";
 
 export default function TabLayout() {
     const theme = useTheme(); // useTheme 훅 사용
-    const isnets = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
 
     return (
         <GestureHandlerRootView style={{flex: 1}}>
-            <View style={{flex: 1, paddingBottom: Platform.OS === 'android' ? isnets.bottom : 0, backgroundColor: 'lavender'}}>
-                <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
-                    <StatusBar style="dark"/>
+            <View style={{flex: 1, paddingBottom: Platform.OS === 'android' ? insets.bottom : 0, backgroundColor: theme.colors.background}}>
+                <View style={{flex: 1, paddingTop: insets.top, backgroundColor: theme.colors.background}}>
+                    <StatusBar style={theme.dark ? "light" : "dark"}/>
                     <Tabs
                         screenOptions={{
                             tabBarActiveTintColor: theme.colors.primary,
                             headerShown: false,
                             tabBarButton: HapticTab,
                             tabBarBackground: TabBarBackground,
-                            sceneContainerStyle: Platform.select({
-                                ios: {
-                                    paddingBottom: 85,
-                                }
-                            }),
                             tabBarStyle: Platform.select({
                                 ios: {
                                     position: 'absolute',
@@ -40,7 +35,7 @@ export default function TabLayout() {
                                     height: 65,
                                     paddingTop: 5,
                                     paddingBottom: 8,
-                                    backgroundColor: 'lavender',
+                                    backgroundColor: theme.colors.card, // 여기도 테마 배경색을 사용하도록 변경합니다.
                                     borderTopWidth: 0,
                                 },
                             }),
@@ -80,3 +75,4 @@ export default function TabLayout() {
         </GestureHandlerRootView>
     );
 }
+// Added a comment to force re-evaluation.

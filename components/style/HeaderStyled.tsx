@@ -24,7 +24,6 @@ export const HContainer = styled(View)<HContainerProps & ThemeProps>` // Changed
     width: 100%;
     background-color: ${(props) => props.theme?.colors?.background || '#ffffff'};
     ${(props) => props.$isMain && mainHeaderStyles}
-    background-color: #ffffff;
     /* 바텀 시트가 확장되면 zIndex를 0으로, 아닐 때는 1로 설정합니다. */
     z-index: ${(props) => (props.$isSheetExpanded ? 0 : 1)};
 
@@ -72,16 +71,16 @@ export const HRecentDiary = styled.View<ThemeProps>` // ThemeProps 추가
     background-color: ${(props) => props.theme?.colors?.card || 'lavender'};
 `;
 
-export const HIconBell = styled(Octicons).attrs({})`
+export const HIconBell = styled(Octicons).attrs<ThemeProps>({})`
     padding: 5px;
-    color: mediumslateblue;
+    color: ${(props) => props.theme?.colors?.text || 'mediumslateblue'};
 `
-export const HIconMail = styled(Octicons).attrs({})`
+export const HIconMail = styled(Octicons).attrs<ThemeProps>({})`
     padding: 5px;
-    color: mediumslateblue;
+    color: ${(props) => props.theme?.colors?.text || 'mediumslateblue'};
 `
 
-export const HIconShare = styled(Octicons).attrs({})`
+export const HIconShare = styled(Octicons).attrs<ThemeProps>({})`
     padding: 5px;
-    color: mediumslateblue;
+    color: ${(props) => props.theme?.colors?.text || 'mediumslateblue'};
 `
