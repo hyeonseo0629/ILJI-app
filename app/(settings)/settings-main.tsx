@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, Button, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useColorScheme } from '@/hooks/_useColorScheme';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { useTheme } from '@react-navigation/native';
 import { useSession } from '@/hooks/useAuth';
 import { Ionicons } from '@expo/vector-icons';

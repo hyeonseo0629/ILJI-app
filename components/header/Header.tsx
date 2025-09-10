@@ -10,8 +10,8 @@ import {
 } from "@/components/style/HeaderStyled";
 import {usePathname} from "expo-router";
 import {TouchableOpacity, View} from "react-native";
-import { useColorScheme } from "@/hooks/_useColorScheme";
-import { useThemeColor } from "@/hooks/useThemeColor";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from '@react-navigation/native'; // useTheme 추가
 
 interface HeaderProps {
     sheetIndex: number;
@@ -19,13 +19,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({sheetIndex}) => {
     const { colorScheme } = useColorScheme();
-    const theme = {
-        colors: {
-            background: useThemeColor({ light: "#ffffff", dark: "#000000" }, "background"),
-            text: useThemeColor({ light: "#000000", dark: "#ffffff" }, "text"),
-            card: useThemeColor({ light: "lavender", dark: "#333333" }, "card"),
-        }
-    };
+    const theme = useTheme(); // 로컬 테마 객체 생성 대신 useTheme() 사용
 
     const pathname = usePathname();
     const isMain = pathname === '/';

@@ -30,6 +30,7 @@ export default function TabLayout() {
                                     position: 'absolute',
                                     height: 85,
                                     paddingBottom: 25,
+                                    backgroundColor: theme.colors.card, // iOS에도 배경색 추가
                                 },
                                 default: {
                                     height: 65,

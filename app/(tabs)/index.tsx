@@ -131,7 +131,7 @@ export default function HomeScreen() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <AnimationContext.Provider value={{ animatedIndex }}>
                 <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-                    <Header theme={theme} sheetIndex={sheetIndex} />
+                    <Header sheetIndex={sheetIndex} />
                     <CContainer theme={theme}>
                         <CalendarView
                             date={currentDate}

@@ -15,6 +15,8 @@ export const Colors = {
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
     card: '#f2f2f2',
+    border: 'rgb(216, 216, 216)', // Default border color
+    notification: 'rgb(255, 59, 48)', // Default notification color
   },
   dark: {
     text: '#ECEDEE',
@@ -24,5 +26,7 @@ export const Colors = {
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
     card: '#333333',
+    border: 'rgb(39, 39, 41)', // Dark border color
+    notification: 'rgb(255, 69, 58)', // Dark notification color
   },
 };

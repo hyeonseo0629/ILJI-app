@@ -15,7 +15,7 @@ interface ColorSchemeContextType {
 const ColorSchemeContext = createContext<ColorSchemeContextType | undefined>(undefined);
 
 // Create the provider component.
-export function ColorSchemeProvider({ children }: PropsWithChildren<{}>) {
+export default function ColorSchemeProvider({ children }: PropsWithChildren<{}>) {
   const systemColorScheme = useSystemColorScheme();
   const [storedColorScheme, setStoredColorScheme] = useState<'light' | 'dark' | null>(null);
   const [isColorSchemeLoading, setIsColorSchemeLoading] = useState(true);

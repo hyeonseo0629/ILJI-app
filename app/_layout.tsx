@@ -4,10 +4,11 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import 'react-native-reanimated';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useColorScheme, ColorSchemeProvider } from '@/hooks/_useColorScheme';
+import { DarkTheme, DefaultTheme, ThemeProvider, Theme } from '@react-navigation/native';
+import ColorSchemeProvider, { useColorScheme } from '@/hooks/useColorScheme';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useSession } from '@/hooks/useAuth';
+import { Colors } from '@/constants/Colors';
 
 // Layout 컴포넌트는 그대로 유지됩니다.
 function Layout() {
@@ -60,8 +61,46 @@ function ThemedAppLayout() {
     );
   }
 
+  const customDefaultTheme: Theme = {
+    dark: false,
+    colors: {
+      primary: Colors.light.tint,
+      background: Colors.light.background,
+      card: Colors.light.card,
+      text: Colors.light.text,
+      border: Colors.light.border,
+      notification: Colors.light.notification,
+    },
+    fonts: {
+      regular: { fontFamily: '', fontWeight: 'normal' },
+      medium: { fontFamily: '', fontWeight: 'normal' },
+      bold: { fontFamily: '', fontWeight: 'bold' },
+      heavy: { fontFamily: '', fontWeight: '900' },
+    },
+  };
+
+  const customDarkTheme: Theme = {
+    dark: true,
+    colors: {
+      primary: Colors.dark.tint,
+      background: Colors.dark.background,
+      card: Colors.dark.card,
+      text: Colors.dark.text,
+      border: Colors.dark.border,
+      notification: Colors.dark.notification,
+    },
+    fonts: {
+      regular: { fontFamily: '', fontWeight: 'normal' },
+      medium: { fontFamily: '', fontWeight: 'normal' },
+      bold: { fontFamily: '', fontWeight: 'bold' },
+      heavy: { fontFamily: '', fontWeight: '900' },
+    },
+  };
+
+  const currentTheme: Theme = isDarkColorScheme ? customDarkTheme : customDefaultTheme;
+
   return (
-    <ThemeProvider value={isDarkColorScheme ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={currentTheme}>
       <AuthProvider>
         <Layout />
       </AuthProvider>
