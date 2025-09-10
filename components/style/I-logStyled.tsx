@@ -10,7 +10,7 @@ import { ScrollView, ScrollViewProps } from 'react-native';
 
 export const ScreenContainer = styled.View<{ $paddingTop?: number; $paddingBottom?: number; }>`
     flex: 1;
-    background-color: lavender;
+    background-color: #fff;
     padding-top: ${props => props.$paddingTop || 0}px;
     padding-bottom: ${props => props.$paddingBottom || 0}px;
 `;
@@ -100,6 +100,7 @@ export const ListDateText = styled.Text`
 export const ListTimeText = styled.Text`
     font-size: 12px;
     color: #888;
+    margin-top: 4px;
 `;
 
 export const ListTitle = styled.Text`
@@ -159,29 +160,45 @@ export const PageHeader = styled.View`
     margin-bottom: 15px;
 `;
 
-export const PageDateInfo = styled.View``;
+export const PageDateInfo = styled.View`
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+`;
+
+export const PageDateButton = styled.TouchableOpacity`
+    flex-direction: row;
+    align-items: center;
+    border-bottom-width: 2px;
+    border-bottom-color: mediumslateblue;
+    padding: 0 10px 3px 5px;
+`
 
 export const PageDateText = styled.Text`
-    font-size: 24px;
+    font-size: 30px;
     font-weight: bold;
+    padding-left: 5px;
 `;
 
 export const PageTimeText = styled.Text`
     font-size: 14px;
     color: #888;
-    margin-top: 4px;
 `;
 
 export const PageTitle = styled.Text`
-    font-size: 22px;
+    font-size: 20px;
     font-weight: bold;
-    margin-bottom: 15px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-color: mediumslateblue;
+    padding: 0 10px;
+    margin: 5px 0 15px;
 `;
 
 export const PageImageContainer = styled.View`
     width: 100%;
     height: 400px; 
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     position: relative;
 `;
 
@@ -219,6 +236,9 @@ export const PageContent = styled.Text`
     line-height: 24px;
     color: #333;
     margin-bottom: 20px;
+    border-left-width: 2px;
+    border-color: mediumslateblue;
+    padding: 10px 20px;
 `;
 
 export const PageFriendTagsContainer = styled.View`
@@ -242,12 +262,82 @@ export const PageFriendTagText = styled.Text`
 export const PageTagsContainer = styled.View``;
 
 export const PageTagsText = styled.Text`
-    font-size: 14px;
+    font-size: 15px;
     color: #888;
-    font-style: italic;
 `;
 
 export const PageScrollView = styled.ScrollView``;
+
+// ------------------ //
+// I-Log Detail View  //
+// ------------------ //
+
+export const DetailHeaderActions = styled.View`
+    flex-direction: row;
+`;
+
+export const DetailActionButton = styled.TouchableOpacity`
+    margin-right: 15px;
+`;
+
+export const DetailModalBackdrop = styled.TouchableOpacity`
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+`;
+
+export const DetailModalContainer = styled.View`
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+`;
+
+export const DetailModalTitle = styled.Text`
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+`;
+
+export const DetailModalText = styled.Text`
+    font-size: 16px;
+    margin-bottom: 20px;
+    text-align: center;
+`;
+
+export const DetailModalButtonContainer = styled.View`
+    flex-direction: row;
+    justify-content: space-around;
+`;
+
+const ModalButton = styled.TouchableOpacity`
+    padding: 10px;
+    border-radius: 5px;
+    width: 45%;
+    align-items: center;
+`;
+
+export const DetailModalCancelButton = styled(ModalButton)`
+    background-color: #ccc;
+`;
+
+export const DetailModalDeleteButton = styled(ModalButton)`
+    background-color: red;
+`;
+
+export const DetailModalButtonText = styled.Text<{ color?: string }>`
+    color: ${props => props.color || 'black'};
+    font-weight: bold;
+`;
+
+export const DetailLoadingContainer = styled.View`
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+`;
+
 
 // ----------------- //
 // Add I-Log View  //
@@ -312,10 +402,9 @@ export const AddImagePickerText = styled.Text`
     border-radius: 10px;
     /* iOS Shadow */
     shadow-color: #000;
-    shadow-offset-width: 0;
-    shadow-offset-height: 2px;
+    shadow-offset: 0px 2px; /* Corrected: Combined width and height into shadow-offset */
     shadow-opacity: 0.25;
-    shadow-radius: 3.84px;
+    shadow-radius: 3.84; /* Corrected: Removed 'px' */
 
     /* Android Shadow (기존 코드) */
     elevation: 5;

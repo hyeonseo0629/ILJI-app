@@ -17,7 +17,6 @@ import {useSafeAreaInsets} from "react-native-safe-area-context";
 // 전역 상태(global state)에서 가져와야 합니다. 여기서는 예시로 사용합니다.
 
 const AddScheduleScreen = () => {
-    const isnets = useSafeAreaInsets();
 
     const router = useRouter();
     const params = useLocalSearchParams();
@@ -114,111 +113,107 @@ const AddScheduleScreen = () => {
 
     return (
         <GestureHandlerRootView>
-            <View style={{flex: 1, paddingBottom: isnets.bottom,  backgroundColor: 'lavender'}}>
-                <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
-                    <StatusBar style="dark"/>
-                    <S.ASContainer contentContainerStyle={{paddingBottom: 40}}>
-                        <ASHeader>New Reminder</ASHeader>
-                        <S.ASContentWrap>
+            <StatusBar style="dark"/>
+            <S.ASContainer contentContainerStyle={{paddingBottom: 40}}>
+                <ASHeader>New Reminder</ASHeader>
+                <S.ASContentWrap>
 
-                            <S.ASLabel>Title</S.ASLabel>
-                            <S.ASInput
-                                value={title}
-                                onChangeText={setTitle}
-                                placeholder="제목"
-                            />
+                    <S.ASLabel>Title</S.ASLabel>
+                    <S.ASInput
+                        value={title}
+                        onChangeText={setTitle}
+                        placeholder="제목"
+                    />
 
-                            <S.ASLabel>Memo</S.ASLabel>
-                            <S.ASInput value={description} onChangeText={setDescription} placeholder="메모" multiline
-                                       style={{height: 100, textAlignVertical: 'top'}}/>
+                    <S.ASLabel>Memo</S.ASLabel>
+                    <S.ASInput value={description} onChangeText={setDescription} placeholder="메모" multiline
+                               style={{height: 100, textAlignVertical: 'top'}}/>
 
-                            <S.ASSwitchRow>
-                                <S.ASLabel style={{marginTop: 0, marginBottom: 0}}>All Day</S.ASLabel>
-                                <Switch
-                                    trackColor={{false: "lavender", true: "mediumpurple"}}
-                                    thumbColor={"mediumslateblue"}
-                                    ios_backgroundColor="lavender"
-                                    onValueChange={setIsAllDay}
-                                    value={isAllDay}
-                                />
-                            </S.ASSwitchRow>
+                    <S.ASSwitchRow>
+                        <S.ASLabel style={{marginTop: 0, marginBottom: 0}}>All Day</S.ASLabel>
+                        <Switch
+                            trackColor={{false: "lavender", true: "mediumpurple"}}
+                            thumbColor={"mediumslateblue"}
+                            ios_backgroundColor="lavender"
+                            onValueChange={setIsAllDay}
+                            value={isAllDay}
+                        />
+                    </S.ASSwitchRow>
 
-                            <S.ASLabel>Start</S.ASLabel>
-                            <S.ASDateTimeRow>
-                                {/* 1. 날짜 선택 버튼 */}
-                                <S.ASDateTimeButton onPress={() => showMode('start', 'date')}>
-                                    <S.ASDateTimeButtonText>{format(startTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
-                                </S.ASDateTimeButton>
-                                {/* 2. '종일'이 아닐 때만 시간 선택 버튼을 보여줍니다. */}
-                                {!isAllDay && (
-                                    <S.ASDateTimeButton onPress={() => showMode('start', 'time')}>
-                                        <S.ASDateTimeButtonText>{format(startTime, 'HH:mm')}</S.ASDateTimeButtonText>
-                                    </S.ASDateTimeButton>
-                                )}
-                            </S.ASDateTimeRow>
-
-                            <S.ASLabel>End</S.ASLabel>
-                            <S.ASDateTimeRow>
-                                <S.ASDateTimeButton onPress={() => showMode('end', 'date')}>
-                                    <S.ASDateTimeButtonText>{format(endTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
-                                </S.ASDateTimeButton>
-                                {!isAllDay && (
-                                    <S.ASDateTimeButton onPress={() => showMode('end', 'time')}>
-                                        <S.ASDateTimeButtonText>{format(endTime, 'HH:mm')}</S.ASDateTimeButtonText>
-                                    </S.ASDateTimeButton>
-                                )}
-                            </S.ASDateTimeRow>
-
-                            <S.ASLabel>Location</S.ASLabel>
-                            <S.ASInput value={location} onChangeText={setLocation} placeholder="장소"/>
-
-                            <S.ASLabel>Tag</S.ASLabel>
-                            <S.ASPickerWrap>
-                                <Picker selectedValue={tagId}
-                                        onValueChange={(itemValue) => setTagId(itemValue)}
-                                        style={{color: 'mediumslateblue'}}
-                                >
-                                    {tags.map(tag => (
-                                        <Picker.Item key={tag.id} label={tag.label} value={tag.id}/>
-                                    ))}
-                                </Picker>
-                            </S.ASPickerWrap>
-
-                            {/* 2. 선택된 태그가 있을 경우, 해시태그 스타일로 화면에 표시합니다. */}
-                            {selectedTag && (
-                                <S.ASSelectedTagWrap>
-                                    <S.ASSelectedTag color={selectedTag.color || 'gray'}>
-                                        <S.ASSelectedTagText>#{selectedTag.label}</S.ASSelectedTagText>
-                                    </S.ASSelectedTag>
-                                </S.ASSelectedTagWrap>
-                            )}
-
-                        </S.ASContentWrap>
-                        {showPicker && (
-                            <DateTimePicker
-                                testID="dateTimePicker"
-                                value={pickerTarget === 'start' ? startTime : endTime}
-                                mode={pickerMode}
-                                is24Hour={true}
-                                display="default"
-                                onChange={onDateTimeChange}
-                            />
+                    <S.ASLabel>Start</S.ASLabel>
+                    <S.ASDateTimeRow>
+                        {/* 1. 날짜 선택 버튼 */}
+                        <S.ASDateTimeButton onPress={() => showMode('start', 'date')}>
+                            <S.ASDateTimeButtonText>{format(startTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
+                        </S.ASDateTimeButton>
+                        {/* 2. '종일'이 아닐 때만 시간 선택 버튼을 보여줍니다. */}
+                        {!isAllDay && (
+                            <S.ASDateTimeButton onPress={() => showMode('start', 'time')}>
+                                <S.ASDateTimeButtonText>{format(startTime, 'HH:mm')}</S.ASDateTimeButtonText>
+                            </S.ASDateTimeButton>
                         )}
+                    </S.ASDateTimeRow>
 
-                    </S.ASContainer>
-                    <ASButtonWrap>
-                        <S.ASSaveButton onPress={handleSave}>
-                            <S.ASSaveButtonText>Save</S.ASSaveButtonText>
-                        </S.ASSaveButton>
-                        <S.ASCancelButton onPress={() => router.push({
-                            pathname: '/',
-                            params: {tags: JSON.stringify(tags)}
-                        })}>
-                            <ASCancelButtonText>Cancel</ASCancelButtonText>
-                        </S.ASCancelButton>
-                    </ASButtonWrap>
-                </View>
-            </View>
+                    <S.ASLabel>End</S.ASLabel>
+                    <S.ASDateTimeRow>
+                        <S.ASDateTimeButton onPress={() => showMode('end', 'date')}>
+                            <S.ASDateTimeButtonText>{format(endTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
+                        </S.ASDateTimeButton>
+                        {!isAllDay && (
+                            <S.ASDateTimeButton onPress={() => showMode('end', 'time')}>
+                                <S.ASDateTimeButtonText>{format(endTime, 'HH:mm')}</S.ASDateTimeButtonText>
+                            </S.ASDateTimeButton>
+                        )}
+                    </S.ASDateTimeRow>
+
+                    <S.ASLabel>Location</S.ASLabel>
+                    <S.ASInput value={location} onChangeText={setLocation} placeholder="장소"/>
+
+                    <S.ASLabel>Tag</S.ASLabel>
+                    <S.ASPickerWrap>
+                        <Picker selectedValue={tagId}
+                                onValueChange={(itemValue) => setTagId(itemValue)}
+                                style={{color: 'mediumslateblue'}}
+                        >
+                            {tags.map(tag => (
+                                <Picker.Item key={tag.id} label={tag.label} value={tag.id}/>
+                            ))}
+                        </Picker>
+                    </S.ASPickerWrap>
+
+                    {/* 2. 선택된 태그가 있을 경우, 해시태그 스타일로 화면에 표시합니다. */}
+                    {selectedTag && (
+                        <S.ASSelectedTagWrap>
+                            <S.ASSelectedTag color={selectedTag.color || 'gray'}>
+                                <S.ASSelectedTagText>#{selectedTag.label}</S.ASSelectedTagText>
+                            </S.ASSelectedTag>
+                        </S.ASSelectedTagWrap>
+                    )}
+
+                </S.ASContentWrap>
+                {showPicker && (
+                    <DateTimePicker
+                        testID="dateTimePicker"
+                        value={pickerTarget === 'start' ? startTime : endTime}
+                        mode={pickerMode}
+                        is24Hour={true}
+                        display="default"
+                        onChange={onDateTimeChange}
+                    />
+                )}
+
+            </S.ASContainer>
+            <ASButtonWrap>
+                <S.ASSaveButton onPress={handleSave}>
+                    <S.ASSaveButtonText>Save</S.ASSaveButtonText>
+                </S.ASSaveButton>
+                <S.ASCancelButton onPress={() => router.push({
+                    pathname: '/',
+                    params: {tags: JSON.stringify(tags)}
+                })}>
+                    <ASCancelButtonText>Cancel</ASCancelButtonText>
+                </S.ASCancelButton>
+            </ASButtonWrap>
         </GestureHandlerRootView>
     );
 };

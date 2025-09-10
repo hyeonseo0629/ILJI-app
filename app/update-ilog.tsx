@@ -1,16 +1,14 @@
 import React, {useState, useEffect, useMemo, useRef} from 'react';
-import { Alert, View, ScrollView, Keyboard, TouchableOpacity, Modal, Text } from 'react-native';
+import { Alert, View, ScrollView, Keyboard, TouchableOpacity } from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as I from "@/components/style/I-logStyled";
-import {AntDesign, SimpleLineIcons, EvilIcons } from '@expo/vector-icons';
+import {AntDesign, SimpleLineIcons } from '@expo/vector-icons';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {AddImagePickerText} from "@/components/style/I-logStyled";
-import { Calendar, DateData } from 'react-native-calendars';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { ILogData } from '@/app/(tabs)/i-log';
+import { ILogData } from "@/app/(tabs)/i-log";
 
-export default function AddILogScreen() {
+export default function UpdateILogScreen() {
     const insets = useSafeAreaInsets();
 
     const router = useRouter();
@@ -23,40 +21,24 @@ export default function AddILogScreen() {
     const [selectedTags, setSelectedTags] = useState<string[]>([]); // 선택된 태그 목록
     const [textAreaHeight, setTextAreaHeight] = useState(200); // AddTextArea의 동적 높이 상태
 
-    // New state for date selection
-    const [selectedLogDate, setSelectedLogDate] = useState<Date>(new Date());
-    const [isCalendarVisible, setCalendarVisible] = useState(false);
-    const [currentCalendarMonth, setCurrentCalendarMonth] = useState(format(new Date(), 'yyyy-MM-01'));
-
-    // Existing logs to disable dates
-    const existingLogs: { id: number; log_date: string }[] = useMemo(() => {
-        try {
-            return JSON.parse(params.existingLogs as string || '[]');
-        } catch (e) {
-            console.error("Failed to parse existingLogs:", e);
-            return [];
+    // 편집 모드일 경우 기존 데이터 로드
+    useEffect(() => {
+        if (params.editLog) {
+            try {
+                const logToEdit: ILogData = JSON.parse(params.editLog as string);
+                setTitle(logToEdit.title);
+                setContent(logToEdit.content);
+                setImageUri(logToEdit.img_url || null);
+                if (logToEdit.tags) {
+                    setSelectedTags(logToEdit.tags.split(' ').filter(tag => tag.startsWith('#')));
+                }
+            } catch (e) {
+                console.error("Failed to parse editLog:", e);
+                Alert.alert("오류", "일기 데이터를 불러오는 데 실패했습니다.");
+                router.back();
+            }
         }
-    }, [params.existingLogs]);
-
-    // Marked dates for the calendar (disabling existing log dates)
-    const markedDates = useMemo(() => {
-        const markings: { [key: string]: { marked?: boolean, dotColor?: string, disabled?: boolean, disableTouchEvent?: boolean, selected?: boolean, selectedColor?: string } } = {};
-        const logsByDate: { [key: string]: { id: number; log_date: string } } = existingLogs.reduce((acc, log) => {
-            acc[format(new Date(log.log_date), 'yyyy-MM-dd')] = log;
-            return acc;
-        }, {} as { [key: string]: { id: number; log_date: string } });
-
-        // Mark existing log dates as disabled
-        for (const dateString in logsByDate) {
-            markings[dateString] = { disabled: true, disableTouchEvent: true };
-        }
-
-        // Mark the currently selected date
-        markings[format(selectedLogDate, 'yyyy-MM-dd')] = { selected: true, selectedColor: 'blue' };
-
-        return markings;
-    }, [existingLogs, selectedLogDate]);
-
+    }, [params.editLog]);
 
     // 해시태그 제안 기능 관련 상태
     const allTags = useMemo(() => {
@@ -220,12 +202,6 @@ export default function AddILogScreen() {
         setSelectedTags(prev => prev.filter(tag => tag !== tagToRemove));
     };
 
-    // Calendar date selection handler
-    const handleDateSelect = (day: DateData) => {
-        setSelectedLogDate(new Date(day.dateString));
-        setCalendarVisible(false);
-    };
-
     // --- 저장 로직 ---
     const handleSave = () => {
         if (!title.trim() || !content.trim()) {
@@ -235,24 +211,18 @@ export default function AddILogScreen() {
 
         const finalTagsString = selectedTags.join(' ');
 
-        const newLog = {
-            id: Date.now(), // Unique ID for new log
-            user_profile_id: 1,
+        const updatedLog: ILogData = {
+            ...(JSON.parse(params.editLog as string)), // 기존 로그 데이터 유지
             title: title.trim(),
             content: content.trim(),
-            log_date: selectedLogDate, // Use selected date
-            created_at: new Date(),
-            like_count: 0,
-            comment_count: 0,
-            visibility: 1,
             tags: finalTagsString,
-            friend_tags: JSON.stringify([]),
             img_url: imageUri,
+            // log_date와 created_at은 업데이트 시 변경하지 않음
         };
 
         router.push({
             pathname: '/(tabs)/i-log',
-            params: {newLog: JSON.stringify(newLog)},
+            params: { updatedLog: JSON.stringify(updatedLog) },
         });
     };
 
@@ -275,12 +245,6 @@ export default function AddILogScreen() {
                         </I.AddHeader>
 
                         <I.AddContentContainer>
-                            {/* Date Picker */}
-                            <TouchableOpacity onPress={() => setCalendarVisible(true)} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                                <EvilIcons name="calendar" size={24} color="black" />
-                                <Text style={{ marginLeft: 5, fontSize: 16 }}>{format(selectedLogDate, 'yyyy년 MM월 dd일')}</Text>
-                            </TouchableOpacity>
-
                             {imageUri ? (
                                 <View>
                                     <TouchableOpacity onPress={pickImage}>
@@ -334,7 +298,7 @@ export default function AddILogScreen() {
                             <I.AddButtonText>Cancel</I.AddButtonText>
                         </I.AddCancelButton>
                         <I.AddSaveButton onPress={handleSave}>
-                            <I.AddButtonText>Save</I.AddButtonText>
+                            <I.AddButtonText>Update</I.AddButtonText>
                         </I.AddSaveButton>
                     </I.AddButtonWrap>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{borderWidth: 1, borderColor: 'mediumslateblue'}}>
@@ -346,31 +310,6 @@ export default function AddILogScreen() {
                     </ScrollView>
                 </I.AddSuggestionContainer>
             </View>
-
-            {/* Calendar Modal */}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={isCalendarVisible}
-                onRequestClose={() => setCalendarVisible(false)}
-            >
-                <TouchableOpacity
-                    style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' }}
-                    activeOpacity={1}
-                    onPressOut={() => setCalendarVisible(false)}
-                >
-                    <View style={{ width: '90%', backgroundColor: 'white', borderRadius: 10, padding: 10 }} onStartShouldSetResponder={() => true}>
-                        <Calendar
-                            markedDates={markedDates}
-                            onDayPress={handleDateSelect}
-                            current={selectedLogDate.toISOString().split('T')[0]}
-                            onMonthChange={(month) => {
-                                setCurrentCalendarMonth(month.dateString);
-                            }}
-                        />
-                    </View>
-                </TouchableOpacity>
-            </Modal>
         </I.ScreenContainer>
     );
 }

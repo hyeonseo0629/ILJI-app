@@ -13,12 +13,9 @@ import {GestureHandlerRootView} from "react-native-gesture-handler";
 
 export default function TabLayout() {
     const colorScheme = useColorScheme();
-    const isnets = useSafeAreaInsets();
 
     return (
         <GestureHandlerRootView style={{flex: 1}}>
-            <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
-                <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
                     <StatusBar style="dark"/>
                     <Tabs
                         screenOptions={{
@@ -71,8 +68,6 @@ export default function TabLayout() {
                             }}
                         />
                     </Tabs>
-                </View>
-            </View>
         </GestureHandlerRootView>
     );
 }

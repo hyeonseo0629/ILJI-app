@@ -1,15 +1,16 @@
-import { Dimensions, View, FlatList } from "react-native";
+import {Dimensions, View, FlatList, ViewToken, TouchableOpacity} from "react-native";
 import * as I from "@/components/style/I-logStyled";
-import React from "react";
-import { ILogData } from "@/app/(tabs)/i-log";
-import { format } from 'date-fns';
-import { AntDesign } from '@expo/vector-icons';
+import React, {useRef, useEffect} from "react";
+import {ILogData} from "@/app/(tabs)/i-log";
+import {format} from 'date-fns';
+import {AntDesign, EvilIcons} from '@expo/vector-icons';
+import { useRouter } from "expo-router";
 
-const { width } = Dimensions.get("window");
+const {width} = Dimensions.get("window");
 
-// DiaryPage는 FlatList의 각 아이템을 렌더링하는 역할을 합니다.
-const DiaryPage = ({ item }: { item: ILogData }) => {
-    let parsedFriendTags: {id: number, name: string}[] = [];
+const DiaryPage = ({item, onDatePress}: { item: ILogData, onDatePress: () => void }) => {
+    const router = useRouter();
+    let parsedFriendTags: { id: number, name: string }[] = [];
     try {
         if (item.friend_tags) {
             parsedFriendTags = JSON.parse(item.friend_tags);
@@ -18,68 +19,84 @@ const DiaryPage = ({ item }: { item: ILogData }) => {
         console.error("Failed to parse friend_tags:", e);
     }
 
+    const handleNavigateToDetail = () => {
+        router.push({ pathname: '/i-log/[id]', params: { id: item.id.toString() } });
+    };
+
     return (
         <I.PageWrap>
             <I.PageScrollView showsVerticalScrollIndicator={false}>
                 <I.PageHeader>
                     <I.PageDateInfo>
-                        <I.PageDateText>{format(item.i_log_date, 'yyyy.MM.dd')}</I.PageDateText>
+                        <I.PageDateButton onPress={onDatePress}>
+                            <EvilIcons name="search" size={35} style={{marginBottom:5}}/>
+                            <I.PageDateText>{format(item.log_date, 'yyyy.MM.dd')}</I.PageDateText>
+                        </I.PageDateButton>
                         <I.PageTimeText>{format(item.created_at, 'HH:mm:ss')}</I.PageTimeText>
                     </I.PageDateInfo>
                 </I.PageHeader>
 
-                <I.PageTitle>{item.title}</I.PageTitle>
+                {/* Wrap content below header in a TouchableOpacity for navigation */}
+                <TouchableOpacity activeOpacity={0.8} onPress={handleNavigateToDetail}>
+                    <I.PageTitle>{item.title}</I.PageTitle>
 
-                {item.img_url && (
-                    <I.PageImageContainer>
-                        <I.PageImage source={{ uri: item.img_url }} />
-                        <I.PageStatsContainer>
-                            <I.PageStatItem>
-                                <AntDesign name="heart" size={14} color="white" />
-                                <I.PageStatText>{item.like_count}</I.PageStatText>
-                            </I.PageStatItem>
-                            <I.PageStatItem>
-                                <AntDesign name="message1" size={14} color="white" />
-                                <I.PageStatText>{item.comment_count}</I.PageStatText>
-                            </I.PageStatItem>
-                        </I.PageStatsContainer>
-                    </I.PageImageContainer>
-                )}
+                    {item.img_url && (
+                        <I.PageImageContainer>
+                            <I.PageImage source={{uri: item.img_url}}/>
+                            <I.PageStatsContainer>
+                                <I.PageStatItem>
+                                    <AntDesign name="heart" size={14} color="white"/>
+                                    <I.PageStatText>{item.like_count}</I.PageStatText>
+                                </I.PageStatItem>
+                                <I.PageStatItem>
+                                    <AntDesign name="message1" size={14} color="white"/>
+                                    <I.PageStatText>{item.comment_count}</I.PageStatText>
+                                </I.PageStatItem>
+                            </I.PageStatsContainer>
+                        </I.PageImageContainer>
+                    )}
 
-                {parsedFriendTags.length > 0 && (
-                    <I.PageFriendTagsContainer>
-                        {parsedFriendTags.map(tag => (
-                            <I.PageFriendTag key={tag.id}>
-                                <I.PageFriendTagText>@{tag.name}</I.PageFriendTagText>
-                            </I.PageFriendTag>
-                        ))}
-                    </I.PageFriendTagsContainer>
-                )}
+                    {parsedFriendTags.length > 0 && (
+                        <I.PageFriendTagsContainer>
+                            {parsedFriendTags.map(tag => (
+                                <I.PageFriendTag key={tag.id}>
+                                    <I.PageFriendTagText>@{tag.name}</I.PageFriendTagText>
+                                </I.PageFriendTag>
+                            ))}
+                        </I.PageFriendTagsContainer>
+                    )}
 
-                <I.PageContent>{item.content}</I.PageContent>
+                    <I.PageContent>{item.content}</I.PageContent>
 
-                {item.tags && (
-                    <I.PageTagsContainer>
-                        <I.PageTagsText>{item.tags}</I.PageTagsText>
-                    </I.PageTagsContainer>
-                )}
+                    {item.tags && (
+                        <I.PageTagsContainer>
+                            <I.PageTagsText>{item.tags}</I.PageTagsText>
+                        </I.PageTagsContainer>
+                    )}
+                </TouchableOpacity>
             </I.PageScrollView>
         </I.PageWrap>
     );
 };
 
-// FlatList를 사용하여 페이지 뷰를 구현한 메인 컴포넌트
-const ILogPageView = ({ ilogs }: { ilogs: ILogData[] }) => {
+const ILogPageView = ({ilogs, onDatePress, scrollToIndex, onPageChange}: {
+    ilogs: ILogData[],
+    onDatePress: () => void,
+    scrollToIndex: number | null,
+    onPageChange: (index: number) => void
+}) => {
+    const flatListRef = useRef<FlatList<ILogData>>(null);
 
-    if (!ilogs || ilogs.length === 0) {
-        return <View><I.PageContent>작성된 일지가 없습니다.</I.PageContent></View>;
-    }
+    const onViewableItemsChanged = useRef(({viewableItems}: { viewableItems: ViewToken[] }) => {
+        if (viewableItems.length > 0) {
+            const currentIndex = viewableItems[0].index;
+            if (currentIndex !== null) {
+                onPageChange(currentIndex);
+            }
+        }
+    });
 
-    const renderItem = ({ item }: { item: ILogData }) => (
-        <View style={{ width }}>
-            <DiaryPage item={item} />
-        </View>
-    );
+    const viewabilityConfig = useRef({itemVisiblePercentThreshold: 50});
 
     const getItemLayout = (data: any, index: number) => ({
         length: width,
@@ -87,9 +104,43 @@ const ILogPageView = ({ ilogs }: { ilogs: ILogData[] }) => {
         index,
     });
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (
+                flatListRef.current &&
+                ilogs &&
+                scrollToIndex !== null &&
+                scrollToIndex >= 0 &&
+                scrollToIndex < ilogs.length
+            ) {
+                try {
+                    flatListRef.current.scrollToIndex({
+                        index: scrollToIndex,
+                        animated: false,
+                    });
+                } catch (e) {
+                    console.error("Failed to scroll in ILogPageView:", e);
+                }
+            }
+        }, 0);
+
+        return () => clearTimeout(timer);
+    }, [scrollToIndex, ilogs]);
+
+    if (!ilogs || ilogs.length === 0) {
+        return <View><I.PageContent>작성된 일지가 없습니다.</I.PageContent></View>;
+    }
+
+    const renderItem = ({item}: { item: ILogData }) => (
+        <View style={{width}}>
+            <DiaryPage item={item} onDatePress={onDatePress}/>
+        </View>
+    );
+
     return (
         <I.Container>
             <FlatList
+                ref={flatListRef}
                 data={ilogs}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id.toString()}
@@ -98,6 +149,9 @@ const ILogPageView = ({ ilogs }: { ilogs: ILogData[] }) => {
                 showsHorizontalScrollIndicator={false}
                 getItemLayout={getItemLayout}
                 windowSize={2}
+                initialNumToRender={1}
+                onViewableItemsChanged={onViewableItemsChanged.current}
+                viewabilityConfig={viewabilityConfig.current}
             />
         </I.Container>
     );
