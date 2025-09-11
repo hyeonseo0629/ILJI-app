@@ -8,7 +8,7 @@ import { Tag } from '@/components/ToDo/types';
 import { differenceInMinutes, isToday, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
-const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
+const HOUR_HEIGHT = 40; // 1시간에 해당하는 높이 (px)
 
 const calculateEventPosition = (event: Schedule) => {
     const startHour = event.startTime.getHours(); // .start -> .startTime
