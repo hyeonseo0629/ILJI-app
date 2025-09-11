@@ -112,7 +112,11 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
 
             const formattedEvents = mySchedules.map(formatRawSchedule);
             setEvents(formattedEvents);
-            setTags(tagsResponse.data); // 새로 추가된 태그 상태 업데이트
+            const processedTags = tagsResponse.data.map(tag => ({
+                ...tag,
+                color: (tag.color && tag.color.trim() !== '') ? tag.color : '#FF6B6B' // Ensure color is always a valid string
+            }));
+            setTags(processedTags); // 새로 추가된 태그 상태 업데이트
             setError(null);
         } catch (err) {
             console.error("초기 데이터 로딩 실패:", err);

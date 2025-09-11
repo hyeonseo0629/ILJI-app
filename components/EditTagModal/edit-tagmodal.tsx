@@ -27,7 +27,12 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
     useEffect(() => {
         if (tagToEdit) {
             setEditName(tagToEdit.label);
-            setEditColor(tagToEdit.color || '#FF6B6B');
+
+            if (tagToEdit.color && tagToEdit.color.trim() !== '') {
+                setEditColor(tagToEdit.color);
+            } else {
+                setEditColor('#FF6B6B'); // Default color if existing color is invalid/empty
+            }
         }
     }, [tagToEdit]);
 
@@ -112,6 +117,7 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
             </S.ColorPickerHeader>
             <S.ColorPickerWrapper>
                 <ColorPicker
+                    key={tagToEdit?.id}
                     color={editColor}
                     onColorChangeComplete={setEditColor}
                 />
