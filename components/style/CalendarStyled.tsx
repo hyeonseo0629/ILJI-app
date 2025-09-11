@@ -1,49 +1,64 @@
 import styled from 'styled-components/native';
 
-// -------------- //
-// Calendar Area  //
-// -------------- //
-
-export const CalendarContainer = styled.View`
+// Calendar Area
+export const CContainer = styled.View`
     flex: 1; /* 남은 공간을 모두 차지하도록 설정 */
     background-color: #ffffff;
     width: 100%;
-    padding: 15px 10px;
+    padding: 15px 30px;
 `
-// ------------------------ //
-// Calendar Style Component //
-// ------------------------ //
 
-export const MonthContainer = styled.View`
+// Monthly Calendar Component
+export const MContainer = styled.View`
     flex: 1; /* 부모 컨테이너(CContainer)의 공간을 모두 차지하도록 설정 */
     background-color: #ffffff;
     padding-vertical: 15px;
     width: 100%;
 `
 
-export const MonthLoadingContainer = styled.View`
+export const MLoadingContainer = styled.View`
     justify-content: center;
     align-items: center;
     height: 420px; // Give it a fixed height to avoid layout shifts
 `
 
-export const MonthHeader = styled.View`
+export const MHeader = styled.View`
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     margin-bottom: 20px;
     padding-horizontal: 15px;
-    padding: 0 18px;
 `;
 
-export const MonthText = styled.Text`
+export const MMonthText = styled.Text`
     font-size: 20px;
     font-weight: bold;
     color: #333;
-    width: 35%;
+    width: 115px;
 `;
 
-export const MonthDayNameText = styled.Text.attrs({
+// --- Day/Week/Month 버튼 스타일 ---
+export const MViewModeContainer = styled.View`
+    flex-direction: row;
+    align-items: center;
+    gap: 5px; /* 버튼 사이에 간격을 줍니다 */
+`;
+
+export const MViewModeButton = styled.Pressable<{ isActive: boolean }>`
+    padding: 8px 10px; /* 버튼의 크기를 조절합니다 */
+    border-radius: 20px; /* 동그란 모양을 만듭니다 */
+    background-color: ${({ isActive }) => (isActive ? '#EAEAFB' : 'transparent')}; /* 활성화 시 연보라색 배경 */
+`;
+
+export const MViewModeButtonText = styled.Text<{ isActive: boolean }>`
+    font-size: 14px;
+    font-weight: 600;
+    color: ${({ isActive }) => (isActive ? '#5856D6' : '#000000')}; /* 활성화 시 진한 보라색 텍스트 */
+`;
+// --- 버튼 스타일 끝 ---
+
+
+export const MDayNameText = styled.Text.attrs({
     allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
 })`
     flex: 1;
@@ -53,80 +68,69 @@ export const MonthDayNameText = styled.Text.attrs({
     text-align: center;
 `;
 
-export const MonthWeek = styled.View<{ $isHeader?: boolean }>`
+export const MWeek = styled.View`
     flex-direction: row;
-    ${(props) => props.$isHeader ?
-            `height: 50px;` : `flex: 1;`
-    }
+    height: 65px;
 `;
 
-export const DayOfTheWeek = styled.View`
-    flex-direction: row;
-    height: 60px;
-    margin-bottom: 20px; /* 요일과 날짜 사이의 간격 */
-`
-
-export const DayOfTheWeekText = styled.Text`
-    flex-direction: row;
-    margin-bottom: 20px; /* 요일과 날짜 사이의 간격 */
-`
-
-interface MonthDayContainerProps {
+interface MDayContainerProps {
     $isSelected?: boolean;
 }
 
-export const MonthDayContainer = styled.TouchableOpacity<MonthDayContainerProps>`
+export const MDayContainer = styled.TouchableOpacity<MDayContainerProps>`
     flex: 1;
     flex-direction: column; /* 날짜와 제목을 세로로 쌓습니다. */
     align-items: center; /* 가로 중앙 정렬 */
     justify-content: flex-start; /* 세로 상단 정렬 */
-    padding: 5px;
+    padding: 10px;
     background-color: ${(props) => (props.$isSelected ? '#EFEFEF' : 'transparent')};
     border-radius: 8px;
 `;
 
-export const MonthEmptyDayContainer = styled.View`
+export const MEmptyDayContainer = styled.View`
     flex: 1;
     height: 10px; /* MDayContainer와 높이를 통일하여 레이아웃 깨짐 방지 */
 `;
 
-interface MonthDayTextProps {
+interface MDayTextProps {
     $isNotInMonth?: boolean;
     $isToday?: boolean;
     $isSelected?: boolean;
 }
 
-export const MonthDayText = styled.Text.attrs({
+export const MDayText = styled.Text.attrs({
     allowFontScaling: false, // OS 폰트 크기 설정에 영향을 받지 않도록 설정
-})<MonthDayTextProps>`
+})<MDayTextProps>`
     font-size: 12px;
     text-align: center;
     color: ${(props) => {
-        if (props.$isSelected) return '#FFFFFF';
-        if (props.$isNotInMonth) return '#D1D1D6';
-        return '#333';
-    }};
+    if (props.$isSelected) return '#FFFFFF';
+    if (props.$isNotInMonth) return '#D1D1D6';
+    return '#333';
+}};
     font-weight: ${(props) => (props.$isToday && !props.$isSelected ? 'bold' : 'normal')};
 `;
 
-export const MonthDayCircle = styled.View`
-    width: 16px;
-    height: 16px;
+export const MDayCircle = styled.View<{$isCurrentMonth?: boolean}>`
+    width: 25px;
+    height: 25px;
     background-color: mediumslateblue;
-    border-radius: 15px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
+    border-radius: 12.5px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
     justify-content: center; /* 내부 텍스트를 세로 중앙에 정렬 */
     align-items: center; /* 내부 텍스트를 가로 중앙에 정렬 */
+    opacity: ${({ $isCurrentMonth = true }) => $isCurrentMonth ? 1 : 0.3};
 `;
 
-interface ScheduleTitleTextProps {
+interface EventTitleTextProps {
     color?: string;
+    $isCurrentMonth?: boolean;
 }
 
-export const ScheduleTitleText = styled.Text.attrs({
+export const EventTitleText = styled.Text.attrs({
     numberOfLines: 1, // 텍스트를 한 줄로 제한합니다.
     ellipsizeMode: 'tail', // 길이가 길면 끝에 ...을 표시합니다.
-})<ScheduleTitleTextProps>`
-    font-size: 10px; /* 월별 캘린더에 맞게 작은 글씨 크기 */
+})<EventTitleTextProps>`
+    font-size: 8px; /* 월별 캘린더에 맞게 작은 글씨 크기 */
     text-align: center;
     margin-top: 2px;
     width: 100%; /* 컨테이너 너비에 맞춤 */
@@ -134,30 +138,19 @@ export const ScheduleTitleText = styled.Text.attrs({
     padding: 1px 3px; /* 텍스트 주변에 약간의 여백을 줍니다. */
     color: #ffffff;
     background-color: ${(props) => props.color || 'gray'};
+    opacity: ${({ $isCurrentMonth = true }) => $isCurrentMonth ? 1 : 0.4};
 `;
 
-export const MoreScheduleText = styled.Text.attrs({
-    numberOfLines: 1,
-})`
-    font-size: 10px;
-    text-align: center;
-    margin-top: 2px;
-    width: 100%;
-    padding: 1px 3px;
-    color: #555; /* 눈에 띄도록 다른 색상 사용 */
-    font-weight: bold;
-`;
-
-export const MonthSchedulesContainer = styled.View`
-    flex: 1; /* 날짜 텍스트를 제외한 나머지 세로 공간을 모두 차지합니다. */
-    width: 100%; /* 부모 컨테이너의 너비에 맞춥니다. */
-    overflow: hidden; /* 이 컨테이너의 크기를 벗어나는 자식 요소(일정)를 숨깁니다. */
-`;
+export const MEventsContainer = styled.View`
+     flex: 1; /* 날짜 텍스트를 제외한 나머지 세로 공간을 모두 차지합니다. */
+     width: 100%; /* 부모 컨테이너의 너비에 맞춥니다. */
+     overflow: hidden; /* 이 컨테이너의 크기를 벗어나는 자식 요소(일정)를 숨깁니다. */
+ `;
 
 
-// ------------------------- //
-// Timetable Style Component //
-// ------------------------- //
+/**
+ * Timetable (Week) View Styles
+ */
 export const TimetableWrapper = styled.View`
     flex: 1;
     border-top-width: 1px;
@@ -186,12 +179,21 @@ export const TimeLabelText = styled.Text`
     transform: translateY(-8px); /* 선의 중앙에 오도록 미세 조정 */
 `;
 
-export const TimeTableDaysContainer = styled.View`
+export const DayText = styled.Text`
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    font-size: 20px;
+    border-bottom-width: 1px ;
+    border-bottom-color: #f0f0f0;
+`
+
+export const DaysContainer = styled.View`
     flex: 1;
     flex-direction: row;
 `;
 
-export const TimeTableDayColumn = styled.View<{ $isToday?: boolean }>`
+export const DayColumn = styled.View<{ $isToday?: boolean }>`
     flex: 1;
     border-left-width: 1px;
     border-left-color: #f0f0f0;
@@ -204,7 +206,7 @@ export const HourCell = styled.View`
     border-bottom-color: #f0f0f0;
 `;
 
-export const ScheduleBlock = styled.TouchableOpacity<{ top: number; height: number; color: string }>`
+export const EventBlock = styled.TouchableOpacity<{ top: number; height: number; color: string }>`
     position: absolute;
     left: 5px;
     right: 5px;
@@ -216,59 +218,59 @@ export const ScheduleBlock = styled.TouchableOpacity<{ top: number; height: numb
     opacity: 0.85;
 `;
 
-export const ScheduleBlockText = styled.Text`
+export const EventBlockText = styled.Text`
     color: #ffffff;
     font-size: 12px;
     font-weight: 500;
 `;
 
-// ----------------------- //
-// View Mode Button Styles //
-// ----------------------- //
 
-export const ViewModeButtonContainer = styled.View`
-    padding: 0px;
-    border-radius: 20px;
+/**
+ * CalendarView Styles
+ */
+export const ViewModeContainer = styled.View`
+    margin: 0 20px;
+    padding: 0 10px;
     flex-direction: row;
     justify-content: center;
     padding-vertical: 10px;
     border-bottom-color: #eee;
-    background-color: lavender;
-    elevation: 10;
 `;
 
 interface ViewModeButtonProps {
     $isActive?: boolean;
 }
 
-export const ViewMonthButton = styled.TouchableOpacity<ViewModeButtonProps>`
+export const ViewModeButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
-    border-top-left-radius: 20px;
-    border-bottom-left-radius: 20px;
+    border-radius: 20px;
+    margin: 0 5px;
     background-color: ${(props) => (props.$isActive ? 'mediumslateblue' : 'lavender')};
-`
+    elevation: 10;
+`;
 
-export const ViewWeekButton = styled.TouchableOpacity<ViewModeButtonProps>`
-    padding: 8px 18px;
-    background-color: ${(props) => (props.$isActive ? 'mediumslateblue' : 'lavender')};
-`
-
-export const ViewDayButton = styled.TouchableOpacity<ViewModeButtonProps>`
-    padding: 8px 18px;
-    border-top-right-radius: 20px;
-    border-bottom-right-radius: 20px;
-    background-color: ${(props) => (props.$isActive ? 'mediumslateblue' : 'lavender')};
-`
-
-export const ViewModeButtonText = styled.Text<ViewModeButtonProps>`
+export const ButtonText = styled.Text<ViewModeButtonProps>`
     font-weight: 500;
     font-size: 20px;
     color: ${(props) => (props.$isActive ? 'white' : 'black')};
 `;
 
-// ------------------------------------- //
-// Daily Calendar Header Style Component //
-// ------------------------------------- //
+/**
+ * Day View Header Styles
+ */
+export const DayViewHeader = styled.View`
+     padding: 10px 20px;
+     background-color: #f8f8f8;
+     border-bottom-width: 1px;
+     border-bottom-color: #eee;
+ `;
+
+export const DayViewHeaderText = styled.Text`
+     font-size: 16px;
+     font-weight: 600;
+     color: #333;
+     text-align: center;
+ `;
 
 export const DayHeader = styled.View`
     padding: 10px 20px;

@@ -9,6 +9,7 @@ import ColorSchemeProvider, { useColorScheme } from '@/hooks/useColorScheme';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useSession } from '@/hooks/useAuth';
 import { Colors } from '@/constants/Colors';
+import { ScheduleProvider } from '@/src/context/ScheduleContext';
 
 // Layout 컴포넌트는 그대로 유지됩니다.
 function Layout() {
@@ -102,7 +103,9 @@ function ThemedAppLayout() {
   return (
     <ThemeProvider value={currentTheme}>
       <AuthProvider>
-        <Layout />
+        <ScheduleProvider>
+          <Layout />
+        </ScheduleProvider>
       </AuthProvider>
       <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
     </ThemeProvider>

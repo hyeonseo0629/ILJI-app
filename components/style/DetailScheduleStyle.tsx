@@ -12,7 +12,7 @@ export const ModalOverlay = styled.Pressable`
     padding-left: 20px;
 `;
 
-export const Container = styled.View`
+export const DSContainer = styled.View`
     width: 95%; /* 부모(ModalOverlay)의 여백을 제외한 전체 너비를 사용합니다. */
     background-color: #ffffff;
     border-radius: 20px;
@@ -23,7 +23,7 @@ export const Container = styled.View`
     elevation: 10; /* 안드로이드에서 그림자 효과를 줍니다. */
 `;
 
-export const Header = styled.Text`
+export const DSHeader = styled.Text`
     margin: 0 30px; /* 헤더의 좌우 여백을 여기서 직접 지정합니다. */
     font-size: 28px; /* 동적 제목에 맞게 폰트 크기 조정 */
     margin-top: 25px; /* 컨테이너의 패딩을 헤더의 마진으로 이동합니다. */
@@ -35,7 +35,7 @@ export const Header = styled.Text`
     margin-bottom: 25px;
 `;
 
-export const HeaderInput = styled.TextInput`
+export const DSHeaderInput = styled.TextInput`
     margin: 0 30px;
     font-size: 28px;
     margin-top: 25px;
@@ -47,7 +47,7 @@ export const HeaderInput = styled.TextInput`
     margin-bottom: 25px;
 `;
 
-export const ContentWrap = styled.ScrollView.attrs({
+export const DSContentWrap = styled.ScrollView.attrs({
     // (Android) 스크롤바가 항상 보이도록 설정합니다. iOS에서는 스크롤 시에만 표시됩니다.
     persistentScrollbar: true,
     // (iOS) 스크롤바를 콘텐츠 패딩(30px) 안쪽으로 들여옵니다.
@@ -96,7 +96,7 @@ export const TimeText = styled.Text`
     margin-top: 2px;
 `;
 
-export const Label = styled.Text`
+export const DSLabel = styled.Text`
     font-size: 22px; /* 라벨 폰트 크기를 약간 줄여 균형을 맞춥니다. */
     font-weight: bold;
     color: mediumslateblue;
@@ -105,7 +105,7 @@ export const Label = styled.Text`
 `;
 
 // 메모, 위치 등 상세 내용을 보여주는 텍스트 스타일
-export const ValueText = styled.Text`
+export const DSValueText = styled.Text`
     width: 100%;
     background-color: #f4f4fd; /* 은은한 배경색으로 구분감을 줍니다. */
     padding: 14px 16px; /* 넉넉한 내부 여백을 추가합니다. */
@@ -118,7 +118,7 @@ export const ValueText = styled.Text`
     overflow: hidden; /* iOS에서 borderRadius를 적용하기 위해 필요합니다. */
 `;
 
-export const ValueInput = styled.TextInput`
+export const DSValueInput = styled.TextInput`
     width: 100%;
     background-color: #f4f4fd;
     padding: 14px 16px;
@@ -188,12 +188,12 @@ export const DeleteButton = styled.TouchableOpacity`
     margin-left: 10px; /* 왼쪽 요소와의 간격 */
 `;
 
-export const SelectedTagWrap = styled.View`
+export const DSSelectedTagWrap = styled.View`
      flex-direction: row;
      flex-wrap: wrap; /* 태그 라벨이 사라져서 상단 여백을 제거합니다. */
  `;
 
-export const SelectedTag = styled.View<{ color: string }>`
+export const DSSelectedTag = styled.View<{ color: string }>`
      flex-direction: row;
      align-items: center;
      background-color: ${(props) => props.color};
@@ -202,13 +202,13 @@ export const SelectedTag = styled.View<{ color: string }>`
      margin-bottom: 25px; /* 다음 섹션과의 간격을 일정하게 조정합니다. */
 `;
 
-export const SelectedTagText = styled.Text`
+export const DSSelectedTagText = styled.Text`
      color: #ffffff;
      font-weight: bold;
      font-size: 18px;
  `;
 
-export const ButtonArea = styled.View`
+export const DSButtonArea = styled.View`
     flex-direction: row;
     /* 내용과 버튼 영역 사이의 간격은 DSContentWrap의 padding-bottom으로 제어합니다. */
     /* 버튼 위의 라벤더 구분선을 제거하여 더 깔끔하게 만듭니다. */
@@ -218,20 +218,20 @@ export const ButtonArea = styled.View`
     overflow: hidden; /* 둥근 모서리를 적용하기 위해 필수 */
 `;
 
-export const ActionButton = styled.TouchableOpacity<{ primary?: boolean }>`
+export const DSActionButton = styled.TouchableOpacity<{ primary?: boolean }>`
     flex: 1; /* 버튼이 영역을 동일하게 나누어 가집니다. */
     padding: 18px;
     align-items: center;
     background-color: ${({ primary }) => primary ? 'mediumslateblue' : '#eef0f4'}; /* secondary 버튼에 아주 연한 배경색 추가 */
 `;
 
-export const ActionButtonText = styled.Text<{ primary?: boolean }>`
+export const DSActionButtonText = styled.Text<{ primary?: boolean }>`
     font-size: 22px;
     font-weight: bold;
     color: ${({ primary }) => primary ? 'white' : 'mediumslateblue'}; /* secondary 버튼 텍스트 색상 유지 */
 `;
 
-export const ButtonSeparator = styled.View`
+export const DSButtonSeparator = styled.View`
     width: 1px;
     background-color: lavender; /* 구분선 색상 */
 `;
