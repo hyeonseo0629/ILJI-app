@@ -186,7 +186,7 @@ export const TimeColumn = styled.View`
 `;
 
 export const TimeLabelCell = styled.View`
-    height: 60px;
+    height: 40px; /* 1시간의 높이 */
     justify-content: flex-start;
     align-items: center;
 `;
@@ -219,7 +219,7 @@ export const DayColumn = styled.View<{ $isToday?: boolean }>`
 `;
 
 export const HourCell = styled.View`
-    height: 60px;
+    height: 40px;
     border-bottom-width: 1px;
     border-bottom-color: #f0f0f0;
 `;
