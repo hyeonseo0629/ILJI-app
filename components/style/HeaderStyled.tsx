@@ -18,7 +18,7 @@ const mainHeaderStyles = css<ContainerProps>`
     elevation: ${(props) => (props.$isSheetExpanded ? 0 : 5)};
 `;
 
-export const Container = styled.View<HContainerProps>`
+export const Container = styled.View<ContainerProps>`
     width: 100%;
     background-color: #ffffff;
     /* 바텀 시트가 확장되면 zIndex를 0으로, 아닐 때는 1로 설정합니다. */

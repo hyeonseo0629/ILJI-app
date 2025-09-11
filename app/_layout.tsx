@@ -7,6 +7,7 @@ import {useColorScheme} from '@/hooks/useColorScheme';
 import {AuthProvider} from '@/hooks/useAuth';
 import {View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
+import { ScheduleProvider } from '@/src/context/ScheduleContext';
 
 export default function RootLayout() {
 
@@ -26,6 +27,7 @@ export default function RootLayout() {
             <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
                 <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
                     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                        <ScheduleProvider>
                         <Stack>
                             <Stack.Screen
                                 name="(tabs)"
@@ -51,6 +53,7 @@ export default function RootLayout() {
                                 name="+not-found"
                             />
                         </Stack>
+                        </ScheduleProvider>
                     </ThemeProvider>
                 </View>
             </View>

@@ -1,5 +1,5 @@
 import React, {useState, useMemo, useRef, useEffect} from 'react';
-import {View, Text, FlatList} from 'react-native';
+import {View, Text, FlatList, Dimensions, Alert} from 'react-native';
 import PagerView from 'react-native-pager-view';
 import {
     format,
@@ -7,12 +7,13 @@ import {
     sub,
     isValid,
     isSameDay,
+    set,
+    differenceInCalendarDays
 } from 'date-fns';
 import * as CS from '../style/CalendarStyled';
 import MonthView from './MonthView';
 import WeekView from './WeekView';
 import DayView from './DayView';
-import DetailSchedule from '@/components/schedule/detail-schedule';
 import { Schedule } from '@/components/calendar/scheduleTypes';
 import { Tag } from '@/components/tag/TagTypes';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,17 +23,18 @@ interface SixWeekCalendarProps {
     onDateChange: (newDate: Date) => void;
     schedules: Schedule[];
     tags: Tag[];
-    onSchedulesChange: (schedules: Schedule[]) => void;
+    // [수정] onSchedulesChange는 Context로 대체되었으므로 제거합니다.
+    onEventPress?: (event: Schedule) => void; // [추가] 부모로부터 클릭 이벤트를 받을 함수
 }
 
-const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, schedules, tags, onSchedulesChange}) => {
+const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, schedules, tags, onEventPress}) => {
+    // Refs for controlling pagers and lists
     const pagerRef = useRef<PagerView>(null);
     const monthFlatListRef = useRef<FlatList>(null);
     const weekPagerRef = useRef<PagerView>(null);
     const dayPagerRef = useRef<PagerView>(null);
 
     const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
-    const [selectedDate, setSelectedDate] = useState(date);
     const [monthContainerHeight, setMonthContainerHeight] = useState(0);
 
     const [isModalVisible, setModalVisible] = useState(false);
@@ -42,8 +44,16 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
     const [weeks, setWeeks] = useState([sub(date, {weeks: 1}), date, add(date, {weeks: 1})]);
     const [days, setDays] = useState([sub(date, {days: 1}), date, add(date, {days: 1})]);
 
+    // WeekView와 DayView에 표시할 '시간 지정' 일정만 필터링합니다.
+    // `schedules`가 변경될 때마다 이 목록이 다시 계산되어 삭제/수정이 반영됩니다.
     const timedSchedules = useMemo(() => {
-        return schedules.filter(schedule => !schedule.isAllDay);
+        return schedules.filter(schedule => {
+            // 조건 1: '종일' 일정이 아니어야 함
+            const isNotAllDay = !schedule.isAllDay;
+            // 조건 2: 시작일과 종료일이 같은 날이어야 함 (하루 안에 끝나는 일정)
+            const isSingleDay = differenceInCalendarDays(schedule.endTime, schedule.startTime) < 1;
+            return isNotAllDay && isSingleDay;
+        });
     }, [schedules])
 
     const insets = useSafeAreaInsets();
@@ -80,30 +90,8 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
 
     const handleDayPress = (day: Date) => {
         onDateChange(day);
-        setSelectedDate(day);
+        // Pager를 Day View(인덱스 2)로 전환합니다.
         pagerRef.current?.setPage(2);
-    };
-
-    const handleEventPress = (event: Schedule) => {
-        setSelectedEvent(event);
-        setModalVisible(true);
-    };
-
-    const handleCloseModal = () => {
-        setModalVisible(false);
-        setTimeout(() => setSelectedEvent(null), 300);
-    };
-
-    const handleUpdateSchedule = (updatedSchedule: Schedule) => {
-        const newSchedules = schedules.map(s => s.id === updatedSchedule.id ? updatedSchedule : s);
-        onSchedulesChange(newSchedules);
-    };
-
-    const handleDeleteEvent = () => {
-        if (!selectedEvent) return;
-        const newSchedules = schedules.filter(schedule => schedule.id !== selectedEvent.id);
-        onSchedulesChange(newSchedules);
-        handleCloseModal();
     };
 
     const viewModes: ('month' | 'week' | 'day')[] = ['month', 'week', 'day'];
@@ -159,7 +147,7 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                                 <View style={{height: monthContainerHeight, margin: 5}}>
                                     <MonthView
                                         date={item}
-                                        schedules={schedules}
+                                        schedules={schedules} // MonthView는 모든 일정을 그대로 받습니다.
                                         tags={tags}
                                         onDayPress={handleDayPress}
                                     />
@@ -191,10 +179,10 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                             <View key={index}>
                                 <WeekView
                                     date={weekDate}
-                                    schedules={timedSchedules}
+                                    schedules={timedSchedules} // WeekView는 필터링된 일정을 받습니다.
                                     tags={tags}
                                     onDayPress={handleDayPress}
-                                    onEventPress={handleEventPress}
+                                    onEventPress={onEventPress}
                                 />
                             </View>
                         ))}
@@ -210,7 +198,6 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                         onPageSelected={(e) => {
                             if (e.nativeEvent.position !== 1) {
                                 onDateChange(days[e.nativeEvent.position]);
-                                setSelectedDate(days[e.nativeEvent.position]);
                             }
                         }}
                     >
@@ -220,22 +207,13 @@ const CalendarView: React.FC<SixWeekCalendarProps> = ({date, onDateChange, sched
                                     date={dayDate}
                                     schedules={timedSchedules.filter(schedule => isSameDay(schedule.startTime, dayDate))}
                                     tags={tags}
-                                    onEventPress={handleEventPress}
+                                    onEventPress={onEventPress}
                                 />
                             </View>
                         ))}
                     </PagerView>
                 </View>
             </PagerView>
-
-            <DetailSchedule
-                schedule={selectedEvent}
-                visible={isModalVisible}
-                onClose={handleCloseModal}
-                onDelete={handleDeleteEvent}
-                onUpdate={handleUpdateSchedule}
-                tags={tags}
-            />
         </CS.MonthContainer>
     );
 };
