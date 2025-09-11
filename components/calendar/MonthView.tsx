@@ -9,6 +9,12 @@ import {
     isSameMonth,
     isToday,
     isSameDay,
+    isWithinInterval,
+    startOfDay,
+    endOfDay,
+    differenceInCalendarDays,
+    max,
+    min,
 } from 'date-fns';
 import * as CS from '../style/CalendarStyled';
 import {Schedule} from '@/components/calendar/scheduleTypes';
@@ -23,6 +29,7 @@ interface MonthViewProps {
 
 const MonthView: React.FC<MonthViewProps> = ({date, schedules = [], tags = [], onDayPress}) => {
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
     const weeks = useMemo(() => {
         const monthStart = startOfMonth(date);
         const monthEnd = endOfMonth(date);
@@ -40,12 +47,13 @@ const MonthView: React.FC<MonthViewProps> = ({date, schedules = [], tags = [], o
         return weeksArray;
     }, [date]);
 
-    // tags 배열이 변경될 때만 색상 맵을 다시 생성하여 성능을 최적화합니다.
     const tagColorMap = useMemo(() => {
         const map = new Map<number, string>();
-        tags.forEach(tag => {
-            map.set(tag.id, tag.color);
-        });
+        if (tags) {
+            tags.forEach(tag => {
+                map.set(tag.id, tag.color);
+            });
+        }
         return map;
     }, [tags]);
 
@@ -63,7 +71,24 @@ const MonthView: React.FC<MonthViewProps> = ({date, schedules = [], tags = [], o
                         if (!day) return <CS.MonthEmptyDayContainer key={`empty-${j}`}/>;
                         const isCurrentMonth = isSameMonth(day, date);
                         const isCurrentDay = isToday(day);
-                        const daySchedules = schedules.filter(schedule => isSameDay(schedule.startTime, day));
+
+                        const daySchedules = schedules.filter(schedule =>
+                            isWithinInterval(day, {
+                                start: startOfDay(schedule.startTime),
+                                end: endOfDay(schedule.endTime)
+                            })
+                        );
+
+                        // [추가] 세로 정렬 문제를 해결하기 위한 정렬 로직
+                        daySchedules.sort((a, b) => {
+                            const aIsMultiDay = !isSameDay(a.startTime, a.endTime);
+                            const bIsMultiDay = !isSameDay(b.startTime, b.endTime);
+
+                            if (aIsMultiDay !== bIsMultiDay) {
+                                return aIsMultiDay ? -1 : 1; // 장기 일정을 항상 위로
+                            }
+                            return a.startTime.getTime() - b.startTime.getTime(); // 그 외에는 시작 시간 순
+                        });
 
                         return (
                             <CS.MonthDayContainer
@@ -81,12 +106,36 @@ const MonthView: React.FC<MonthViewProps> = ({date, schedules = [], tags = [], o
                                 )}
                                 <CS.MonthSchedulesContainer>
                                     {/* 해당 날짜의 모든 일정을 순회하며 표시합니다. */}
-                                    {daySchedules.slice(0, 2).map(schedule => {
+                                    {daySchedules.slice(0, 2).map((schedule, index) => {
                                         const eventColor = tagColorMap.get(schedule.tagId) || 'gray';
+
+                                        const isMultiDay = !isSameDay(schedule.startTime, schedule.endTime);
+                                        const isStart = isSameDay(day, schedule.startTime);
+                                        const isEnd = isSameDay(day, schedule.endTime);
+
+                                        let position: 'start' | 'middle' | 'end' | 'single' = 'middle';
+                                        if (!isMultiDay) {
+                                            position = 'single';
+                                        } else if (isStart) {
+                                            position = 'start';
+                                        } else if (isEnd) {
+                                            position = 'end';
+                                        }
+
+                                        const topPosition = index * 14;
+
                                         return (
-                                            <CS.ScheduleTitleText key={schedule.id} color={eventColor}>
-                                                {schedule.title}
-                                            </CS.ScheduleTitleText>
+                                            <CS.EventBar
+                                                key={schedule.id}
+                                                color={eventColor}
+                                                $position={position}
+                                                $isCurrentMonth={isCurrentMonth}
+                                                $top={topPosition}
+                                            >
+                                                <CS.EventBarText>
+                                                    {position === 'start' || position === 'single' ? schedule.title : ''}
+                                                </CS.EventBarText>
+                                            </CS.EventBar>
                                         );
                                     })}
 
