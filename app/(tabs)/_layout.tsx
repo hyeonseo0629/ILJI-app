@@ -8,7 +8,6 @@ import TabBarBackground from '@/components/ui/TabBarBackground';
 import {Colors} from '@/constants/Colors';
 import {useColorScheme} from '@/hooks/useColorScheme';
 import {StatusBar} from "expo-status-bar";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 
 export default function TabLayout() {

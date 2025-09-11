@@ -1,20 +1,20 @@
 import * as I from "@/components/style/I-logStyled";
-import {FlatList, View, Modal, TouchableOpacity, Text} from "react-native";
+import {FlatList, View, Modal, TouchableOpacity, Text, TouchableWithoutFeedback} from "react-native";
 import {ILogData} from "@/app/(tabs)/i-log";
 import {format} from 'date-fns';
-import {AntDesign} from '@expo/vector-icons';
+import {AntDesign, EvilIcons} from '@expo/vector-icons';
 import React, {useState} from "react";
-import { Calendar, DateData } from 'react-native-calendars';
-import { useRouter } from 'expo-router';
+import {Calendar, DateData} from 'react-native-calendars';
+import {useRouter} from 'expo-router';
 
 // Month/Year Picker Modal Component
 const MonthYearPickerModal = ({
-    isVisible,
-    onClose,
-    data,
-    onSelect,
-    title,
-}: {
+                                  isVisible,
+                                  onClose,
+                                  data,
+                                  onSelect,
+                                  title,
+                              }: {
     isVisible: boolean;
     onClose: () => void;
     data: { label: string; value: string }[];
@@ -29,22 +29,23 @@ const MonthYearPickerModal = ({
             onRequestClose={onClose}
         >
             <TouchableOpacity
-                style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' }}
+                style={{flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center'}}
                 activeOpacity={1}
                 onPressOut={onClose}
             >
                 {/* The onStartShouldSetResponder is removed from this View */}
-                <View style={{ width: '80%', maxHeight: '70%', backgroundColor: 'white', borderRadius: 10, padding: 10 }}>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' }}>{title}</Text>
+                <View style={{width: '80%', maxHeight: '70%', backgroundColor: 'white', borderRadius: 10, padding: 10}}>
+                    <Text
+                        style={{fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center'}}>{title}</Text>
                     <FlatList
                         data={data}
                         keyExtractor={(item) => item.value}
-                        renderItem={({ item }) => (
+                        renderItem={({item}) => (
                             <TouchableOpacity
                                 onPress={() => onSelect(item.value)}
-                                style={{ padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+                                style={{padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee'}}
                             >
-                                <Text style={{ fontSize: 16 }}>{item.label}</Text>
+                                <Text style={{fontSize: 16}}>{item.label}</Text>
                             </TouchableOpacity>
                         )}
                     />
@@ -63,7 +64,7 @@ const ListItem = ({item}: { item: ILogData }) => {
     const previewText = singleLineContent.substring(0, maxLength);
 
     const handlePress = () => {
-        router.push({ pathname: '/i-log/[id]', params: { id: item.id.toString() } });
+        router.push({pathname: '/i-log/[id]', params: {id: item.id.toString()}});
     };
 
     return (
@@ -108,33 +109,35 @@ const ListItem = ({item}: { item: ILogData }) => {
 
 // ILogListView 메인 컴포넌트
 const ILogListView = ({
-    ilogs,
-    listFilterType,
-    listFilterValue,
-    openListCalendar,
-    isListCalendarVisible,
-    setListCalendarVisible,
-    markedDatesForListCalendar,
-    handleListDateSelect,
-    currentListCalendarMonth,
-    setCurrentListCalendarMonth,
-    handleListMonthFilter,
-    handleListYearFilter,
-    resetListFilter,
-    isMonthPickerVisible,
-    setMonthPickerVisible,
-    isYearPickerVisible,
-    setYearPickerVisible,
-    handleSelectMonth,
-    handleSelectYear,
-}: {
+                          ilogs,
+                          listFilterType,
+                          listFilterValue,
+                          openListCalendar,
+                          isListCalendarVisible,
+                          setListCalendarVisible,
+                          markedDatesForListCalendar,
+                          handleListDateSelect,
+                          currentListCalendarMonth,
+                          setCurrentListCalendarMonth,
+                          handleListMonthFilter,
+                          handleListYearFilter,
+                          resetListFilter,
+                          isMonthPickerVisible,
+                          setMonthPickerVisible,
+                          isYearPickerVisible,
+                          setYearPickerVisible,
+                          handleSelectMonth,
+                          handleSelectYear,
+                      }: {
     ilogs: ILogData[];
     listFilterType: 'day' | 'month' | 'year' | 'none';
     listFilterValue: string | null;
     openListCalendar: () => void;
     isListCalendarVisible: boolean;
     setListCalendarVisible: React.Dispatch<React.SetStateAction<boolean>>;
-    markedDatesForListCalendar: { [key: string]: { marked?: boolean, dotColor?: string, disabled?: boolean, disableTouchEvent?: boolean } };
+    markedDatesForListCalendar: {
+        [key: string]: { marked?: boolean, dotColor?: string, disabled?: boolean, disableTouchEvent?: boolean }
+    };
     handleListDateSelect: (day: DateData) => void;
     currentListCalendarMonth: string;
     setCurrentListCalendarMonth: React.Dispatch<React.SetStateAction<string>>;
@@ -161,68 +164,115 @@ const ILogListView = ({
         return '전체 보기';
     };
 
-    const months = Array.from({ length: 12 }, (_, i) => ({
+    const months = Array.from({length: 12}, (_, i) => ({
         label: `${i + 1}월`,
         value: format(new Date(2000, i, 1), 'MM'),
     }));
 
-    const years = Array.from({ length: 81 }, (_, i) => {
-        const year = new Date().getFullYear() - 80 + i;
-        return { label: `${year}년`, value: `${year}` };
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({length: 81}, (_, i) => {
+        const year = currentYear - i;
+        return {label: `${year}년`, value: `${year}`};
     });
 
     const dropdownOptions = [
-        { label: '날짜 선택', action: () => { setDropdownVisible(false); openListCalendar(); } },
-        { label: `${format(new Date(currentListCalendarMonth), 'yyyy년 MM월')}로 검색`, action: () => { setDropdownVisible(false); handleListMonthFilter(); } },
-        { label: `${format(new Date(currentListCalendarMonth), 'yyyy년')}으로 검색`, action: () => { setDropdownVisible(false); handleListYearFilter(); } },
-        { label: '월 선택', action: () => { setDropdownVisible(false); setMonthPickerVisible(true); } },
-        { label: '연도 선택', action: () => { setDropdownVisible(false); setYearPickerVisible(true); } },
-        { label: '필터 초기화', action: () => { setDropdownVisible(false); resetListFilter(); } },
+        {
+            label: '날짜 선택', action: () => {
+                setDropdownVisible(false);
+                openListCalendar();
+            }
+        },
+        {
+            label: '월 선택', action: () => {
+                setDropdownVisible(false);
+                setMonthPickerVisible(true);
+            }
+        },
+        {
+            label: '연도 선택', action: () => {
+                setDropdownVisible(false);
+                setYearPickerVisible(true);
+            }
+        },
+        {
+            label: `${format(new Date(currentListCalendarMonth), 'yyyy년 MM월')}로 검색`, action: () => {
+                setDropdownVisible(false);
+                handleListMonthFilter();
+            }
+        },
+        {
+            label: `${format(new Date(currentListCalendarMonth), 'yyyy년')}으로 검색`, action: () => {
+                setDropdownVisible(false);
+                handleListYearFilter();
+            }
+        },
+        {
+            label: '필터 초기화', action: () => {
+                setDropdownVisible(false);
+                resetListFilter();
+            }
+        },
     ];
 
     return (
         <I.Container>
-            <View style={{ paddingHorizontal: 10, marginBottom: 10, zIndex: 1 }}>
-                <TouchableOpacity
+            <I.ListSearchWrap>
+                <I.ListSearchButton
                     onPress={() => setDropdownVisible(!isDropdownVisible)}
-                    style={{
-                        padding: 10,
-                        backgroundColor: '#f0f0f0',
-                        borderRadius: 5,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
                 >
-                    <I.ListDateText>
-                        {getFilterDisplayText()}
-                    </I.ListDateText>
-                </TouchableOpacity>
+                    <I.ListSearchButtonTextWrap>
+                        <EvilIcons name="search" size={30} style={{paddingRight: 5}}/>
+                        <I.ListSearchButtonText>{getFilterDisplayText()}</I.ListSearchButtonText>
+                    </I.ListSearchButtonTextWrap>
+                </I.ListSearchButton>
 
                 {isDropdownVisible && (
-                    <View style={{ position: 'absolute', top: 50, right: 10, width: 200, backgroundColor: 'white', borderRadius: 5, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84 }}>
-                        {dropdownOptions.map((option, index) => (
-                            <TouchableOpacity
-                                key={index}
-                                onPress={option.action}
-                                style={{ padding: 15, borderBottomWidth: index === dropdownOptions.length - 1 ? 0 : 1, borderBottomColor: '#eee' }}
-                            >
-                                <Text>{option.label}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={isDropdownVisible}
+                        onRequestClose={() => setDropdownVisible(false)}
+                    >
+                        <TouchableWithoutFeedback onPress={() => setDropdownVisible(false)}>
+                            <I.ListDropDownWrap>
+                                <View onStartShouldSetResponder={() => true}> {/* Prevents touch from propagating to outer TouchableWithoutFeedback */}
+                                    <I.ListDropDownMenuWrap>
+                                        {dropdownOptions.map((option, index) => (
+                                            <TouchableOpacity
+                                                key={index}
+                                                onPress={() => {
+                                                    option.action();
+                                                    setDropdownVisible(false); // Close modal after selection
+                                                }}
+                                                style={{
+                                                    padding: 15,
+                                                    borderBottomWidth: index === dropdownOptions.length - 1 ? 0 : 1,
+                                                    borderBottomColor: '#eee',
+                                                    width: '100%', // Ensure option takes full width of dropdown
+                                                    alignItems: 'center', // Center text within option
+                                                }}
+                                            >
+                                                <Text>{option.label}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </I.ListDropDownMenuWrap>
+                                </View>
+                            </I.ListDropDownWrap>
+                        </TouchableWithoutFeedback>
+                    </Modal>
                 )}
-            </View>
+            </I.ListSearchWrap>
 
             <FlatList
                 data={ilogs}
                 renderItem={({item}) => <ListItem item={item}/>}
                 keyExtractor={(item) => item.id.toString()}
                 ListEmptyComponent={
-                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 50 }}>
-                        <I.PageContent>
+                    <I.ListNoSearchResultWrap>
+                        <I.ListNoSearchResultText>
                             {listFilterType !== 'none' ? '선택된 조건에 일지가 없습니다.' : '작성된 일지가 없습니다.'}
-                        </I.PageContent>
-                    </View>
+                        </I.ListNoSearchResultText>
+                    </I.ListNoSearchResultWrap>
                 }
             />
 
@@ -233,11 +283,17 @@ const ILogListView = ({
                 onRequestClose={() => setListCalendarVisible(false)}
             >
                 <TouchableOpacity
-                    style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' }}
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}
                     activeOpacity={1}
                     onPressOut={() => setListCalendarVisible(false)}
                 >
-                    <View style={{ width: '90%', backgroundColor: 'white', borderRadius: 10, padding: 10 }} onStartShouldSetResponder={() => true}>
+                    <View style={{width: '90%', backgroundColor: 'white', borderRadius: 10, padding: 10}}
+                          onStartShouldSetResponder={() => true}>
                         <Calendar
                             key={isListCalendarVisible ? 'list-calendar-open' : 'list-calendar-closed'}
                             markedDates={markedDatesForListCalendar}

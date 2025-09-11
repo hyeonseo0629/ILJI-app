@@ -6,6 +6,7 @@ import {ILogData} from "@/app/(tabs)/i-log";
 import {format} from 'date-fns';
 import {AntDesign, MaterialCommunityIcons} from '@expo/vector-icons';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
+import {DetailActionsWrap, DetailDateWrap, DetailHeaderText} from "@/components/style/I-logStyled";
 
 // Mock data for now - in a real app, you'd fetch this from a backend
 const initialILogs: ILogData[] = [
@@ -231,62 +232,61 @@ export default function ILogDetailScreen() {
 
     return (
         <I.ScreenContainer>
-            <TouchableOpacity style={{backgroundColor: 'white', elevation: 5}} onPress={() => router.back()}>
-                <Text style={{position: 'sticky', padding: 15, fontSize: 20}}>← 뒤로가기</Text>
-            </TouchableOpacity>
+            <I.DetailHeader onPress={() => router.push('/i-log')}>
+                <AntDesign name="arrowleft" size={24} color="black"/>
+                <I.DetailHeaderText>뒤로가기</I.DetailHeaderText>
+            </I.DetailHeader>
             <ScrollView style={{flex: 1}}>
-                <I.PageWrap>
-                    <I.PageHeader>
-                        <I.PageDateInfo>
-                            <I.PageDateText>{format(log.log_date, 'yyyy.MM.dd')}</I.PageDateText>
-                            <I.PageTimeText>{format(log.created_at, 'HH:mm:ss')}</I.PageTimeText>
-                        </I.PageDateInfo>
-                    </I.PageHeader>
-                    <I.DetailHeaderActions>
-                        <I.DetailActionButton onPress={handleEdit}>
-                            <MaterialCommunityIcons name="square-edit-outline" size={28} color="black"/>
-                        </I.DetailActionButton>
-                        <I.DetailActionButton onPress={handleDelete}>
-                            <MaterialCommunityIcons name="trash-can-outline" size={28} color="black"/>
-                        </I.DetailActionButton>
-                    </I.DetailHeaderActions>
+                <I.DetailWrap>
+                    <I.DetailDateWrap>
+                        <I.DetailDateText>{format(log.log_date, 'yyyy.MM.dd')}</I.DetailDateText>
+                        <I.DetailTimeText>{format(log.created_at, 'HH:mm:ss')}</I.DetailTimeText>
+                        <I.DetailActionsWrap>
+                            <I.DetailActionButton onPress={handleEdit}>
+                                <MaterialCommunityIcons name="square-edit-outline" size={28} color="black"/>
+                            </I.DetailActionButton>
+                            <I.DetailActionButton onPress={handleDelete}>
+                                <MaterialCommunityIcons name="trash-can-outline" size={28} color="black"/>
+                            </I.DetailActionButton>
+                        </I.DetailActionsWrap>
+                    </I.DetailDateWrap>
 
-                    <I.PageTitle>{log.title}</I.PageTitle>
+                    <I.DetailTitle>{log.title}</I.DetailTitle>
 
                     {log.img_url && (
-                        <I.PageImageContainer>
-                            <I.PageImage source={{uri: log.img_url}}/>
-                            <I.PageStatsContainer>
-                                <I.PageStatItem>
+                        <I.DetailImageContainer>
+                            <I.DetailImage source={{uri: log.img_url}}/>
+                            <I.DetailStatsContainer>
+                                <I.DetailStatItem>
                                     <AntDesign name="heart" size={14} color="white"/>
-                                    <I.PageStatText>{log.like_count}</I.PageStatText>
-                                </I.PageStatItem>
-                                <I.PageStatItem>
+                                    <I.DetailStatText>{log.like_count}</I.DetailStatText>
+                                </I.DetailStatItem>
+                                <I.DetailStatItem>
                                     <AntDesign name="message1" size={14} color="white"/>
-                                    <I.PageStatText>{log.comment_count}</I.PageStatText>
-                                </I.PageStatItem>
-                            </I.PageStatsContainer>
-                        </I.PageImageContainer>
+                                    <I.DetailStatText>{log.comment_count}</I.DetailStatText>
+                                </I.DetailStatItem>
+                            </I.DetailStatsContainer>
+                        </I.DetailImageContainer>
                     )}
 
                     {parsedFriendTags.length > 0 && (
-                        <I.PageFriendTagsContainer>
+                        <I.DetailFriendTagsContainer>
                             {parsedFriendTags.map(tag => (
-                                <I.PageFriendTag key={tag.id}>
-                                    <I.PageFriendTagText>@{tag.name}</I.PageFriendTagText>
-                                </I.PageFriendTag>
+                                <I.DetailFriendTag key={tag.id}>
+                                    <I.DetailFriendTagText>@{tag.name}</I.DetailFriendTagText>
+                                </I.DetailFriendTag>
                             ))}
-                        </I.PageFriendTagsContainer>
+                        </I.DetailFriendTagsContainer>
                     )}
 
-                    <I.PageContent>{log.content}</I.PageContent>
+                    <I.DetailContent>{log.content}</I.DetailContent>
 
                     {log.tags && (
-                        <I.PageTagsContainer>
-                            <I.PageTagsText>{log.tags}</I.PageTagsText>
-                        </I.PageTagsContainer>
+                        <I.DetailTagsContainer>
+                            <I.DetailTagsText>{log.tags}</I.DetailTagsText>
+                        </I.DetailTagsContainer>
                     )}
-                </I.PageWrap>
+                </I.DetailWrap>
             </ScrollView>
 
             {/* Delete Confirmation Modal */}

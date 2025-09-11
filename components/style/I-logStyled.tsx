@@ -65,6 +65,57 @@ export const TabsButtonText = styled.Text`
 // I-Log List View //
 // ----------------- //
 
+export const ListSearchWrap = styled.View`
+    z-index: 1;
+    width: 100%;
+`
+
+export const ListSearchButton = styled.TouchableOpacity`
+    padding: 10px;
+    background-color: #fff;
+`
+
+export const ListSearchButtonTextWrap = styled.View`
+    margin: 5px 10px;
+    padding-bottom: 10px;
+    border-bottom-width: 2px;
+    border-bottom-color: mediumslateblue;
+    flex-direction: row;
+`
+
+export const ListSearchButtonText = styled.Text`
+    font-size: 20px;
+    padding: 2px 0 0;
+`
+
+export const ListDropDownWrap = styled.View`
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+`
+
+export const ListDropDownMenuWrap = styled.View`
+    position: relative;
+    width: 300px;
+    border-radius: 10px;
+    padding: 0;
+    background-color: #fff;
+
+`
+
+export const ListNoSearchResultWrap = styled.View`
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+    
+`
+
+export const ListNoSearchResultText = styled.Text`
+    font-size: 15px;
+`
+
 export const ListWrap = styled.View`
     flex-direction: row;
     padding: 15px;
@@ -272,12 +323,137 @@ export const PageScrollView = styled.ScrollView``;
 // I-Log Detail View  //
 // ------------------ //
 
-export const DetailHeaderActions = styled.View`
+export const DetailHeader = styled.TouchableOpacity`
+    background-color: #fff;
+    padding: 15px;
+    flex-direction: row;
+    
+    /* iOS Shadow */
+    shadow-color: #000;
+    shadow-offset: 0px 2px; /* Corrected: Combined width and height into shadow-offset */
+    shadow-opacity: 0.25;
+    shadow-radius: 3.84; /* Corrected: Removed 'px' */
+
+    /* Android Shadow */
+    elevation: 5;
+`
+
+export const DetailHeaderText = styled.Text`
+    position: sticky;
+    padding-left: 10px;
+    font-size: 20px;
+`
+
+export const DetailWrap = styled.View`
+    flex: 1;
+    margin: 20px;
+`
+
+export const DetailDateWrap = styled.View`
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: flex-start;
+    margin-bottom: 15px;
+`
+export const DetailDateText = styled.Text`
+    font-size: 30px;
+    font-weight: bold;
+    padding-right: 5px;
+`
+
+export const DetailTimeText = styled.Text`
+    font-size: 14px;
+    color: #888;
+    padding-top: 15px;
+`
+
+export const DetailActionsWrap = styled.View`
     flex-direction: row;
 `;
 
 export const DetailActionButton = styled.TouchableOpacity`
     margin-right: 15px;
+`;
+
+export const DetailTitle = styled.Text`
+    font-size: 20px;
+    font-weight: bold;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-color: mediumslateblue;
+    padding: 0 10px;
+    margin: 5px 0 15px;
+`
+
+export const DetailImageContainer = styled.View`
+    width: 100%;
+    height: 400px;
+    margin-bottom: 20px;
+    position: relative;
+`
+
+export const DetailImage = styled.Image`
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    background-color: #e0e0e0;
+`;
+
+export const DetailStatsContainer = styled.View`
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    flex-direction: row;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 5px 10px;
+    border-radius: 15px;
+`;
+
+export const DetailStatItem = styled.View`
+    flex-direction: row;
+    align-items: center;
+    margin-left: 10px;
+`;
+
+export const DetailStatText = styled.Text`
+    color: #fff;
+    font-size: 14px;
+    margin-left: 4px;
+`;
+
+export const DetailFriendTagsContainer = styled.View`
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+`;
+
+export const DetailFriendTag = styled.View`
+    background-color: #eef2fa;
+    border-radius: 15px;
+    padding: 6px 12px;
+    margin: 4px;
+`;
+
+export const DetailFriendTagText = styled.Text`
+    color: #4c669f;
+    font-weight: bold;
+`;
+
+export const DetailContent = styled.Text`
+    font-size: 16px;
+    line-height: 24px;
+    color: #333;
+    margin-bottom: 20px;
+    border-left-width: 2px;
+    border-color: mediumslateblue;
+    padding: 10px 20px;
+`;
+
+export const DetailTagsContainer = styled.View``;
+
+export const DetailTagsText = styled.Text`
+    font-size: 15px;
+    color: #888;
 `;
 
 export const DetailModalBackdrop = styled.TouchableOpacity`
