@@ -10,7 +10,9 @@ export function useThemeColor(
   props: { light?: string; dark?: string },
   colorName: keyof typeof Colors.light & keyof typeof Colors.dark
 ) {
-  const theme = useColorScheme() ?? 'light';
+  const { colorScheme } = useColorScheme(); // useColorScheme()에서 colorScheme 속성만 추출
+  const theme = colorScheme ?? 'light'; // 추출한 colorScheme 사용
+
   const colorFromProps = props[theme];
 
   if (colorFromProps) {

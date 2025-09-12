@@ -210,7 +210,7 @@ export const SelectedTagText = styled.Text`
 
 export const ButtonArea = styled.View`
     flex-direction: row;
-    /* 내용과 버튼 영역 사이의 간격은 DSContentWrap의 padding-bottom으로 제어합니다. */
+    /* 내용과 버튼 영역 사이의 간격은 ContentWrap의 padding-bottom으로 제어합니다. */
     /* 버튼 위의 라벤더 구분선을 제거하여 더 깔끔하게 만듭니다. */
     background-color: #f9f9f9; /* 버튼 영역 배경색 */
     border-bottom-left-radius: 14px; /* 컨테이너의 둥근 모서리에 맞춤 (20px - 6px) */

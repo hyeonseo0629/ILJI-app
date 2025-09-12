@@ -87,7 +87,7 @@ export const MonthDayContainer = styled.TouchableOpacity<MonthDayContainerProps>
 
 export const MonthEmptyDayContainer = styled.View`
     flex: 1;
-    height: 10px; /* MDayContainer와 높이를 통일하여 레이아웃 깨짐 방지 */
+    height: 10px;
 `;
 
 interface MonthDayTextProps {
@@ -109,31 +109,54 @@ export const MonthDayText = styled.Text.attrs({
     font-weight: ${(props) => (props.$isToday && !props.$isSelected ? 'bold' : 'normal')};
 `;
 
-export const MonthDayCircle = styled.View`
+export const MonthDayCircle = styled.View<{ $isCurrentMonth?: boolean }>`
     width: 16px;
     height: 16px;
     background-color: mediumslateblue;
     border-radius: 15px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
     justify-content: center; /* 내부 텍스트를 세로 중앙에 정렬 */
     align-items: center; /* 내부 텍스트를 가로 중앙에 정렬 */
+    opacity: ${({$isCurrentMonth = true}) => $isCurrentMonth ? 1 : 0.3};
 `;
 
 interface ScheduleTitleTextProps {
     color?: string;
 }
 
-export const ScheduleTitleText = styled.Text.attrs({
-    numberOfLines: 1, // 텍스트를 한 줄로 제한합니다.
-    ellipsizeMode: 'tail', // 길이가 길면 끝에 ...을 표시합니다.
-})<ScheduleTitleTextProps>`
-    font-size: 10px; /* 월별 캘린더에 맞게 작은 글씨 크기 */
-    text-align: center;
-    margin-top: 2px;
-    width: 100%; /* 컨테이너 너비에 맞춤 */
-    border-radius: 4px;
-    padding: 1px 3px; /* 텍스트 주변에 약간의 여백을 줍니다. */
+export const DayNumberWrapper = styled.View`
+    height: 25px;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+`;
+
+export const EventBar = styled.View<{
+    color: string;
+    $isCurrentMonth: boolean;
+    $position: 'start' | 'middle' | 'end' | 'single';
+    $top: number;
+}>`
+    background-color: ${props => props.color || 'gray'};
+    opacity: ${({$isCurrentMonth = true}) => $isCurrentMonth ? 1 : 0.4};
+    height: 12px;
+    justify-content: center;
+    padding: 0 3px;
+    position: absolute;
+    top: ${props => props.$top}px;
+    left: ${props => (props.$position === 'middle' || props.$position === 'end') ? '-1px' : '0px'};
+    right: ${props => (props.$position === 'start' || props.$position === 'middle') ? '-1px' : '0px'};
+    border-top-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '4px' : '0px'};
+    border-bottom-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '4px' : '0px'};
+    border-top-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '4px' : '0px'};
+    border-bottom-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '4px' : '0px'};
+`;
+
+export const EventBarText = styled.Text.attrs({
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
+})`
+    font-size: 8px;
     color: #ffffff;
-    background-color: ${(props) => props.color || 'gray'};
 `;
 
 export const MoreScheduleText = styled.Text.attrs({
@@ -148,10 +171,22 @@ export const MoreScheduleText = styled.Text.attrs({
     font-weight: bold;
 `;
 
+export const ScheduleTitleText = styled.Text.attrs({
+    numberOfLines: 1, // 텍스트를 한 줄로 제한합니다.
+    ellipsizeMode: 'tail', // 길이가 길면 끝에 ...을 표시합니다.
+})<ScheduleTitleTextProps>`
+    font-size: 10px; /* 월별 캘린더에 맞게 작은 글씨 크기 */
+    text-align: center;
+    margin-top: 2px;
+    width: 100%; /* 컨테이너 너비에 맞춤 */
+    border-radius: 4px;
+    padding: 1px 3px; /* 텍스트 주변에 약간의 여백을 줍니다. */
+`
+
 export const MonthSchedulesContainer = styled.View`
+    position: relative;
     flex: 1; /* 날짜 텍스트를 제외한 나머지 세로 공간을 모두 차지합니다. */
     width: 100%; /* 부모 컨테이너의 너비에 맞춥니다. */
-    overflow: hidden; /* 이 컨테이너의 크기를 벗어나는 자식 요소(일정)를 숨깁니다. */
 `;
 
 
@@ -175,7 +210,7 @@ export const TimeColumn = styled.View`
 `;
 
 export const TimeLabelCell = styled.View`
-    height: 60px; /* 1시간의 높이 */
+    height: 40px; /* 1시간의 높이 */
     justify-content: flex-start;
     align-items: center;
 `;
@@ -183,7 +218,7 @@ export const TimeLabelCell = styled.View`
 export const TimeLabelText = styled.Text`
     font-size: 12px;
     color: #8e8e93;
-    transform: translateY(-8px); /* 선의 중앙에 오도록 미세 조정 */
+    transform: translateY(-8px);
 `;
 
 export const TimeTableDaysContainer = styled.View`
@@ -199,7 +234,7 @@ export const TimeTableDayColumn = styled.View<{ $isToday?: boolean }>`
 `;
 
 export const HourCell = styled.View`
-    height: 60px; /* 1시간의 높이 */
+    height: 40px;
     border-bottom-width: 1px;
     border-bottom-color: #f0f0f0;
 `;

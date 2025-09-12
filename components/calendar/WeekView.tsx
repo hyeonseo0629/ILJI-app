@@ -15,7 +15,7 @@ import { Schedule } from '@/components/calendar/scheduleTypes';
 import { Tag } from '@/components/tag/TagTypes';
 import {DayOfTheWeekText} from "../style/CalendarStyled";
 
-const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
+const HOUR_HEIGHT = 40; // 1시간에 해당하는 높이 (px)
 
 const calculateSchedulePosition = (event: Schedule) => {
     const startHour = event.startTime.getHours();

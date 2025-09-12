@@ -41,6 +41,5 @@ app-example
 .idea
 .vscode
 
-#Android
 android
 ios

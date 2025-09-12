@@ -1,4 +1,4 @@
-import { useSession, SessionUser } from '@/hooks/useAuth';
+import {useSession, SessionUser} from '@/hooks/useAuth';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
@@ -14,6 +14,7 @@ import {
     GoogleSignin,
     statusCodes,
 } from '@react-native-google-signin/google-signin';
+import { useRouter } from 'expo-router';
 
 // app.json에서 클라이언트 ID들을 가져옵니다.
 const extra = Constants.expoConfig?.extra ?? {};
@@ -22,9 +23,10 @@ const GOOGLE_IOS_CLIENT_ID = extra.GOOGLE_IOS_CLIENT_ID as string;
 
 export default function LoginScreen(): React.JSX.Element {
     // useSession 훅을 사용하여 세션 상태와 함수들을 가져옵니다.
-    const { signIn, signOut, session, isLoading } = useSession();
+    const {signIn, signOut, session, isLoading} = useSession();
     // 로그인 진행 중 상태를 관리합니다.
     const [busy, setBusy] = useState(false);
+    const router = useRouter();
 
     // useMemo를 사용하여 Google Sign-In 설정을 최적화합니다.
     const config = useMemo(
@@ -42,41 +44,56 @@ export default function LoginScreen(): React.JSX.Element {
     );
 
     useEffect(() => {
+        console.log('Configuring Google Sign-In...');
         if (GOOGLE_WEB_CLIENT_ID) {
             GoogleSignin.configure(config);
+            console.log('Google Sign-In configured with:', config);
         } else {
             console.error('Google Web Client ID is missing!');
         }
     }, [config]);
 
     const handleGoogleSignIn = async (): Promise<void> => {
+        console.log('Attempting Google Sign-In...');
         if (!GOOGLE_WEB_CLIENT_ID) {
-            const errorMessage = 'Google Web Client ID is missing. Please check your app.json.';
+            const errorMessage = 'Google Web Client ID is missing. Please check your app.json and ensure `extra.GOOGLE_WEB_CLIENT_ID` is set correctly.';
             Alert.alert('Configuration Error', errorMessage);
+            console.error(errorMessage);
             return;
         }
 
         try {
             setBusy(true);
+            console.log('Checking for Play Services...');
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+            console.log('Play Services are available.');
 
-            const userInfo = await GoogleSignin.signIn();
-            console.log("userInfo :", userInfo)
-            const data = (userInfo as any).data;
-            console.log("✅ Google Login Success:", data);
+            console.log('Calling GoogleSignin.signIn()...');
+            const userInfo = (await GoogleSignin.signIn()) as any;
+            console.log('Google Sign-In Success! User Info:', JSON.stringify(userInfo, null, 2));
 
-            // Google 로그인 성공 후 받은 데이터에서 idToken과 user 정보를 추출합니다.
-            const idToken = data.idToken;
-            const user = data.user;
+            // Correctly access the nested data from the userInfo object
+            const idToken = userInfo.data.idToken;
+            const user = userInfo.data.user;
 
             if (!idToken) {
-                Alert.alert('Google Sign-In Error', 'Failed to retrieve authentication token (idToken) from Google.');
+                const errorMessage = 'Failed to retrieve authentication token (idToken) from Google. This usually means the `webClientId` in your app configuration does not match the one in your Google Cloud project.';
+                Alert.alert('Google Sign-In Error', errorMessage);
+                console.error(errorMessage, 'Received userInfo:', userInfo);
+                return;
+            }
+
+            if (!user || !user.email) {
+                const errorMessage = 'Could not retrieve user profile (email) from Google. Please ensure your Google account has an email and that the app has permission.';
+                Alert.alert('Google Sign-In Error', errorMessage);
+                console.error(errorMessage, 'Received user object:', user);
                 return;
             }
 
             // 플랫폼에 따라 백엔드 서버 주소를 다르게 설정합니다.
-            const backendUrl = Platform.OS === 'android' ? 'http://10.100.0.115:8090' : 'http://localhost:8090';
+            const backendUrl = Platform.OS === 'android' ? 'http://10.100.0.86:8090' : 'http://localhost:8090';
 
+            console.log(`Sending idToken to backend: ${backendUrl}/api/auth/google`);
             const response = await fetch(`${backendUrl}/api/auth/google`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -89,47 +106,44 @@ export default function LoginScreen(): React.JSX.Element {
                     user: { name: user.name, email: user.email, photo: user.photo },
                     token: authResponse.appToken,
                 };
-                // useSession의 signIn 함수를 호출하여 세션을 시작합니다.
+                console.log('Backend authentication successful. Signing in...');
                 await signIn(sessionUser);
             } else {
                 const errorText = await response.text();
                 Alert.alert('Backend Auth Failed', `Server response error: ${errorText}`);
+                console.error('Backend Auth Failed:', errorText);
             }
 
         } catch (error: any) {
-            // iOS 코드의 상세한 에러 핸들링을 적용합니다.
+            console.error('--- Google Sign-In Error ---');
+            console.error('Full Error Object:', JSON.stringify(error, null, 2));
+            console.error('--------------------------');
+
             if (error?.code === statusCodes.SIGN_IN_CANCELLED) {
                 console.log('Sign-in was cancelled by the user.');
                 return;
             }
             if (error?.code === statusCodes.IN_PROGRESS) {
                 Alert.alert('Info', 'Sign-in is already in progress.');
+                console.warn('Sign-in is already in progress.');
                 return;
             }
             if (error?.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
                 Alert.alert('Error', 'Google Play Services is required.');
+                console.error('Google Play Services is not available.');
                 return;
             }
             if (error?.code === '10') { // DEVELOPER_ERROR
                  Alert.alert(
                     'Developer Error',
-                    'There is a configuration issue with Google Sign-In. Please check your `app.json` and Google Cloud Console settings.'
+                    'There is a configuration issue with Google Sign-In. Please check your `app.json` and Google Cloud Console settings (SHA-1, Bundle ID, etc.)'
                 );
                 return;
             }
             Alert.alert('Login Failed', `An unexpected error occurred: ${error?.message ?? 'Unknown'}`);
         } finally {
             setBusy(false);
-        }
-    };
-
-    const handleSignOut = async () => {
-        try {
-            await GoogleSignin.signOut();
-            await signOut(); // useSession의 signOut 함수 호출
-        } catch (error) {
-            console.error("Sign Out Error:", error);
-            Alert.alert('Sign Out Failed', 'An error occurred while signing out.');
+            console.log('Google Sign-In flow finished.');
         }
     };
 
@@ -144,29 +158,16 @@ export default function LoginScreen(): React.JSX.Element {
 
     return (
         <View style={styles.container}>
-            {session ? (
-                <>
-                    <Text style={styles.title}>Welcome</Text>
-                    <Text style={styles.subtitle}>{session.user.name}</Text>
-                    <Text style={{ marginBottom: 20 }}>{session.user.email}</Text>
-                    <Button title="Sign Out" onPress={handleSignOut} />
-                </>
-            ) : (
-                <>
-                    <Text style={styles.title}>Login</Text>
-                    <Text style={styles.subtitle}>Sign in to sync your schedules.</Text>
-                    {busy && (
-                        <View style={{ marginBottom: 16 }}>
-                            <ActivityIndicator />
-                        </View>
-                    )}
-                    <Button
-                        title="Sign in with Google"
-                        onPress={handleGoogleSignIn}
-                        disabled={busy}
-                    />
-                </>
+            <Text style={styles.title}>Login</Text>
+            <Text style={styles.subtitle}>Sign in to sync your schedules.</Text>
+
+            {busy && (
+                <View style={{ marginBottom: 16 }}>
+                    <ActivityIndicator />
+                </View>
             )}
+
+            <Button title="Sign in with Google" onPress={handleGoogleSignIn} />
         </View>
     );
 }
