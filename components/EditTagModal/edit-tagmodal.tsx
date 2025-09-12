@@ -5,6 +5,7 @@ import { AntDesign } from '@expo/vector-icons';
 import * as S from './EditTagModalStyled';
 import { Tag } from '@/components/ToDo/types';
 import { useSchedule } from '@/src/context/ScheduleContext';
+import ConfirmModal from '@/components/ConfirmModal/ConfirmModal'; // [추가] 커스텀 확인 모달 import
 
 interface EditTagModalProps {
     visible: boolean;
@@ -14,41 +15,45 @@ interface EditTagModalProps {
 const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
     const { tags, updateTag, deleteTag } = useSchedule();
 
-    // 'list' 또는 'edit' 모드를 결정합니다. null이면 목록, Tag 객체면 편집 폼.
     const [tagToEdit, setTagToEdit] = useState<Tag | null>(null);
-
-    // 편집 폼의 상태
     const [editName, setEditName] = useState('');
     const [editColor, setEditColor] = useState('#FF6B6B');
     const [isSaving, setIsSaving] = useState(false);
 
-    // 편집할 태그가 선택되면, 폼의 상태를 해당 태그의 정보로 채웁니다.
+    // [추가] 삭제 확인 모달 관련 상태
+    const [isConfirmModalVisible, setConfirmModalVisible] = useState(false);
+    const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
+
     useEffect(() => {
         if (tagToEdit) {
             setEditName(tagToEdit.label);
-            setEditColor(tagToEdit.color || '#FF6B6B');
+
+            if (tagToEdit.color && tagToEdit.color.trim() !== '') {
+                setEditColor(tagToEdit.color);
+            } else {
+                setEditColor('#FF6B6B'); // Default color if existing color is invalid/empty
+            }
         }
     }, [tagToEdit]);
 
+    // [수정] 삭제 버튼 클릭 시, 어떤 태그를 삭제할지 상태에 저장하고 확인 모달을 엽니다.
     const handleDelete = (tag: Tag) => {
-        Alert.alert(
-            "태그 삭제",
-            `'${tag.label}' 태그를 정말 삭제하시겠습니까? 이 태그가 적용된 모든 일정이 '태그 없음'으로 변경됩니다.`,
-            [
-                { text: "취소", style: "cancel" },
-                {
-                    text: "삭제",
-                    onPress: async () => {
-                        try {
-                            await deleteTag(tag.id);
-                        } catch (error) {
-                            Alert.alert("삭제 실패", "태그를 삭제하는 중 오류가 발생했습니다.");
-                        }
-                    },
-                    style: "destructive",
-                },
-            ]
-        );
+        setTagToDelete(tag);
+        setConfirmModalVisible(true);
+    };
+
+    // [추가] 확인 모달에서 '확인'을 눌렀을 때 실행될 실제 삭제 처리 함수
+    const handleConfirmDelete = async () => {
+        if (tagToDelete) {
+            try {
+                await deleteTag(tagToDelete.id);
+            } catch (error) {
+                Alert.alert("삭제 실패", "태그를 삭제하는 중 오류가 발생했습니다.");
+            } finally {
+                setConfirmModalVisible(false);
+                setTagToDelete(null);
+            }
+        }
     };
 
     const handleSaveEdit = async () => {
@@ -60,13 +65,12 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
         setIsSaving(true);
         try {
             await updateTag({ ...tagToEdit, label: editName.trim(), color: editColor });
-            setTagToEdit(null); // 저장 후 목록 보기로 돌아갑니다.
+            setTagToEdit(null);
         } finally {
             setIsSaving(false);
         }
     };
 
-    // 모달이 닫힐 때 내부 상태를 초기화합니다.
     const handleCloseModal = () => {
         setTagToEdit(null);
         onClose();
@@ -84,12 +88,11 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
         </S.TagItem>
     );
 
-    // 태그 목록을 렌더링하는 뷰
     const renderListView = () => (
         <>
             <S.ModalHeader>Tag Edit</S.ModalHeader>
             <S.TagList
-                data={tags.filter(tag => tag.id !== 0)} // '태그 없음'은 편집/삭제 불가
+                data={tags.filter(tag => tag.id !== 0)}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderTagItem}
             />
@@ -99,7 +102,6 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
         </>
     );
 
-    // 특정 태그를 편집하는 폼 뷰
     const renderEditForm = () => (
         <>
             <S.ModalHeader>Tag Edit</S.ModalHeader>
@@ -115,6 +117,7 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
             </S.ColorPickerHeader>
             <S.ColorPickerWrapper>
                 <ColorPicker
+                    key={tagToEdit?.id}
                     color={editColor}
                     onColorChangeComplete={setEditColor}
                 />
@@ -142,6 +145,17 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
                     {tagToEdit ? renderEditForm() : renderListView()}
                 </S.ModalContainer>
             </S.ModalOverlay>
+            {/* [추가] 커스텀 확인 모달을 렌더링합니다. */}
+            <ConfirmModal
+                visible={isConfirmModalVisible}
+                title="Delete Tag"
+                message={tagToDelete ? `'${tagToDelete.label}' 태그를 정말 삭제하시겠습니까? 이 태그가 적용된 모든 일정이 'No Tag'으로 변경됩니다.` : ''}
+                onClose={() => {
+                    setConfirmModalVisible(false);
+                    setTagToDelete(null);
+                }}
+                onConfirm={handleConfirmDelete}
+            />
         </Modal>
     );
 };

@@ -8,17 +8,17 @@ import {
     TimeColumn,
     TimeLabelCell,
     TimeLabelText,
-    DayColumn,
+    TimeTableDayColumn,
     HourCell,
-    EventBlock,
-    EventBlockText
+    ScheduleBlock,
+    ScheduleBlockText
 } from '../style/CalendarStyled';
 import { Schedule } from '@/components/calendar/scheduleTypes';
 import { Tag } from '@/components/tag/TagTypes';
 import { differenceInMinutes, isToday, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
-const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
+const HOUR_HEIGHT = 40; // 1시간에 해당하는 높이 (px)
 
 const calculateSchedulePosition = (event: Schedule) => {
     const startHour = event.startTime.getHours();
@@ -70,19 +70,19 @@ const DayView: React.FC<DayViewProps> = ({ date, schedules = [], tags = [], onEv
                             ))}
                         </TimeColumn>
 
-                        <DayColumn $isToday={isToday(date)}>
+                        <TimeTableDayColumn $isToday={isToday(date)}>
                             {timeLabels.map(time => <HourCell key={time} />)}
 
                             {schedules.map(event => {
                                 const eventColor = tagColorMap.get(event.tagId) || 'gray';
                                 const { top, height } = calculateSchedulePosition(event);
                                 return (
-                                    <EventBlock key={event.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(event)}>
-                                        <EventBlockText>{event.title}</EventBlockText>
-                                    </EventBlock>
+                                    <ScheduleBlock key={event.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(event)}>
+                                        <ScheduleBlockText>{event.title}</ScheduleBlockText>
+                                    </ScheduleBlock>
                                 );
                             })}
-                        </DayColumn>
+                        </TimeTableDayColumn>
                     </TimetableGrid>
                 </ScrollView>
             </TimetableWrapper>

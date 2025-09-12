@@ -1,29 +1,26 @@
 import styled, { css } from 'styled-components/native';
-import Animated from 'react-native-reanimated';
-import { Theme } from '@react-navigation/native'; // Theme 타입 임포트
-import { View } from 'react-native'; // Import View from react-native
 import Octicons from "react-native-vector-icons/Octicons";
 
-interface HContainerProps {
+interface ContainerProps {
     $isMain?: boolean;
     $isSheetExpanded?: boolean;
 }
 
-interface ThemeProps { // ThemeProps 인터페이스 정의
-    theme: Theme;
-}
-
-const mainHeaderStyles = css<HContainerProps & ThemeProps>` // ThemeProps 추가
+const mainHeaderStyles = css<ContainerProps>`
     /* iOS Shadow */
     shadow-color: #000;
     shadow-offset: 0px 2px;
+    /* 바텀 시트가 열리면 그림자를 숨깁니다. */
+    shadow-opacity: ${(props) => (props.$isSheetExpanded ? 0 : 0.08)};
     shadow-radius: 3.84px;
+    /* Android Shadow */
+    /* 바텀 시트가 열리면 elevation을 0으로 만들어 뒤로 보냅니다. */
+    elevation: ${(props) => (props.$isSheetExpanded ? 0 : 5)};
 `;
 
-export const HContainer = styled(View)<HContainerProps & ThemeProps>` // Changed from Animated.View to View
+export const Container = styled.View<ContainerProps>`
     width: 100%;
-    background-color: ${(props) => props.theme?.colors?.background || '#ffffff'};
-    ${(props) => props.$isMain && mainHeaderStyles}
+    background-color: #ffffff;
     /* 바텀 시트가 확장되면 zIndex를 0으로, 아닐 때는 1로 설정합니다. */
     z-index: ${(props) => (props.$isSheetExpanded ? 0 : 1)};
 
@@ -32,13 +29,13 @@ export const HContainer = styled(View)<HContainerProps & ThemeProps>` // Changed
     padding-top: 10px;
 `;
 
-export const HWrap = styled.View`
+export const Wrap = styled.View`
     padding: 0 10px;
     flex-direction: row;
     justify-content: space-between;
-`;
+`
 
-export const HLogo = styled.Image.attrs((props) => ({
+export const Logo = styled.Image.attrs((props) => ({
     source: require('../../assets/images/logo.png'),
 }))`
     width: 65px;
@@ -46,41 +43,23 @@ export const HLogo = styled.Image.attrs((props) => ({
     margin: 0 5px;
 `;
 
-export const HIconWrap = styled.View`
+export const IconWrap = styled.View`
     width: 30%;
     margin: 15px 20px 0;
     flex-direction: row;
     justify-content: space-between;
-`;
-
-export const HIcon = styled.Text<ThemeProps>` // ThemeProps 추가
-    font-size: 20px;
-    color: ${(props) => props.theme?.colors?.text || '#000'};
-`;
-
-export const HBottom = styled.View`
-    padding: 15px;
-    flex-direction: row;
-    justify-content: space-around;
-`;
-
-export const HRecentDiary = styled.View<ThemeProps>` // ThemeProps 추가
-    width: 55px;
-    height: 55px;
-    border-radius: 50px;
-    background-color: ${(props) => props.theme?.colors?.card || 'lavender'};
-`;
-
-export const HIconBell = styled(Octicons).attrs<ThemeProps>({})`
-    padding: 5px;
-    color: ${(props) => props.theme?.colors?.text || 'mediumslateblue'};
-`
-export const HIconMail = styled(Octicons).attrs<ThemeProps>({})`
-    padding: 5px;
-    color: ${(props) => props.theme?.colors?.text || 'mediumslateblue'};
 `
 
-export const HIconShare = styled(Octicons).attrs<ThemeProps>({})`
+export const IconBell = styled(Octicons).attrs({})`
     padding: 5px;
-    color: ${(props) => props.theme?.colors?.text || 'mediumslateblue'};
+    color: mediumslateblue;
+`
+export const IconMail = styled(Octicons).attrs({})`
+    padding: 5px;
+    color: mediumslateblue;
+`
+
+export const IconShare = styled(Octicons).attrs({})`
+    padding: 5px;
+    color: mediumslateblue;
 `

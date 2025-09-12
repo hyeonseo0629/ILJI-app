@@ -1,18 +1,23 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Alert, Switch, Platform, Text, ActivityIndicator} from 'react-native';
+import {Alert, Switch, Platform, Text, View,ActivityIndicator} from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
-import {Tag} from '@/components/ToDo/types';
-import * as S from '@/components/AddSchedule/AddScheduleStyle';
+import * as S from '@/components/schedule/AddScheduleStyle';
 import {Picker} from '@react-native-picker/picker';
 import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
-import { format } from 'date-fns';
+import {format} from 'date-fns';
+import {ASButtonWrap, ASCancelButtonText, ASHeader} from "@/components/schedule/AddScheduleStyle";
 import BottomSheet, {BottomSheetBackdrop} from "@gorhom/bottom-sheet";
 import { useSchedule } from '@/src/context/ScheduleContext';
 import {GestureHandlerRootView} from "react-native-gesture-handler";
-import { AntDesign } from '@expo/vector-icons';
+import {StatusBar} from "expo-status-bar";
+import {AntDesign} from "@expo/vector-icons";
 import CreateTagModal from "@/components/AddTagModal/add-tagmodal";
 
+// 실제 앱에서는 이 화면으로 이동할 때 tags 목록을 prop으로 전달받거나
+// 전역 상태(global state)에서 가져와야 합니다. 여기서는 예시로 사용합니다.
+
 const AddScheduleScreen = () => {
+
     const router = useRouter();
     // [추가] 라우터 파라미터에서 initialDate를 가져옵니다.
     const { initialDate } = useLocalSearchParams<{ initialDate: string }>();
@@ -126,8 +131,9 @@ const AddScheduleScreen = () => {
 
     return (
         <GestureHandlerRootView>
+            <StatusBar style="dark"/>
             <S.ASContainer contentContainerStyle={{paddingBottom: 120}}>
-                <S.ASHeader>New Reminder</S.ASHeader>
+                <ASHeader>New Reminder</ASHeader>
                 <S.ASContentWrap>
 
                     <S.ASLabel>Title</S.ASLabel>
@@ -252,15 +258,15 @@ const AddScheduleScreen = () => {
                 <S.ASContentWrap>
                 </S.ASContentWrap>
             </BottomSheet>
-            <S.ASButtonWrap>
+            <ASButtonWrap>
                 {/* Cancel 버튼은 단순히 이전 화면으로 돌아가도록 router.back()을 사용합니다. */}
                 <S.ASCancelButton onPress={() => router.back()}>
-                    <S.ASCancelButtonText>Cancel</S.ASCancelButtonText>
+                    <ASCancelButtonText>Cancel</ASCancelButtonText>
                 </S.ASCancelButton>
                 <S.ASSaveButton onPress={handleSave} disabled={loading}>
                     <S.ASSaveButtonText>Save</S.ASSaveButtonText>
                 </S.ASSaveButton>
-            </S.ASButtonWrap>
+            </ASButtonWrap>
         </GestureHandlerRootView>
     );
 };

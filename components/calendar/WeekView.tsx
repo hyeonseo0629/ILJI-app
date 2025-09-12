@@ -8,30 +8,16 @@ import {
     isToday,
     isSameDay,
     differenceInMinutes,
+    isSameWeek,
 } from 'date-fns';
-import {
-    MWeek,
-    MDayContainer,
-    MDayNameText,
-    MDayCircle,
-    MDayText,
-    TimetableWrapper,
-    TimetableGrid,
-    TimeColumn,
-    TimeLabelCell,
-    TimeLabelText,
-    DaysContainer,
-    DayColumn,
-    HourCell,
-    EventBlock,
-    EventBlockText
-} from '../style/CalendarStyled';
+import * as CS from '../style/CalendarStyled';
 import { Schedule } from '@/components/calendar/scheduleTypes';
 import { Tag } from '@/components/tag/TagTypes';
+import {DayOfTheWeekText} from "../style/CalendarStyled";
 
-const HOUR_HEIGHT = 60; // 1시간에 해당하는 높이 (px)
+const HOUR_HEIGHT = 40; // 1시간에 해당하는 높이 (px)
 
-const calculateEventPosition = (event: Schedule) => {
+const calculateSchedulePosition = (event: Schedule) => {
     const startHour = event.startTime.getHours();
     const startMinute = event.startTime.getMinutes();
     const durationInMinutes = differenceInMinutes(event.endTime, event.startTime);
@@ -79,62 +65,64 @@ const WeekView: React.FC<WeekViewProps> = ({ date, schedules = [], tags = [], on
     return (
         <View style={{ flex: 1 }}>
             {/* Day Headers */}
-            <MWeek style={{ marginLeft: 50, marginBottom: 0 }}>
+            {/* --- 주요 변경사항 --- */}
+            {/* MWeek의 flex: 1 스타일을 덮어쓰기 위해 flex: 0을 추가합니다. */}
+            <CS.DayOfTheWeek style={{ marginLeft: 50, marginBottom: 0, flex: 0 }}>
                 {weekDays.map((day) => {
                     const isCurrentDay = isToday(day);
                     return (
-                        <MDayContainer
+                        <CS.MonthDayContainer
                             key={day.toISOString()}
                             style={{ height: 'auto', padding: 5 }}
                             onPress={() => onDayPress?.(day)}
                         >
-                            <MDayNameText>{format(day, 'EEE')}</MDayNameText>
+                            <CS.DayOfTheWeekText>{format(day, 'EEE')}</CS.DayOfTheWeekText>
                             {isCurrentDay ? (
-                                <MDayCircle>
-                                    <MDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</MDayText>
-                                </MDayCircle>
+                                <CS.MonthDayCircle>
+                                    <CS.MonthDayText $isSelected={true} $isToday={true}>{format(day, 'd')}</CS.MonthDayText>
+                                </CS.MonthDayCircle>
                             ) : (
-                                <MDayText>{format(day, 'd')}</MDayText>
+                                <CS.MonthDayText>{format(day, 'd')}</CS.MonthDayText>
                             )}
-                        </MDayContainer>
+                        </CS.MonthDayContainer>
                     );
                 })}
-            </MWeek>
+            </CS.DayOfTheWeek>
 
-            <TimetableWrapper>
+            <CS.TimetableWrapper>
                 <ScrollView ref={scrollViewRef}>
-                    <TimetableGrid>
+                    <CS.TimetableGrid>
                         {/* Time Column */}
-                        <TimeColumn>
+                        <CS.TimeColumn>
                             {timeLabels.map(time => (
-                                <TimeLabelCell key={time}>
-                                    <TimeLabelText>{time}</TimeLabelText>
-                                </TimeLabelCell>
+                                <CS.TimeLabelCell key={time}>
+                                    <CS.TimeLabelText>{time}</CS.TimeLabelText>
+                                </CS.TimeLabelCell>
                             ))}
-                        </TimeColumn>
+                        </CS.TimeColumn>
 
                         {/* Days Columns */}
-                        <DaysContainer>
+                        <CS.TimeTableDaysContainer>
                             {weekDays.map((day) => (
-                                <DayColumn key={day.toISOString()} $isToday={isToday(day)}>
-                                    {timeLabels.map(time => <HourCell key={`${day.toISOString()}-${time}`} />)}
+                                <CS.TimeTableDayColumn key={day.toISOString()} $isToday={isToday(day)}>
+                                    {timeLabels.map(time => <CS.HourCell key={`${day.toISOString()}-${time}`} />)}
 
                                     {/* schedules for this day */}
                                     {schedules.filter(event => isSameDay(event.startTime, day)).map(event => {
                                         const eventColor = tagColorMap.get(event.tagId) || 'gray';
-                                        const { top, height } = calculateEventPosition(event);
+                                        const { top, height } = calculateSchedulePosition(event);
                                         return (
-                                            <EventBlock key={event.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(event)}>
-                                                <EventBlockText>{event.title}</EventBlockText>
-                                            </EventBlock>
+                                            <CS.ScheduleBlock key={event.id} top={top} height={height} color={eventColor} onPress={() => onEventPress?.(event)}>
+                                                <CS.ScheduleBlockText>{event.title}</CS.ScheduleBlockText>
+                                            </CS.ScheduleBlock>
                                         );
                                     })}
-                                </DayColumn>
+                                </CS.TimeTableDayColumn>
                             ))}
-                        </DaysContainer>
-                    </TimetableGrid>
+                        </CS.TimeTableDaysContainer>
+                    </CS.TimetableGrid>
                 </ScrollView>
-            </TimetableWrapper>
+            </CS.TimetableWrapper>
         </View>
     );
 };

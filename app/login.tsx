@@ -1,4 +1,4 @@
-import { useSession, SessionUser } from '@/hooks/useAuth'; // Import SessionUser and useSession from useAuth.ts
+import {useSession, SessionUser} from '@/hooks/useAuth';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
@@ -16,19 +16,24 @@ import {
 } from '@react-native-google-signin/google-signin';
 import { useRouter } from 'expo-router';
 
+// app.json에서 클라이언트 ID들을 가져옵니다.
 const extra = Constants.expoConfig?.extra ?? {};
 const GOOGLE_WEB_CLIENT_ID = extra.GOOGLE_WEB_CLIENT_ID as string;
 const GOOGLE_IOS_CLIENT_ID = extra.GOOGLE_IOS_CLIENT_ID as string;
 
 export default function LoginScreen(): React.JSX.Element {
-    const { signIn } = useSession();
+    // useSession 훅을 사용하여 세션 상태와 함수들을 가져옵니다.
+    const {signIn, signOut, session, isLoading} = useSession();
+    // 로그인 진행 중 상태를 관리합니다.
     const [busy, setBusy] = useState(false);
     const router = useRouter();
 
+    // useMemo를 사용하여 Google Sign-In 설정을 최적화합니다.
     const config = useMemo(
         () => ({
             webClientId: GOOGLE_WEB_CLIENT_ID,
             scopes: ['profile', 'email'],
+            // Platform.OS 값에 따라 iosClientId를 동적으로 추가합니다.
             ...(Platform.OS === 'ios'
                 ? { iosClientId: GOOGLE_IOS_CLIENT_ID }
                 : {}),
@@ -62,7 +67,7 @@ export default function LoginScreen(): React.JSX.Element {
             console.log('Checking for Play Services...');
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
             console.log('Play Services are available.');
-            
+
             console.log('Calling GoogleSignin.signIn()...');
             const userInfo = (await GoogleSignin.signIn()) as any;
             console.log('Google Sign-In Success! User Info:', JSON.stringify(userInfo, null, 2));
@@ -85,7 +90,9 @@ export default function LoginScreen(): React.JSX.Element {
                 return;
             }
 
-            const backendUrl = 'http://localhost:8090';
+            // 플랫폼에 따라 백엔드 서버 주소를 다르게 설정합니다.
+            const backendUrl = Platform.OS === 'android' ? 'http://10.100.0.86:8090' : 'http://localhost:8090';
+
             console.log(`Sending idToken to backend: ${backendUrl}/api/auth/google`);
             const response = await fetch(`${backendUrl}/api/auth/google`, {
                 method: 'POST',
@@ -139,6 +146,15 @@ export default function LoginScreen(): React.JSX.Element {
             console.log('Google Sign-In flow finished.');
         }
     };
+
+    // 로딩 중일 때 ActivityIndicator를 보여줍니다.
+    if (isLoading) {
+        return (
+            <View style={styles.container}>
+                <ActivityIndicator />
+            </View>
+        )
+    }
 
     return (
         <View style={styles.container}>

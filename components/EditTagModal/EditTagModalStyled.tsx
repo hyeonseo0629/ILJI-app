@@ -1,6 +1,6 @@
 import styled from 'styled-components/native';
 import { FlatList, FlatListProps } from 'react-native';
-import { Tag } from '@/components/ToDo/types';
+import { Tag } from '@/components/tag/TagTypes';
 
 export const ModalOverlay = styled.View`
     flex: 1;

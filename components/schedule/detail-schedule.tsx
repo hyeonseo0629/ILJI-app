@@ -1,12 +1,13 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Modal, Pressable, View, Alert, Switch, Platform } from 'react-native';
+import { Modal, Pressable, View, Switch, Platform } from 'react-native';
 import { format, set } from 'date-fns';
-import { MaterialIcons, Feather } from '@expo/vector-icons';
-import * as S from '../style/DetailScheduleStyle';
+import { Feather } from '@expo/vector-icons';
+import * as DS from '../style/DetailScheduleStyled';
 import { Schedule } from '@/components/calendar/scheduleTypes';
-import { Tag } from '@/components/ToDo/types';
+import { Tag } from '@/components/tag/TagTypes';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useSchedule } from '@/src/context/ScheduleContext'; // 🚨 경로를 네 프로젝트에 맞게 수정했습니다.
+import { useSchedule } from '@/src/context/ScheduleContext';
+import ConfirmModal from '@/components/ConfirmModal/ConfirmModal'; // [추가] 커스텀 확인 모달 import
 
 interface DetailScheduleProps {
     schedule: Schedule | null;
@@ -16,22 +17,21 @@ interface DetailScheduleProps {
 
 const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onClose }) => {
     const [isEditMode, setIsEditMode] = useState(false);
-    // [수정] Context에서 deleteSchedule 함수도 가져옵니다.
     const { updateSchedule, deleteSchedule, tags } = useSchedule();
     const [formData, setFormData] = useState<Schedule | null>(schedule);
     // Date & Time Picker 상태
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+    // [추가] 삭제 확인 모달의 표시 상태를 관리합니다.
+    const [isConfirmModalVisible, setConfirmModalVisible] = useState(false);
 
     const selectedTag = useMemo(() => {
-        // 수정 후 바로 반영되도록 formData를 기준으로 태그를 찾습니다.
         if (!formData) return null;
         return tags.find(tag => tag.id === formData.tagId);
     }, [formData, tags]);
 
     useEffect(() => {
-        // 모달이 열리거나 스케줄이 변경될 때 폼 데이터를 초기화하고, 수정 모드를 끕니다.
         setFormData(schedule);
         if (!visible) {
             setIsEditMode(false);
@@ -39,36 +39,27 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
     }, [schedule, visible]);
 
     if (!schedule || !formData) {
-        return null; // 스케줄이 없으면 아무것도 렌더링하지 않음
+        return null;
     }
 
+    // [수정] 쓰레기통 아이콘 클릭 시, 커스텀 모달을 띄웁니다.
     const handleDeletePress = () => {
-        Alert.alert(
-            "일정 삭제",
-            `'${schedule.title}' 일정을 정말 삭제하시겠습니까?`,
-            [
-                {
-                    text: "취소",
-                    style: "cancel"
-                },
-                {
-                    text: "삭제",
-                    onPress: async () => {
-                        // [수정] Context의 deleteSchedule 함수를 호출합니다.
-                        await deleteSchedule(schedule.id);
-                        // 삭제 후 모달을 닫습니다.
-                        onClose();
-                    },
-                    style: "destructive",
-                }
-            ]
-        );
+        setConfirmModalVisible(true);
+    };
+
+    // [추가] 커스텀 모달에서 '확인'을 눌렀을 때 실행될 함수입니다.
+    const handleConfirmDelete = async () => {
+        if (schedule) {
+            await deleteSchedule(schedule.id);
+            setConfirmModalVisible(false); // 확인 모달 닫기
+            onClose(); // 상세 정보 모달 닫기
+        }
     };
 
     const handleUpdatePress = () => {
         if (formData) {
-            updateSchedule(formData); // Context의 update 함수를 직접 호출합니다.
-            setIsEditMode(false); // 수정 후 디테일 뷰로 전환
+            updateSchedule(formData);
+            setIsEditMode(false);
         }
     };
 
@@ -89,7 +80,6 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
         setShowStartTimePicker(Platform.OS === 'ios');
         if (selectedTime) {
             const newStartTime = set(formData.startTime, { hours: selectedTime.getHours(), minutes: selectedTime.getMinutes() });
-            // 시작 시간이 종료 시간보다 늦어지지 않도록 보정
             if (newStartTime > formData.endTime) {
                 setFormData(prev => prev ? { ...prev, startTime: newStartTime, endTime: newStartTime } : null);
             } else {
@@ -117,136 +107,134 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
             visible={visible}
             onRequestClose={onClose}
         >
-            <S.ModalOverlay onPress={onClose}>
+            <DS.ModalOverlay onPress={onClose}>
                 {/* Pressable로 감싸서 모달 내부 클릭 시 닫히는 것을 방지 */}
                 <Pressable>
-                    <S.DSContainer>
+                    <DS.Container>
                         {isEditMode ? (
-                            <S.DSHeaderInput value={formData.title} onChangeText={(text) => handleInputChange('title', text)} />
+                            <DS.HeaderInput value={formData.title} onChangeText={(text) => handleInputChange('title', text)} />
                         ) : (
-                            <S.DSHeader>{formData.title}</S.DSHeader>
+                            <DS.Header>{formData.title}</DS.Header>
                         )}
-                        <S.DSContentWrap>
+                        <DS.ContentWrap>
                             {isEditMode ? (
                                 <>
-                                    <S.AllDayRow>
-                                        <S.DSLabel>All Day</S.DSLabel>
+                                    <DS.AllDayRow>
+                                        <DS.Label>All Day</DS.Label>
                                         <Switch
                                             trackColor={{ false: "#767577", true: "mediumslateblue" }}
                                             thumbColor={"#f4f3f4"}
                                             onValueChange={(value) => handleInputChange('isAllDay', value)}
                                             value={formData.isAllDay}
                                         />
-                                    </S.AllDayRow>
-                                    <S.DateTimePickerButton onPress={() => setShowDatePicker(true)}>
-                                        <S.DateTimePickerButtonText>{format(formData.startTime, 'yyyy. MM. dd')}</S.DateTimePickerButtonText>
-                                    </S.DateTimePickerButton>
+                                    </DS.AllDayRow>
+                                    <DS.DateTimePickerButton onPress={() => setShowDatePicker(true)}>
+                                        <DS.DateTimePickerButtonText>{format(formData.startTime, 'yyyy. MM. dd')}</DS.DateTimePickerButtonText>
+                                    </DS.DateTimePickerButton>
                                     {!formData.isAllDay && (
-                                        <S.DateTimePickersRow style={{ marginTop: 15 }}>
-                                            <S.DateTimePickerButton onPress={() => setShowStartTimePicker(true)} style={{ marginRight: 10 }}>
-                                                <S.DateTimePickerButtonText>{format(formData.startTime, 'HH:mm')}</S.DateTimePickerButtonText>
-                                            </S.DateTimePickerButton>
-                                            <S.DateTimePickerButton onPress={() => setShowEndTimePicker(true)}>
-                                                <S.DateTimePickerButtonText>{format(formData.endTime, 'HH:mm')}</S.DateTimePickerButtonText>
-                                            </S.DateTimePickerButton>
-                                        </S.DateTimePickersRow>
+                                        <DS.DateTimePickersRow style={{ marginTop: 15 }}>
+                                            <DS.DateTimePickerButton onPress={() => setShowStartTimePicker(true)} style={{ marginRight: 10 }}>
+                                                <DS.DateTimePickerButtonText>{format(formData.startTime, 'HH:mm')}</DS.DateTimePickerButtonText>
+                                            </DS.DateTimePickerButton>
+                                            <DS.DateTimePickerButton onPress={() => setShowEndTimePicker(true)}>
+                                                <DS.DateTimePickerButtonText>{format(formData.endTime, 'HH:mm')}</DS.DateTimePickerButtonText>
+                                            </DS.DateTimePickerButton>
+                                        </DS.DateTimePickersRow>
                                     )}
                                 </>
                             ) : (
-                                <S.DateTimeInfoRow>
-                                    <S.DateTimeInfo>
-                                        <S.CalendarIcon name="event" size={40} color="#888" />
-                                        <S.DateTimeTexts>
-                                            <S.DateText>{format(formData.startTime, 'yyyy. MM. dd')}</S.DateText>
+                                <DS.DateTimeInfoRow>
+                                    <DS.DateTimeInfo>
+                                        <DS.CalendarIcon name="event" size={40} color="#888" />
+                                        <DS.DateTimeTexts>
+                                            <DS.DateText>{format(formData.startTime, 'yyyy. MM. dd')}</DS.DateText>
                                             {formData.isAllDay ? (
-                                                <S.TimeText>ALL DAY</S.TimeText>
+                                                <DS.TimeText>ALL DAY</DS.TimeText>
                                             ) : (
-                                                <S.TimeText>
+                                                <DS.TimeText>
                                                     {format(formData.startTime, 'HH:mm')} ~ {format(formData.endTime, 'HH:mm')}
-                                                </S.TimeText>
+                                                </DS.TimeText>
                                             )}
-                                        </S.DateTimeTexts>
-                                    </S.DateTimeInfo>
-                                    <S.DeleteButton onPress={handleDeletePress}>
+                                        </DS.DateTimeTexts>
+                                    </DS.DateTimeInfo>
+                                    <DS.DeleteButton onPress={handleDeletePress}>
                                         <Feather name="trash-2" size={30} color="#D25A5A" />
-                                    </S.DeleteButton>
-                                </S.DateTimeInfoRow>
+                                    </DS.DeleteButton>
+                                </DS.DateTimeInfoRow>
                             )}
 
-                            {/* Tag 섹션을 이 위치로 이동합니다. */}
                             {isEditMode ? (
                                 <>
-                                    <S.DSLabel>Tag</S.DSLabel>
-                                    <S.TagSelectorContainer>
+                                    <DS.Label>Tag</DS.Label>
+                                    <DS.TagSelectorContainer>
                                         {tags.map(tag => (
-                                            <S.TagSelectorItem
+                                            <DS.TagSelectorItem
                                                 key={tag.id}
                                                 color={tag.color}
                                                 selected={formData.tagId === tag.id}
-                                                // [수정] 이미 선택된 태그를 누르면 해제(0), 아니면 해당 태그를 선택합니다.
                                                 onPress={() => handleInputChange('tagId', formData.tagId === tag.id ? 0 : tag.id)}
                                             >
-                                                <S.TagSelectorText selected={formData.tagId === tag.id}>
+                                                <DS.TagSelectorText selected={formData.tagId === tag.id}>
                                                     #{tag.label}
-                                                </S.TagSelectorText>
-                                            </S.TagSelectorItem>
+                                                </DS.TagSelectorText>
+                                            </DS.TagSelectorItem>
                                         ))}
-                                    </S.TagSelectorContainer>
+                                    </DS.TagSelectorContainer>
                                 </>
                             ) : selectedTag && (
-                                <S.DSSelectedTagWrap>
-                                    <S.DSSelectedTag color={selectedTag.color || 'gray'}>
-                                        <S.DSSelectedTagText>#{selectedTag.label}</S.DSSelectedTagText>
-                                    </S.DSSelectedTag>
-                                </S.DSSelectedTagWrap>
+                                <DS.SelectedTagWrap>
+                                    <DS.SelectedTag color={selectedTag.color || 'gray'}>
+                                        <DS.SelectedTagText>#{selectedTag.label}</DS.SelectedTagText>
+                                    </DS.SelectedTag>
+                                </DS.SelectedTagWrap>
                             )}
 
-                            <S.DSLabel>Memo</S.DSLabel>
+                            <DS.Label>Memo</DS.Label>
                             {isEditMode ? (
-                                <S.DSValueInput
+                                <DS.ValueInput
                                     value={formData.description || ''}
                                     onChangeText={(text) => handleInputChange('description', text)}
                                     multiline
                                 />
                             ) : (
-                                <S.DSValueText>{formData.description || '메모 없음'}</S.DSValueText>
+                                <DS.ValueText>{formData.description || '메모 없음'}</DS.ValueText>
                             )}
 
-                            <S.DSLabel>Location</S.DSLabel>
+                            <DS.Label>Location</DS.Label>
                             {isEditMode ? (
-                                <S.DSValueInput
+                                <DS.ValueInput
                                     value={formData.location || ''}
                                     onChangeText={(text) => handleInputChange('location', text)}
                                 />
                             ) : (
-                                <S.DSValueText>{formData.location || '장소 없음'}</S.DSValueText>
+                                <DS.ValueText>{formData.location || '장소 없음'}</DS.ValueText>
                             )}
 
-                        </S.DSContentWrap>
+                        </DS.ContentWrap>
                         {isEditMode ? (
-                            <S.DSButtonArea>
-                                <S.DSActionButton onPress={() => setIsEditMode(false)}>
-                                    <S.DSActionButtonText>Cancel</S.DSActionButtonText>
-                                </S.DSActionButton>
-                                <S.DSButtonSeparator />
-                                <S.DSActionButton primary onPress={handleUpdatePress}>
-                                    <S.DSActionButtonText primary>Save</S.DSActionButtonText>
-                                </S.DSActionButton>
-                            </S.DSButtonArea>
+                            <DS.ButtonArea>
+                                <DS.ActionButton onPress={() => setIsEditMode(false)}>
+                                    <DS.ActionButtonText>Cancel</DS.ActionButtonText>
+                                </DS.ActionButton>
+                                <DS.ButtonSeparator />
+                                <DS.ActionButton primary onPress={handleUpdatePress}>
+                                    <DS.ActionButtonText primary>Save</DS.ActionButtonText>
+                                </DS.ActionButton>
+                            </DS.ButtonArea>
                         ) : (
-                            <S.DSButtonArea>
-                                <S.DSActionButton onPress={onClose}>
-                                    <S.DSActionButtonText>Close</S.DSActionButtonText>
-                                </S.DSActionButton>
-                                <S.DSButtonSeparator />
-                                <S.DSActionButton primary onPress={() => setIsEditMode(true)}>
-                                    <S.DSActionButtonText primary>Edit</S.DSActionButtonText>
-                                </S.DSActionButton>
-                            </S.DSButtonArea>
+                            <DS.ButtonArea>
+                                <DS.ActionButton onPress={onClose}>
+                                    <DS.ActionButtonText>Close</DS.ActionButtonText>
+                                </DS.ActionButton>
+                                <DS.ButtonSeparator />
+                                <DS.ActionButton primary onPress={() => setIsEditMode(true)}>
+                                    <DS.ActionButtonText primary>Edit</DS.ActionButtonText>
+                                </DS.ActionButton>
+                            </DS.ButtonArea>
                         )}
-                    </S.DSContainer>
+                    </DS.Container>
                 </Pressable>
-                {/* DateTimePicker 모달들 */}
+                {/* ... DateTimePicker 모달들 ... */}
                 {showDatePicker && (
                     <DateTimePicker
                         value={formData.startTime}
@@ -272,9 +260,17 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                         minimumDate={formData.startTime} // 시작 시간보다 이전은 선택 불가
                     />
                 )}
-            </S.ModalOverlay>
+            </DS.ModalOverlay>
+            {/* [추가] 커스텀 확인 모달을 렌더링합니다. */}
+            <ConfirmModal
+                visible={isConfirmModalVisible}
+                title="Delete Schedule"
+                message={`'${schedule.title}' 일정을 정말 삭제하시겠습니까?`}
+                onClose={() => setConfirmModalVisible(false)}
+                onConfirm={handleConfirmDelete}
+            />
         </Modal>
     );
 };
 
-export default DetailSchedule;
+export default DetailSchedule

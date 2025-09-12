@@ -1,4 +1,3 @@
-// app/(tabs)/index.tsx
 import React, {useCallback, useMemo, useRef, useState, useEffect} from 'react';
 import {Pressable, View, Text, StyleSheet, ActivityIndicator} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
@@ -8,16 +7,21 @@ import Header from "@/components/header/Header";
 import {set} from "date-fns";
 import {Schedule} from "@/components/calendar/scheduleTypes";
 import {Tag} from "@/components/tag/TagTypes";
-import {CContainer} from "@/components/calendar/CalendarStyled";
-import * as M from "@/components/style/MainStyle";
+import {CalendarContainer} from "@/components/style/CalendarStyled";
+import {
+    MainContainer,
+    MainContentWrap,
+    MainToDoCategory,
+    MainToDoCategoryText,
+    MainToDoCategoryWarp
+} from "@/components/style/MainStyled";
 import {BottomSheetContent} from "@/components/common/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
 import { AnimationContext } from '@/components/common/AnimationContext';
 import { useTheme } from '@react-navigation/native';
 import {GestureHandlerRootView} from "react-native-gesture-handler";
-import { useSchedule } from '@/src/context/ScheduleContext';
 import DetailSchedule from "@/components/schedule/detail-schedule";
-import {MainToDoCategoryText} from "../../components/style/MainStyle";
+import {useSchedule} from "@/src/context/ScheduleContext";
 
 export default function HomeScreen() {
     const params = useLocalSearchParams();
@@ -97,21 +101,21 @@ export default function HomeScreen() {
 
     const TabHandle = () => (
         <Pressable onPress={handleSheetToggle}>
-            <M.MainToDoCategoryWarp>
+            <MainToDoCategoryWarp>
                 {/* [수정] 통합된 displayTags 배열을 사용해 모든 탭을 일관된 방식으로 렌더링합니다. */}
                 {displayTags.map(tag => (
-                    <M.MainToDoCategory
+                    <MainToDoCategory
                         key={tag.id}
                         $isActive={activeTab === tag.label}
                         activeColor={tag.color}
                         onPress={() => handleTabPress(tag.label)}
                     >
-                        <M.MainToDoCategoryText $isActive={activeTab === tag.label}>
+                        <MainToDoCategoryText $isActive={activeTab === tag.label}>
                             {tag.label}
-                        </M.MainToDoCategoryText>
-                    </M.MainToDoCategory>
+                        </MainToDoCategoryText>
+                    </MainToDoCategory>
                 ))}
-            </M.MainToDoCategoryWarp>
+            </MainToDoCategoryWarp>
         </Pressable>
     );
 
@@ -128,9 +132,9 @@ export default function HomeScreen() {
     return (
         // GestureHandlerRootView는 앱의 최상단에서 전체 화면을 차지해야 합니다.
         <GestureHandlerRootView style={{flex: 1}}>
-            <M.MainContainer>
+            <MainContainer>
                 <Header sheetIndex={sheetIndex} />
-                <CContainer>
+                <CalendarContainer>
                     <CalendarView
                         date={currentDate}
                         onDateChange={handleDateChange} // [수정] 새로 만든 핸들러 함수를 전달
@@ -139,7 +143,7 @@ export default function HomeScreen() {
                         // [수정] DayView/WeekView의 일정 클릭 시 모달을 열도록 함수를 연결하고, 불필요한 prop은 제거합니다.
                         onEventPress={handleSchedulePress}
                     />
-                </CContainer>
+                </CalendarContainer>
                 <BottomSheet
                     ref={bottomSheetRef}
                     index={0}
@@ -152,11 +156,11 @@ export default function HomeScreen() {
                     }}
                 >
                     {/* 5. BottomSheetContent에는 activeTab 정보만 넘겨줍니다. */}
-                    <M.MainContentWrap>
+                    <MainContentWrap>
                         <BottomSheetContent activeTab={activeTab} />
-                    </M.MainContentWrap>
+                    </MainContentWrap>
                 </BottomSheet>
-            </M.MainContainer>
+            </MainContainer>
 
             {/* [추가] 상세 모달을 화면에 렌더링하고 상태와 연결합니다. */}
             <DetailSchedule

@@ -1,17 +1,14 @@
 import {Text, TouchableOpacity} from "react-native";
 import React, {useMemo, useState} from "react";
 import { useRouter } from "expo-router";
+import * as BS from "@/components/style/BottomSheetStyled";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import {
-    BSContainer, BSContentWrap, BSHeader, BSHeaderLeft, BSHeaderRight, TagEditBTN, BSTodayText,
-    BSToDoAddButton,
-} from "@/components/style/BottomSheetStyled";
 import SortByPicker from "@/components/common/SortByPicker";
 import {format} from "date-fns";
 import {BottomSheetScrollView} from "@gorhom/bottom-sheet";
-import {ToDo} from "@/components/ToDo/ToDo";
+import {TaggedSchedule} from "@/components/tag/TaggedSchedule";
 import {Schedule} from "@/components/calendar/scheduleTypes";
-import {Tag} from "@/components/ToDo/types";
+import {Tag} from "@/components/tag/TagTypes";
 import {useSchedule} from "@/src/context/ScheduleContext";
 import EditTagModal from "@/components/EditTagModal/edit-tagmodal";
 
@@ -50,6 +47,11 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
         return schedules.filter(schedule => schedule.tagId === currentTag.id);
     }, [activeTab, schedules, tags]);
 
+    // 1. 핸들러 함수 분리
+    const handleAddSchedulePress = () => {
+        router.push({ pathname: '/add-schedule', params: { tags: JSON.stringify(tags) } });
+    };
+
     const handleAddPress = () => {
         router.push({
             pathname: '/add-schedule',
@@ -59,37 +61,38 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
     };
 
     return (
-        <BSContainer>
-            <BSHeader>
-                <BSHeaderLeft>
-                    {/* 정렬 피커를 다시 헤더 왼쪽으로 이동시켰습니다. */}
-                    <SortByPicker items={pickerItems} selectedValue={sortBy} onValueChange={setSortBy} />
-                </BSHeaderLeft>
-                <BSHeaderRight>
-                    {/* [수정] 하드코딩된 new Date() 대신, Context에서 가져온 selectedDate를 사용합니다. */}
-                    <BSTodayText>{format(selectedDate, "yyyy-MM-dd")}</BSTodayText>
-                    {/* [수정] '+' 버튼 클릭 시 handleAddPress 함수를 호출합니다. */}
+        <BS.Container>
+            <BS.Header>
+                <BS.HeaderLeft>
+                    <SortByPicker
+                        items={pickerItems}
+                        selectedValue={sortBy}
+                        onValueChange={setSortBy}
+                    />
+                </BS.HeaderLeft>
+                <BS.HeaderRight>
+                    <BS.TodayText>{format(new Date(), "yyyy-MM-dd")}</BS.TodayText>
+                    {/* 2. 분리된 핸들러 함수를 onPress에 적용 */}
                     <TouchableOpacity onPress={handleAddPress}>
-                        <BSToDoAddButton name="pluscircleo" size={20}/>
+                        <BS.ScheduleAddButton name="pluscircleo" size={20}/>
                     </TouchableOpacity>
-                    <TagEditBTN onPress={() => setIsEditTagModalVisible(true)}>
+                    <BS.TagEditBTN onPress={() => setIsEditTagModalVisible(true)}>
                         <MaterialCommunityIcons name="book-edit-outline" size={24} color="mediumslateblue" />
-                    </TagEditBTN>
-                </BSHeaderRight>
-            </BSHeader>
+                    </BS.TagEditBTN>
+                </BS.HeaderRight>
+            </BS.Header>
             <BottomSheetScrollView style={{flex:1}}>
-                <BSContentWrap>
-                    {/* 2. 필터링된 스케줄 목록을 화면에 렌더링합니다. */}
+                <BS.ContentWrap>
                     {filteredSchedules.map(schedule => (
-                        <ToDo key={schedule.id} item={schedule} />
+                        <TaggedSchedule key={schedule.id} item={schedule} />
                     ))}
-                </BSContentWrap>
+                </BS.ContentWrap>
             </BottomSheetScrollView>
             {/* 태그 편집 모달 */}
             <EditTagModal
                 visible={isEditTagModalVisible}
                 onClose={() => setIsEditTagModalVisible(false)}
             />
-        </BSContainer>
+        </BS.Container>
     );
 }

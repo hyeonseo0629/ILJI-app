@@ -1,50 +1,43 @@
 import React from "react";
-import {
-    HContainer,
-    HIconBell,
-    HIconMail,
-    HIconShare,
-    HIconWrap,
-    HLogo,
-    HWrap,
-} from "@/components/style/HeaderStyled";
+import * as H from "@/components/style/HeaderStyled";
 import {usePathname} from "expo-router";
-import {TouchableOpacity, View} from "react-native";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { useTheme } from '@react-navigation/native'; // useTheme 추가
-
+import {TouchableOpacity} from "react-native";
 interface HeaderProps {
     sheetIndex: number;
 }
 
 const Header: React.FC<HeaderProps> = ({sheetIndex}) => {
-    const { colorScheme } = useColorScheme();
-    const theme = useTheme(); // 로컬 테마 객체 생성 대신 useTheme() 사용
-
+    // 1. expo-router의 usePathname 훅을 사용해 현재 화면의 경로를 가져옵니다.
+    //    - 홈 화면 (index.tsx)일 경우: '/'
+    //    - 다이어리 화면 (Diary.tsx)일 경우: '/Diary'
     const pathname = usePathname();
     const isMain = pathname === '/';
+    // 2. 바텀 시트가 확장된 상태인지 (인덱스가 0보다 큰지) 확인합니다.
     const isSheetExpanded = sheetIndex > 0;
 
     return (
         <>
-            <HContainer $isMain={isMain} $isSheetExpanded={isSheetExpanded} theme={theme}>
-                <HWrap>
-                    <HLogo/>
-                    <HIconWrap>
+            {/* 3. isMain과 isSheetExpanded 값을 prop으로 전달하여,
+                   HContainer가 스스로 그림자와 z-index를 제어하도록 합니다.
+            */}
+            <H.Container $isMain={isMain} $isSheetExpanded={isSheetExpanded}>
+                <H.Wrap>
+                    <H.Logo/>
+                    <H.IconWrap>
                         <TouchableOpacity>
-                            <HIconBell name="bell" size={25} theme={theme}/>
+                            <H.IconBell name="bell" size={25}/>
                         </TouchableOpacity>
                         <TouchableOpacity>
-                            <HIconShare name="share" size={25} theme={theme}/>
+                            <H.IconShare name="share" size={25}/>
                         </TouchableOpacity>
                         <TouchableOpacity>
-                            <HIconMail name="mail" size={25} theme={theme}/>
+                            <H.IconMail name="mail" size={25}/>
                         </TouchableOpacity>
-                    </HIconWrap>
-                </HWrap>
-            </HContainer>
+                    </H.IconWrap>
+                </H.Wrap>
+            </H.Container>
         </>
     )
 }
 
-export default Header;
+export default Header
