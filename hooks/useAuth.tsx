@@ -40,9 +40,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const storedSession = await SecureStore.getItemAsync(TOKEN_KEY);
         if (storedSession) {
           const parsedSession = JSON.parse(storedSession);
+          console.log('[AuthProvider] Session loaded from store:', JSON.stringify(parsedSession, null, 2));
           setSession(parsedSession);
         } else {
-          // No session found, this is fine.
+          console.log('[AuthProvider] No session found in store.');
         }
       } catch (e) {
         console.error("Failed to load session from secure store", e);
@@ -51,28 +52,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    console.log('[AuthProvider] Initial mount. Loading session...');
     loadSession();
   }, []);
 
   const signIn = async (user: SessionUser) => {
+    console.log('[AuthProvider] signIn called with user ID:', user.user.id);
     setSession(user);
     try {
       await SecureStore.setItemAsync(TOKEN_KEY, JSON.stringify(user));
+      console.log('[AuthProvider] Session saved to store.');
     } catch (e) {
       console.error("Failed to save session to SecureStore", e);
     }
   };
 
   const signOut = async () => {
+    console.log('[AuthProvider] signOut called.');
     setSession(null);
     try {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
+      console.log('[AuthProvider] Session deleted from store.');
     } catch (e) {
       console.error("Failed to delete session from SecureStore", e);
     }
   };
 
-  // This comment is added to force a re-write of the file.
+  console.log('[AuthProvider] Rendering. Current session state:', session ? `User ID: ${session.user.id}`: 'null');
   return (
     <AuthContext.Provider value={{ signIn, signOut, session, isLoading }}>
       {children}

@@ -62,7 +62,7 @@ interface ScheduleProviderProps {
 
 export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const { session } = useSession();
-    const userId = session?.user?.id; // 로그인한 사용자의 DB ID를 가져옵니다.
+    const userId = session?.user?.id;
 
     const [events, setEvents] = useState<Schedule[]>([]);
     const [tags, setTags] = useState<Tag[]>([]);
@@ -83,7 +83,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             description: rawEvent.description ?? '',
             location: rawEvent.location ?? '',
             tagId: rawEvent.tagId ?? 0,
-            userId: userId, // 실제 로그인된 사용자의 ID를 사용합니다.
+            userId: userId,
             rrule: '',
             createdAt: new Date(rawEvent.createdAt),
             updatedAt: new Date(rawEvent.updatedAt),
@@ -92,23 +92,20 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     }, [userId]);
 
     const fetchSchedules = useCallback(async () => {
-        if (!userId) return; // 로그인하지 않았으면 데이터를 불러오지 않습니다.
+        if (!userId) return;
 
         setLoading(true);
         try {
+            // 백엔드에서 이미 사용자별로 필터링된 데이터를 보내줍니다.
             const [schedulesResponse, tagsResponse] = await Promise.all([
                 api.get<RawScheduleEvent[]>('/schedules'),
-                api.get<Tag[]>(`/tags/user/${userId}`) // 동적 userId 사용
+                api.get<Tag[]>('/tags')
             ]);
 
-            const userTagIds = new Set(tagsResponse.data.map(tag => tag.id));
-
-            const mySchedules = schedulesResponse.data.filter(event =>
-                event.tagId === null || userTagIds.has(event.tagId!)
-            );
-
-            const formattedEvents = mySchedules.map(formatRawSchedule);
+            // 클라이언트 필터링이 더 이상 필요 없습니다.
+            const formattedEvents = schedulesResponse.data.map(formatRawSchedule);
             setEvents(formattedEvents);
+
             const processedTags = tagsResponse.data.map(tag => ({
                 ...tag,
                 color: (tag.color && tag.color.trim() !== '') ? tag.color : '#FF6B6B'
@@ -117,14 +114,12 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             setError(null);
         } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 404) {
-                // 404 오류는 백엔드에서 데이터가 없을 때 발생할 수 있습니다.
-                // 이를 오류로 처리하지 않고, 빈 데이터 상태로 정상 처리합니다.
+                // 404는 이제 발생하지 않아야 하지만, 만약을 위해 유지합니다.
                 console.warn("404 Not Found: 서버에 데이터가 없는 것으로 간주합니다.");
                 setEvents([]);
                 setTags([]);
                 setError(null);
             } else {
-                // 그 외 다른 모든 오류는 사용자에게 알립니다.
                 console.error("초기 데이터 로딩 실패:", err);
                 setError(err as Error);
                 Alert.alert("오류", "데이터를 불러오는 데 실패했습니다.");
@@ -138,7 +133,6 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         if (userId) {
             fetchSchedules();
         } else {
-            // 로그아웃 상태일 때 데이터 초기화
             setEvents([]);
             setTags([]);
             setLoading(false);
@@ -150,7 +144,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         try {
             const payload = {
                 ...scheduleToUpdate,
-                userId: userId, // 동적 userId 사용
+                userId: userId,
                 startTime: format(scheduleToUpdate.startTime, scheduleToUpdate.isAllDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm:ss"),
                 endTime: format(scheduleToUpdate.endTime, scheduleToUpdate.isAllDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm:ss"),
                 tagId: scheduleToUpdate.tagId === 0 ? null : scheduleToUpdate.tagId,
@@ -179,7 +173,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         try {
             const payload = {
                 ...newScheduleData,
-                userId: userId, // 동적 userId 사용
+                userId: userId,
                 startTime: format(newScheduleData.startTime, newScheduleData.isAllDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm:ss"),
                 endTime: format(newScheduleData.endTime, newScheduleData.isAllDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm:ss"),
                 tagId: newScheduleData.tagId === 0 ? null : newScheduleData.tagId,
@@ -216,7 +210,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const createTag = useCallback(async (tagData: { label: string, color: string }): Promise<Tag> => {
         if (!userId) throw new Error("User not logged in");
         try {
-            const payload = { ...tagData, userId: userId }; // 동적 userId 사용
+            const payload = { ...tagData, userId: userId };
             const response = await api.post<Tag>('/tags', payload);
             const newTag = response.data;
             setTags(prevTags => [...prevTags, newTag]);
@@ -231,7 +225,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const updateTag = useCallback(async (tagToUpdate: Tag) => {
         if (!userId) return;
         try {
-            const payload = { ...tagToUpdate, userId: userId }; // 동적 userId 사용
+            const payload = { ...tagToUpdate, userId: userId };
             const response = await api.put<Tag>(`/tags/${tagToUpdate.id}`, payload);
             const updatedTag = response.data;
             setTags(prevTags =>
@@ -247,7 +241,9 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const deleteTag = useCallback(async (tagId: number) => {
         if (!userId) return;
         try {
-            await api.delete(`/tags/${tagId}`, { data: { userId: userId } }); // 동적 userId 사용
+            // TagController에 따라 userId를 body로 보낼 필요가 없습니다.
+            await api.delete(`/tags/${tagId}`);
+            // 태그가 삭제되면, 관련 스케줄의 tagId가 null이 될 수 있으므로 전체 데이터를 새로고침합니다.
             await fetchSchedules();
         } catch (err) {
             console.error("태그 삭제 실패:", err);

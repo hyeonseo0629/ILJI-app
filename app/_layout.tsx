@@ -8,6 +8,7 @@ import {AuthProvider} from '@/hooks/useAuth';
 import {View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import { ScheduleProvider } from '@/src/context/ScheduleContext';
+import { ILogProvider } from '@/src/context/ILogContext';
 
 export default function RootLayout() {
 
@@ -28,6 +29,7 @@ export default function RootLayout() {
                 <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
                     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                         <ScheduleProvider>
+                        <ILogProvider>
                         <Stack>
                             <Stack.Screen
                                 name="(tabs)"
@@ -53,6 +55,7 @@ export default function RootLayout() {
                                 name="+not-found"
                             />
                         </Stack>
+                        </ILogProvider>
                         </ScheduleProvider>
                     </ThemeProvider>
                 </View>
