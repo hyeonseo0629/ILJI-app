@@ -75,7 +75,7 @@ export default function LoginScreen(): React.JSX.Element {
             }
 
             // 플랫폼에 따라 백엔드 서버 주소를 다르게 설정합니다.
-            const backendUrl = Platform.OS === 'android' ? 'http://172.30.1.8:8090' : 'http://localhost:8090';
+            const backendUrl = Platform.OS === 'android' ? 'http://10.100.0.34:8090' : 'http://localhost:8090';
 
             const response = await fetch(`${backendUrl}/api/auth/google`, {
                 method: 'POST',
@@ -85,11 +85,24 @@ export default function LoginScreen(): React.JSX.Element {
 
             if (response.ok) {
                 const authResponse = await response.json();
+
+                // 백엔드 응답에 user 객체와 id가 있는지 확인합니다.
+                if (!authResponse.user || !authResponse.user.id) {
+                    Alert.alert('Login Failed', 'User data not found in server response.');
+                    return;
+                }
+
+                // 백엔드에서 받은 user 객체를 세션 user 타입에 맞게 매핑합니다.
                 const sessionUser: SessionUser = {
-                    user: { name: user.name, email: user.email, photo: user.photo },
+                    user: {
+                        id: authResponse.user.id,
+                        name: authResponse.user.name,
+                        email: authResponse.user.email,
+                        photo: authResponse.user.picture, // 'picture'를 'photo'로 매핑
+                    },
                     token: authResponse.appToken,
                 };
-                // useSession의 signIn 함수를 호출하여 세션을 시작합니다.
+                
                 await signIn(sessionUser);
             } else {
                 const errorText = await response.text();

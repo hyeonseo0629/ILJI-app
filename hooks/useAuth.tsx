@@ -5,7 +5,7 @@ const TOKEN_KEY = 'ilji_session';
 
 // Define the shape of the user session
 export type SessionUser = {
-  user: { name: string; email: string; photo?: string };
+  user: { id: number; name: string; email: string; photo?: string };
   token: string;
 };
 
