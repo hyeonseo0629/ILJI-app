@@ -38,7 +38,6 @@ const DiaryPage = ({item, onDatePress}: { item: ILogData, onDatePress: () => voi
 
                 {/* Wrap content below header in a TouchableOpacity for navigation */}
                 <TouchableOpacity activeOpacity={0.8} onPress={handleNavigateToDetail}>
-                    <I.PageTitle>{item.title}</I.PageTitle>
 
                     {item.img_url && (
                         <I.PageImageContainer>

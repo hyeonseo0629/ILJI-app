@@ -1,14 +1,13 @@
 import React, {useState, useEffect, useMemo, useRef} from 'react';
-import { Alert, View, ScrollView, Keyboard, TouchableOpacity, Modal, Text } from 'react-native';
+import {Alert, View, ScrollView, Keyboard, TouchableOpacity, Modal, Text} from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as I from "@/components/style/I-logStyled";
-import {AntDesign, SimpleLineIcons, EvilIcons } from '@expo/vector-icons';
+import {AntDesign, SimpleLineIcons} from '@expo/vector-icons';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {AddImagePickerText} from "@/components/style/I-logStyled";
-import { Calendar, DateData } from 'react-native-calendars';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { ILogData } from '@/app/(tabs)/i-log';
+import {Calendar, DateData} from 'react-native-calendars';
+import {format} from 'date-fns';
 
 export default function AddILogScreen() {
     const insets = useSafeAreaInsets();
@@ -17,7 +16,6 @@ export default function AddILogScreen() {
     const params = useLocalSearchParams();
 
     // --- 상태 관리 ---
-    const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [selectedTags, setSelectedTags] = useState<string[]>([]); // 선택된 태그 목록
@@ -26,7 +24,6 @@ export default function AddILogScreen() {
     // New state for date selection
     const [selectedLogDate, setSelectedLogDate] = useState<Date>(new Date());
     const [isCalendarVisible, setCalendarVisible] = useState(false);
-    const [currentCalendarMonth, setCurrentCalendarMonth] = useState(format(new Date(), 'yyyy-MM-01'));
 
     // Existing logs to disable dates
     const existingLogs: { id: number; log_date: string }[] = useMemo(() => {
@@ -40,7 +37,14 @@ export default function AddILogScreen() {
 
     // Marked dates for the calendar (disabling existing log dates)
     const markedDates = useMemo(() => {
-        const markings: { [key: string]: { marked?: boolean, dotColor?: string, disabled?: boolean, disableTouchEvent?: boolean, selected?: boolean, selectedColor?: string } } = {};
+        const markings: {
+            [key: string]: {
+                disabled?: boolean,
+                disableTouchEvent?: boolean,
+                selected?: boolean,
+                selectedColor?: string
+            }
+        } = {};
         const logsByDate: { [key: string]: { id: number; log_date: string } } = existingLogs.reduce((acc, log) => {
             acc[format(new Date(log.log_date), 'yyyy-MM-dd')] = log;
             return acc;
@@ -48,11 +52,11 @@ export default function AddILogScreen() {
 
         // Mark existing log dates as disabled
         for (const dateString in logsByDate) {
-            markings[dateString] = { disabled: true, disableTouchEvent: true };
+            markings[dateString] = {disabled: true, disableTouchEvent: true};
         }
 
         // Mark the currently selected date
-        markings[format(selectedLogDate, 'yyyy-MM-dd')] = { selected: true, selectedColor: 'blue' };
+        markings[format(selectedLogDate, 'yyyy-MM-dd')] = {selected: true, selectedColor: 'blue'};
 
         return markings;
     }, [existingLogs, selectedLogDate]);
@@ -68,7 +72,6 @@ export default function AddILogScreen() {
     }, [params.uniqueTags]);
 
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [currentTypingTag, setCurrentTypingTag] = useState('');
     const [cursorPosition, setCursorPosition] = useState(0);
 
     // 키보드 높이 상태
@@ -104,14 +107,14 @@ export default function AddILogScreen() {
 
         if (isCursorAtEnd.current) {
             setTimeout(() => {
-                scrollViewRef.current?.scrollToEnd({ animated: true });
+                scrollViewRef.current?.scrollToEnd({animated: true});
             }, 100);
         }
     };
 
     const handleTextAreaFocus = () => {
         setTimeout(() => {
-            scrollViewRef.current?.scrollToEnd({ animated: true });
+            scrollViewRef.current?.scrollToEnd({animated: true});
         }, 100);
     };
 
@@ -228,8 +231,8 @@ export default function AddILogScreen() {
 
     // --- 저장 로직 ---
     const handleSave = () => {
-        if (!title.trim() || !content.trim()) {
-            Alert.alert('오류', '제목과 내용을 모두 입력해주세요.');
+        if (!content.trim()) {
+            Alert.alert('오류', '내용을 입력해주세요.');
             return;
         }
 
@@ -238,7 +241,6 @@ export default function AddILogScreen() {
         const newLog = {
             id: Date.now(), // Unique ID for new log
             user_profile_id: 1,
-            title: title.trim(),
             content: content.trim(),
             log_date: selectedLogDate, // Use selected date
             created_at: new Date(),
@@ -265,22 +267,16 @@ export default function AddILogScreen() {
                         stickyHeaderIndices={[0]}
                         ref={scrollViewRef}
                     >
-                        <I.AddHeader>
-                            <I.AddInput
-                                placeholder="New I-Log..."
-                                value={title}
-                                onChangeText={setTitle}
-                                autoFocus={true}
-                            />
+                        <I.AddHeader onPress={() => setCalendarVisible(true)}>
+                            <I.AddIconWrap>
+                                <AntDesign name="calendar" size={30} color="mediumslateblue"/>
+                            </I.AddIconWrap>
+                            <I.AddHeaderText>
+                                {format(selectedLogDate, 'yyyy년 MM월 dd일')}
+                            </I.AddHeaderText>
                         </I.AddHeader>
 
                         <I.AddContentContainer>
-                            {/* Date Picker */}
-                            <TouchableOpacity onPress={() => setCalendarVisible(true)} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                                <EvilIcons name="calendar" size={24} color="black" />
-                                <Text style={{ marginLeft: 5, fontSize: 16 }}>{format(selectedLogDate, 'yyyy년 MM월 dd일')}</Text>
-                            </TouchableOpacity>
-
                             {imageUri ? (
                                 <View>
                                     <TouchableOpacity onPress={pickImage}>
@@ -294,7 +290,7 @@ export default function AddILogScreen() {
                                 </View>
                             ) : (
                                 <I.AddImagePlaceholder onPress={pickImage}>
-                                    <SimpleLineIcons name="picture" size={150} color="#ddd" />
+                                    <SimpleLineIcons name="picture" size={150} color="#ddd"/>
                                     <AddImagePickerText>Add a picture...</AddImagePickerText>
                                 </I.AddImagePlaceholder>
                             )}
@@ -315,7 +311,7 @@ export default function AddILogScreen() {
                                 value={content}
                                 onChangeText={handleContentChange}
                                 onSelectionChange={e => {
-                                    const { selection } = e.nativeEvent;
+                                    const {selection} = e.nativeEvent;
                                     setCursorPosition(selection.start);
                                     isCursorAtEnd.current = selection.start >= content.length;
                                 }}
@@ -323,6 +319,7 @@ export default function AddILogScreen() {
                                 height={textAreaHeight}
                                 onFocus={handleTextAreaFocus}
                                 onContentSizeChange={handleContentSizeChange}
+                                autoFocus={true}
                             />
                         </I.AddContentContainer>
                     </I.AddWrap>
@@ -337,7 +334,8 @@ export default function AddILogScreen() {
                             <I.AddButtonText>Save</I.AddButtonText>
                         </I.AddSaveButton>
                     </I.AddButtonWrap>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{borderWidth: 1, borderColor: 'mediumslateblue'}}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}
+                                style={{borderWidth: 1, borderColor: 'mediumslateblue'}}>
                         {suggestions.map((tag) => (
                             <I.AddSuggestionButton key={tag} onPress={() => handleSuggestionTap(tag)}>
                                 <I.AddSuggestionButtonText>{tag}</I.AddSuggestionButtonText>
@@ -355,18 +353,21 @@ export default function AddILogScreen() {
                 onRequestClose={() => setCalendarVisible(false)}
             >
                 <TouchableOpacity
-                    style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' }}
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}
                     activeOpacity={1}
                     onPressOut={() => setCalendarVisible(false)}
                 >
-                    <View style={{ width: '90%', backgroundColor: 'white', borderRadius: 10, padding: 10 }} onStartShouldSetResponder={() => true}>
+                    <View style={{width: '90%', backgroundColor: 'white', borderRadius: 10, padding: 10}}
+                          onStartShouldSetResponder={() => true}>
                         <Calendar
                             markedDates={markedDates}
                             onDayPress={handleDateSelect}
                             current={selectedLogDate.toISOString().split('T')[0]}
-                            onMonthChange={(month) => {
-                                setCurrentCalendarMonth(month.dateString);
-                            }}
                         />
                     </View>
                 </TouchableOpacity>

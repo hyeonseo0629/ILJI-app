@@ -13,7 +13,6 @@ const initialILogs: ILogData[] = [
     {
         id: 109,
         user_profile_id: 101,
-        title: '작은 이야기',
         log_date: new Date('2025-05-10'),
         content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
         img_url: 'https://picsum.photos/seed/500/400/400',
@@ -27,7 +26,6 @@ const initialILogs: ILogData[] = [
     {
         id: 108,
         user_profile_id: 103,
-        title: '새로운 시작',
         log_date: new Date('2025-04-29'),
         content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘ender 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
         img_url: 'https://picsum.photos/seed/972/400/400',
@@ -41,7 +39,6 @@ const initialILogs: ILogData[] = [
     {
         id: 107,
         user_profile_id: 101,
-        title: '나의 하루',
         log_date: new Date('2025-04-21'),
         content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
         img_url: 'https://picsum.photos/seed/769/400/400',
@@ -58,7 +55,6 @@ const initialILogs: ILogData[] = [
     {
         id: 106,
         user_profile_id: 102,
-        title: '추억 한 조각',
         log_date: new Date('2025-03-24'),
         content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
         img_url: 'https://picsum.photos/seed/563/400/400',
@@ -72,7 +68,6 @@ const initialILogs: ILogData[] = [
     {
         id: 105,
         user_profile_id: 101,
-        title: '깊은 고찰',
         log_date: new Date('2025-02-28'),
         content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
         img_url: 'https://picsum.photos/seed/697/400/400',
@@ -86,7 +81,6 @@ const initialILogs: ILogData[] = [
     {
         id: 104,
         user_profile_id: 103,
-        title: '일상의 기록',
         log_date: new Date('2025-02-09'),
         content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
         img_url: 'https://picsum.photos/seed/490/400/400',
@@ -103,7 +97,6 @@ const initialILogs: ILogData[] = [
     {
         id: 103,
         user_profile_id: 102,
-        title: '새로운 발견',
         log_date: new Date('2025-01-19'),
         content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
         img_url: 'https://picsum.photos/seed/41/400/400',
@@ -117,7 +110,6 @@ const initialILogs: ILogData[] = [
     {
         id: 102,
         user_profile_id: 101,
-        title: '오늘의 생각',
         log_date: new Date('2024-12-29'),
         content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
         img_url: 'https://picsum.photos/seed/688/400/400',
@@ -131,7 +123,6 @@ const initialILogs: ILogData[] = [
     {
         id: 101,
         user_profile_id: 103,
-        title: '특별한 순간',
         log_date: new Date('2024-11-20'),
         content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
         img_url: 'https://picsum.photos/seed/150/400/400',
@@ -148,7 +139,6 @@ const initialILogs: ILogData[] = [
     {
         id: 100,
         user_profile_id: 102,
-        title: '나의 하루',
         log_date: new Date('2024-10-25'),
         content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
         img_url: 'https://picsum.photos/seed/891/400/400',
@@ -241,17 +231,7 @@ export default function ILogDetailScreen() {
                     <I.DetailDateWrap>
                         <I.DetailDateText>{format(log.log_date, 'yyyy.MM.dd')}</I.DetailDateText>
                         <I.DetailTimeText>{format(log.created_at, 'HH:mm:ss')}</I.DetailTimeText>
-                        <I.DetailActionsWrap>
-                            <I.DetailActionButton onPress={handleEdit}>
-                                <MaterialCommunityIcons name="square-edit-outline" size={28} color="black"/>
-                            </I.DetailActionButton>
-                            <I.DetailActionButton onPress={handleDelete}>
-                                <MaterialCommunityIcons name="trash-can-outline" size={28} color="black"/>
-                            </I.DetailActionButton>
-                        </I.DetailActionsWrap>
                     </I.DetailDateWrap>
-
-                    <I.DetailTitle>{log.title}</I.DetailTitle>
 
                     {log.img_url && (
                         <I.DetailImageContainer>
@@ -269,6 +249,16 @@ export default function ILogDetailScreen() {
                         </I.DetailImageContainer>
                     )}
 
+                    <I.DetailActionsWrap>
+                        <I.DetailActionButton onPress={handleEdit} style={{marginRight: 10}}>
+                            <MaterialCommunityIcons name="square-edit-outline" size={40} color="mediumslateblue"/>
+                        </I.DetailActionButton>
+                        <I.DetailActionButton onPress={handleDelete}>
+                            <MaterialCommunityIcons name="trash-can-outline" size={40} color="#D25A5A"/>
+                        </I.DetailActionButton>
+                    </I.DetailActionsWrap>
+
+
                     {parsedFriendTags.length > 0 && (
                         <I.DetailFriendTagsContainer>
                             {parsedFriendTags.map(tag => (
@@ -278,14 +268,14 @@ export default function ILogDetailScreen() {
                             ))}
                         </I.DetailFriendTagsContainer>
                     )}
-
-                    <I.DetailContent>{log.content}</I.DetailContent>
-
                     {log.tags && (
                         <I.DetailTagsContainer>
                             <I.DetailTagsText>{log.tags}</I.DetailTagsText>
                         </I.DetailTagsContainer>
                     )}
+
+                    <I.DetailContent>{log.content}</I.DetailContent>
+
                 </I.DetailWrap>
             </ScrollView>
 
