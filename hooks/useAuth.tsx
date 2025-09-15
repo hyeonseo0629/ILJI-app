@@ -5,7 +5,8 @@ const TOKEN_KEY = 'ilji_session';
 
 // Define the shape of the user session
 export type SessionUser = {
-  user: { name: string; email: string; photo?: string };
+  // [수정] user 객체에 id 필드 추가
+  user: { id: number; name: string; email: string; photo?: string };
   token: string;
 };
 

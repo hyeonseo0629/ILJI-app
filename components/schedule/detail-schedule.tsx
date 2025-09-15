@@ -7,7 +7,7 @@ import { Schedule } from '@/components/calendar/scheduleTypes';
 import { Tag } from '@/components/tag/TagTypes';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSchedule } from '@/src/context/ScheduleContext';
-import ConfirmModal from '@/components/ConfirmModal/ConfirmModal'; // [추가] 커스텀 확인 모달 import
+import ConfirmModal from '@/components/confirmModal/ConfirmModal'; // [추가] 커스텀 확인 모달 import
 
 interface DetailScheduleProps {
     schedule: Schedule | null;

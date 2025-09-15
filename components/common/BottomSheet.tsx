@@ -10,7 +10,7 @@ import {TaggedSchedule} from "@/components/tag/TaggedSchedule";
 import {Schedule} from "@/components/calendar/scheduleTypes";
 import {Tag} from "@/components/tag/TagTypes";
 import {useSchedule} from "@/src/context/ScheduleContext";
-import EditTagModal from "@/components/EditTagModal/edit-tagmodal";
+import EditTagModal from "@/components/editTagModal/edit-tagmodal";
 
 interface BottomSheetContentProps {
     activeTab: string; // e.g., "All", "Work", "Personal", "Study"
