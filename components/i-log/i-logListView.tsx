@@ -64,7 +64,7 @@ const ListItem = ({item}: { item: ILogData }) => {
     const previewText = singleLineContent.substring(0, maxLength);
 
     const handlePress = () => {
-        router.push({pathname: '/i-log/[id]', params: {id: item.id.toString()}});
+        router.push({pathname: './[id]', params: {id: item.id.toString()}});
     };
 
     return (
@@ -79,7 +79,6 @@ const ListItem = ({item}: { item: ILogData }) => {
                         <I.ListTimeText>{format(item.created_at, 'HH:mm:ss')}</I.ListTimeText>
                     </I.ListHeader>
 
-                    <I.ListTitle>{item.title}</I.ListTitle>
                     <I.ListContent>
                         {previewText}
                         {singleLineContent.length > maxLength ? "..." : ""}

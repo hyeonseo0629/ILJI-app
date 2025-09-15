@@ -1,10 +1,25 @@
-module.exports = function (api) {
+module.exports = function(api) {
   api.cache(true);
   return {
-    presets: ["babel-preset-expo"],
+    presets: ['babel-preset-expo'],
     plugins: [
-      // reanimated 플러그인을 다시 추가합니다.
-      "react-native-reanimated/plugin",
-    ],
+      [
+        'module-resolver',
+        {
+          root: ['./'],
+          alias: {
+            '@': './',
+          },
+          extensions: [
+            '.js',
+            '.jsx',
+            '.ts',
+            '.tsx',
+          ]
+        }
+      ],
+      'react-native-reanimated/plugin',
+      ['styled-components', { ssr: true, displayName: true, preprocess: false }]
+    ]
   };
 };

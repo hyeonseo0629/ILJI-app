@@ -14,7 +14,6 @@ import * as CS from '../style/CalendarStyled';
 import MonthView from './MonthView';
 import WeekView from './WeekView';
 import DayView from './DayView';
-import DetailSchedule from '@/components/schedule/detail-schedule';
 import { Schedule } from '@/components/calendar/scheduleTypes';
 import { Tag } from '@/components/tag/TagTypes';
 import { useSafeAreaInsets } from "react-native-safe-area-context";

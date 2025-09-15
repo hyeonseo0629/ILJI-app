@@ -15,7 +15,6 @@ export default function UpdateILogScreen() {
     const params = useLocalSearchParams();
 
     // --- 상태 관리 ---
-    const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [selectedTags, setSelectedTags] = useState<string[]>([]); // 선택된 태그 목록
@@ -26,7 +25,6 @@ export default function UpdateILogScreen() {
         if (params.editLog) {
             try {
                 const logToEdit: ILogData = JSON.parse(params.editLog as string);
-                setTitle(logToEdit.title);
                 setContent(logToEdit.content);
                 setImageUri(logToEdit.img_url || null);
                 if (logToEdit.tags) {
@@ -50,7 +48,6 @@ export default function UpdateILogScreen() {
     }, [params.uniqueTags]);
 
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [currentTypingTag, setCurrentTypingTag] = useState('');
     const [cursorPosition, setCursorPosition] = useState(0);
 
     // 키보드 높이 상태
@@ -204,8 +201,8 @@ export default function UpdateILogScreen() {
 
     // --- 저장 로직 ---
     const handleSave = () => {
-        if (!title.trim() || !content.trim()) {
-            Alert.alert('오류', '제목과 내용을 모두 입력해주세요.');
+        if (!content.trim()) {
+            Alert.alert('오류', '내용을 입력해주세요.');
             return;
         }
 
@@ -213,7 +210,6 @@ export default function UpdateILogScreen() {
 
         const updatedLog: ILogData = {
             ...(JSON.parse(params.editLog as string)), // 기존 로그 데이터 유지
-            title: title.trim(),
             content: content.trim(),
             tags: finalTagsString,
             img_url: imageUri,
@@ -232,18 +228,8 @@ export default function UpdateILogScreen() {
                 <I.Container>
                     <I.AddWrap
                         contentContainerStyle={{paddingBottom: 40 + keyboardHeight}}
-                        stickyHeaderIndices={[0]}
                         ref={scrollViewRef}
                     >
-                        <I.AddHeader>
-                            <I.AddInput
-                                placeholder="New I-Log..."
-                                value={title}
-                                onChangeText={setTitle}
-                                autoFocus={true}
-                            />
-                        </I.AddHeader>
-
                         <I.AddContentContainer>
                             {imageUri ? (
                                 <View>
@@ -287,6 +273,7 @@ export default function UpdateILogScreen() {
                                 height={textAreaHeight}
                                 onFocus={handleTextAreaFocus}
                                 onContentSizeChange={handleContentSizeChange}
+                                autoFocus={true}
                             />
                         </I.AddContentContainer>
                     </I.AddWrap>

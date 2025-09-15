@@ -12,9 +12,6 @@ import {
     isWithinInterval,
     startOfDay,
     endOfDay,
-    differenceInCalendarDays,
-    max,
-    min,
 } from 'date-fns';
 import * as CS from '../style/CalendarStyled';
 import {Schedule} from '@/components/calendar/scheduleTypes';

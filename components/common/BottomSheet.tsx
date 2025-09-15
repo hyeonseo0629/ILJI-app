@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity} from "react-native";
+import {TouchableOpacity} from "react-native";
 import React, {useMemo, useState} from "react";
 import { useRouter } from "expo-router";
 import * as BS from "@/components/style/BottomSheetStyled";
@@ -7,10 +7,8 @@ import SortByPicker from "@/components/common/SortByPicker";
 import {format} from "date-fns";
 import {BottomSheetScrollView} from "@gorhom/bottom-sheet";
 import {TaggedSchedule} from "@/components/tag/TaggedSchedule";
-import {Schedule} from "@/components/calendar/scheduleTypes";
-import {Tag} from "@/components/tag/TagTypes";
 import {useSchedule} from "@/src/context/ScheduleContext";
-import EditTagModal from "@/components/EditTagModal/edit-tagmodal";
+import EditTagModal from "@/components/editTagModal/EditTagModal";
 
 interface BottomSheetContentProps {
     activeTab: string; // e.g., "All", "Work", "Personal", "Study"

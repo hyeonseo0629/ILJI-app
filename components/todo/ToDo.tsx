@@ -3,7 +3,7 @@ import {TouchableOpacity} from "react-native";
 import {format} from "date-fns";
 import * as BS from "@/components/style/BottomSheetStyled";
 import {Schedule} from "@/components/calendar/scheduleTypes";
-import {ScheduleTextsWarp} from "@/components/style/BottomSheetStyled";
+import {ScheduleTextsWrap} from "@/components/style/BottomSheetStyled";
 
 interface ToDoProps {
     item: Schedule;
@@ -20,7 +20,7 @@ export const ToDoMainContent: React.FC<ToDoMainContentProps> = ({title, date, ti
     const [isChecked, setIsChecked] = useState(false);
 
     return (
-        <BS.ScheduleTextsWarp>
+        <BS.ScheduleTextsWrap>
             <BS.ScheduleLeftWrap>
                 <TouchableOpacity onPress={() => setIsChecked(prev => !prev)}>
                     <BS.ScheduleCheckBox
@@ -35,7 +35,7 @@ export const ToDoMainContent: React.FC<ToDoMainContentProps> = ({title, date, ti
                     <BS.ScheduleTitle $isChecked={isChecked}>{title}</BS.ScheduleTitle>
                 </BS.ScheduleTextWrap>
             </BS.ScheduleLeftWrap>
-        </BS.ScheduleTextsWarp>
+        </BS.ScheduleTextsWrap>
     );
 };
 

@@ -36,7 +36,7 @@ export const MainToDoCategory = styled.TouchableOpacity<CategoryTabProps>`
     opacity: ${(props) => (props.$isActive ? 1 : 0.6)};
 `;
 
-export const MainToDoCategoryText = styled.Text<CategoryTabProps & ThemeProps>`
+export const MainTodoCategoryText = styled.Text<CategoryTabProps & ThemeProps>`
     font-size: 15px;
     font-weight: ${(props) => (props.$isActive ? 'bold' : 'normal')};
     color: ${(props) => props.theme?.colors?.text || '#333333'};

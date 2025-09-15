@@ -1,21 +1,22 @@
 import React, {useCallback, useMemo, useRef, useState, useEffect} from 'react';
 import {Pressable, View, Text, StyleSheet, ActivityIndicator} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
+import { useSharedValue } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Header from "@/components/header/Header";
-import {set} from "date-fns";
 import {Schedule} from "@/components/calendar/scheduleTypes";
-import {Tag} from "@/components/tag/TagTypes";
 import {CalendarContainer} from "@/components/style/CalendarStyled";
 import {
     MainContainer,
     MainContentWrap,
     MainToDoCategory,
-    MainTodoCategoryText,
+    MainToDoCategoryText,
     MainToDoCategoryWarp
 } from "@/components/style/MainStyled";
 import {BottomSheetContent} from "@/components/common/BottomSheet";
 import CalendarView from "@/components/calendar/CalendarView";
+import { AnimationContext } from '@/components/common/AnimationContext';
+import { useTheme } from '@react-navigation/native';
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import DetailSchedule from "@/components/schedule/detail-schedule";
 import {useSchedule} from "@/src/context/ScheduleContext";
@@ -25,8 +26,10 @@ export default function HomeScreen() {
     const router = useRouter();
     const [currentDate, setCurrentDate] = useState(new Date());
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const [sheetIndex, setSheetIndex] = useState(0);
     const tabPressedRef = useRef(false);
+    const animatedIndex = useSharedValue<number>(0);
+    const theme = useTheme();
+    const [sheetIndex, setSheetIndex] = useState(0);
 
     // [추가] 상세 모달을 제어하기 위한 상태와 핸들러 함수들
     const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
@@ -72,16 +75,6 @@ export default function HomeScreen() {
         []
     );
 
-    // 3. 로딩 중일 때 보여줄 화면
-    if (loading) {
-        return (
-            <View style={styles.centered}>
-                <ActivityIndicator size="large" />
-                <Text>일정을 불러오는 중...</Text>
-            </View>
-        );
-    }
-
     const handleTabPress = (tabName: string) => {
         tabPressedRef.current = true;
         setActiveTab(tabName);
@@ -93,12 +86,16 @@ export default function HomeScreen() {
             tabPressedRef.current = false;
             return;
         }
-        if (sheetIndex === 1) {
+        if (animatedIndex.value > 0) {
             bottomSheetRef.current?.collapse();
         } else {
             bottomSheetRef.current?.expand();
         }
     };
+
+    const handleSheetChange = useCallback((index: number) => {
+        setSheetIndex(index);
+    }, []);
 
     const TabHandle = () => (
         <Pressable onPress={handleSheetToggle}>
@@ -111,14 +108,24 @@ export default function HomeScreen() {
                         activeColor={tag.color}
                         onPress={() => handleTabPress(tag.label)}
                     >
-                        <MainTodoCategoryText $isActive={activeTab === tag.label}>
+                        <MainToDoCategoryText $isActive={activeTab === tag.label}>
                             {tag.label}
-                        </MainTodoCategoryText>
+                        </MainToDoCategoryText>
                     </MainToDoCategory>
                 ))}
             </MainToDoCategoryWarp>
         </Pressable>
     );
+
+    // 3. 로딩 중일 때 보여줄 화면
+    if (loading) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" />
+                <Text>일정을 불러오는 중...</Text>
+            </View>
+        );
+    }
 
     return (
         // GestureHandlerRootView는 앱의 최상단에서 전체 화면을 차지해야 합니다.

@@ -20,7 +20,7 @@ const DiaryPage = ({item, onDatePress}: { item: ILogData, onDatePress: () => voi
     }
 
     const handleNavigateToDetail = () => {
-        router.push({ pathname: '/i-log/[id]', params: { id: item.id.toString() } });
+        router.push({ pathname: './[id]', params: { id: item.id.toString() } });
     };
 
     return (
@@ -38,7 +38,6 @@ const DiaryPage = ({item, onDatePress}: { item: ILogData, onDatePress: () => voi
 
                 {/* Wrap content below header in a TouchableOpacity for navigation */}
                 <TouchableOpacity activeOpacity={0.8} onPress={handleNavigateToDetail}>
-                    <I.PageTitle>{item.title}</I.PageTitle>
 
                     {item.img_url && (
                         <I.PageImageContainer>

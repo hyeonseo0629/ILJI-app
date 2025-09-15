@@ -11,7 +11,7 @@ import { useSchedule } from '@/src/context/ScheduleContext';
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {StatusBar} from "expo-status-bar";
 import {AntDesign} from "@expo/vector-icons";
-import CreateTagModal from "@/components/AddTagModal/add-tagmodal";
+import CreateTagModal from "@/components/addTagModal/Add-tagmodal";
 
 // 실제 앱에서는 이 화면으로 이동할 때 tags 목록을 prop으로 전달받거나
 // 전역 상태(global state)에서 가져와야 합니다. 여기서는 예시로 사용합니다.

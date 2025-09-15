@@ -140,32 +140,25 @@ export const ListHeader = styled.View`
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
 `;
 
 export const ListDateText = styled.Text`
-    font-size: 13px;
+    font-size: 20px;
     color: #555;
 `;
 
 export const ListTimeText = styled.Text`
     font-size: 12px;
     color: #888;
-    margin-top: 4px;
-`;
-
-export const ListTitle = styled.Text`
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 4px;
+    margin: 5px;
 `;
 
 export const ListContent = styled.Text`
     font-size: 14px;
     color: #666;
     line-height: 20px;
-    margin-bottom: 8px;
+    margin: 5px 8px 20px 0;
 `;
 
 export const ListStatsContainer = styled.View`
@@ -353,37 +346,41 @@ export const DetailDateWrap = styled.View`
     justify-content: space-between;
     flex-direction: row;
     align-items: flex-start;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 `
 export const DetailDateText = styled.Text`
-    font-size: 30px;
+    font-size: 45px;
     font-weight: bold;
     padding-right: 5px;
+    border-bottom-width: 3px;
+    border-color: mediumslateblue;
 `
 
 export const DetailTimeText = styled.Text`
     font-size: 14px;
     color: #888;
-    padding-top: 15px;
+    padding-top: 40px;
 `
 
 export const DetailActionsWrap = styled.View`
+    width: 100%;
     flex-direction: row;
+    justify-content: flex-end;
 `;
 
 export const DetailActionButton = styled.TouchableOpacity`
-    margin-right: 15px;
+    background-color: lavender;
+    padding: 5px 10px;
+    border-radius: 50px;
+    
+    /* Android Shadow */
+    elevation: 5;
+    /* iOS Shadow */
+    shadow-color: #000;
+    shadow-offset: 0px 2px;
+    shadow-opacity: 0.25;
+    shadow-radius: 3.84;
 `;
-
-export const DetailTitle = styled.Text`
-    font-size: 20px;
-    font-weight: bold;
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-color: mediumslateblue;
-    padding: 0 10px;
-    margin: 5px 0 15px;
-`
 
 export const DetailImageContainer = styled.View`
     width: 100%;
@@ -449,11 +446,14 @@ export const DetailContent = styled.Text`
     padding: 10px 20px;
 `;
 
-export const DetailTagsContainer = styled.View``;
+export const DetailTagsContainer = styled.View`
+    width: 95%;
+    margin: 0px auto 10px;
+;`;
 
 export const DetailTagsText = styled.Text`
-    font-size: 15px;
-    color: #888;
+    font-size: 20px;
+    color: mediumslateblue;
 `;
 
 export const DetailModalBackdrop = styled.TouchableOpacity`
@@ -530,15 +530,29 @@ export const AddWrap = styled(ForwardedAddWrap)`
 
 export const AddContentContainer = styled.View`
     padding-horizontal: 20px;
+    position: sticky;
 `;
 
-export const AddHeader = styled.View`
-    padding: 15px;
-    margin-bottom: 20px;
-    background-color: #fff; /* 배경색 추가 */
-    justify-content: start;
+export const AddHeader = styled.TouchableOpacity`
+    position: sticky;
+    flex-direction: row;
     align-items: center;
+    padding: 15px 30px;
+    background-color: #fff;
+    justify-content: start;
+    border-color: #9f9ff0;
+    border-bottom-width: 2px;
 `;
+
+export const AddHeaderText = styled.Text`
+    font-size: 30px;
+    color: mediumslateblue;
+`
+
+export const AddIconWrap = styled.View`
+    margin-right: 10px;
+    border-radius: 50px;
+`
 
 export const AddInput = styled.TextInput.attrs({
     placeholderTextColor: '#9f9ff0',
@@ -591,14 +605,14 @@ export const AddImagePreview = styled.Image`
     width: 100%;
     height: 375px;
     border-radius: 8px;
-    margin-bottom: 15px;
+    margin: 20px 0 10px;
 `;
 
 export const AddImagePlaceholder = styled.TouchableOpacity`
     width: 100%;
     height: 375px;
     border-radius: 8px;
-    margin-bottom: 15px;
+    margin: 20px 0 10px;
     background-color: #f0f0f0;
     justify-content: center;
     align-items: center;
@@ -607,12 +621,19 @@ export const AddImagePlaceholder = styled.TouchableOpacity`
 
 export const AddImageRemoveButton = styled.TouchableOpacity`
     position: absolute;
-    top: 10px;
+    top: 30px;
     right: 10px;
     z-index: 1;
-    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 15px;
     padding: 2px;
+    
+    /* Android Shadow */
+    elevation: 10;
+    /* iOS Shadow */
+    shadow-color: #000;
+    shadow-offset: 0px 2px;
+    shadow-opacity: 0.25;
+    shadow-radius: 3.84;
 `;
 
 export const AddSuggestionContainer = styled.View<{ $bottom?: number }>`

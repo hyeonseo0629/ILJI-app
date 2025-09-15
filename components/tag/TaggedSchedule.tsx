@@ -19,7 +19,7 @@ export const ScheduleMainContent: React.FC<ToDoMainContentProps> = ({title, date
     const [isChecked, setIsChecked] = useState(false);
 
     return (
-        <BS.ScheduleTextsWarp>
+        <BS.ScheduleTextsWrap>
             <BS.ScheduleLeftWrap>
                 <TouchableOpacity onPress={() => setIsChecked(prev => !prev)}>
                     <BS.ScheduleCheckBox
@@ -28,13 +28,13 @@ export const ScheduleMainContent: React.FC<ToDoMainContentProps> = ({title, date
                 </TouchableOpacity>
                 <BS.ScheduleTextWrap>
                     <BS.ScheduleDayWrap>
-                        <BS.ScheduleDate $isChecked={isChecked}> {date}</BS.ScheduleDate>
-                        <BS.ScheduleTime $isChecked={isChecked}> {time}</BS.ScheduleTime>
+                        <BS.ScheduleDate $isChecked={isChecked}>{date}</BS.ScheduleDate>
+                        <BS.ScheduleTime $isChecked={isChecked}>{`${time}`}</BS.ScheduleTime>
                     </BS.ScheduleDayWrap>
                     <BS.ScheduleTitle $isChecked={isChecked}>{title}</BS.ScheduleTitle>
                 </BS.ScheduleTextWrap>
             </BS.ScheduleLeftWrap>
-        </BS.ScheduleTextsWarp>
+        </BS.ScheduleTextsWrap>
     );
 };
 
@@ -45,7 +45,7 @@ export const TaggedSchedule: React.FC<ToDoProps> = ({item}) => {
 
     return (
         <BS.ScheduleWrap>
-            <BS.ScheduleState> {state} </BS.ScheduleState>
+            <BS.ScheduleState>{state}</BS.ScheduleState>
             <BS.ScheduleListWrap>
                 <ScheduleMainContent
                     title={item.title}
