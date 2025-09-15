@@ -20,12 +20,12 @@ export const Colors = {
   },
   dark: {
     text: '#ECEDEE',
-    background: '#151718',
+    background: '#000000',
     tint: tintColorDark,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
-    card: '#333333',
+    card: '#000000',
     border: 'rgb(39, 39, 41)', // Dark border color
     notification: 'rgb(255, 69, 58)', // Dark notification color
   },
