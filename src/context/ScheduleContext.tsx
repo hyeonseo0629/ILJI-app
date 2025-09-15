@@ -92,15 +92,27 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     }, [userId]);
 
     const fetchSchedules = useCallback(async () => {
-        if (!userId) return; // 로그인하지 않았으면 데이터를 불러오지 않습니다.
+        console.log("Fetching schedules for userId:", userId);
+        if (!userId) {
+            console.warn("User ID is not available. Cannot fetch schedules.");
+            setLoading(false);
+            return;
+        }
 
         setLoading(true);
         try {
+            const schedulesUrl = '/schedules';
+            const tagsUrl = '/tags';
+            console.log("Requesting schedules from URL:", schedulesUrl);
+            console.log("Requesting tags from URL:", tagsUrl);
+
             const [schedulesResponse, tagsResponse] = await Promise.all([
-                // 404 오류 발생: '/schedules/user/4' 경로가 없음. 기존에 작동하던 '/schedules'로 되돌립니다.
-                api.get<RawScheduleEvent[]>('/schedules'),
-                api.get<Tag[]>(`/tags/user/${userId}`) // 동적 userId 사용
+                api.get<RawScheduleEvent[]>(schedulesUrl),
+                api.get<Tag[]>(tagsUrl)
             ]);
+
+            console.log("Schedules API response data:", schedulesResponse.data);
+            console.log("Tags API response data:", tagsResponse.data);
 
             const userTagIds = new Set(tagsResponse.data.map(tag => tag.id));
 
@@ -117,16 +129,29 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             setTags(processedTags);
             setError(null);
         } catch (err) {
-            if (axios.isAxiosError(err) && err.response?.status === 404) {
-                // 404 오류는 백엔드에서 데이터가 없을 때 발생할 수 있습니다.
-                // 이를 오류로 처리하지 않고, 빈 데이터 상태로 정상 처리합니다.
-                console.warn("404 Not Found: 서버에 데이터가 없는 것으로 간주합니다.");
-                setEvents([]);
-                setTags([]);
-                setError(null);
+            if (axios.isAxiosError(err)) {
+                console.error("Axios error during fetchSchedules:", err.message);
+                if (err.response) {
+                    console.error("Axios error response status:", err.response.status);
+                    console.error("Axios error response data:", err.response.data);
+                    console.error("Axios error response config URL:", err.response.config.url);
+                } else if (err.request) {
+                    console.error("Axios error request:", err.request);
+                } else {
+                    console.error("Axios error config:", err.config);
+                }
+
+                if (err.response?.status === 404) {
+                    console.warn(`404 Not Found for user ${userId}: 서버에 데이터가 없는 것으로 간주합니다.`, err.response?.config?.url);
+                    setEvents([]);
+                    setTags([]);
+                    setError(null);
+                } else {
+                    setError(err as Error);
+                    Alert.alert("오류", "데이터를 불러오는 데 실패했습니다.");
+                }
             } else {
-                // 그 외 다른 모든 오류는 사용자에게 알립니다.
-                console.error("초기 데이터 로딩 실패:", err);
+                console.error("초기 데이터 로딩 실패 (non-Axios error):", err);
                 setError(err as Error);
                 Alert.alert("오류", "데이터를 불러오는 데 실패했습니다.");
             }
@@ -172,8 +197,6 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error("Axios 업데이트 에러:", err.message);
-            } else {
-                console.error("일정 업데이트 실패:", err);
             }
             Alert.alert("업데이트 실패", "서버와 통신 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.");
         }
@@ -200,8 +223,6 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error("Axios 생성 에러:", err.message);
-            } else {
-                console.error("일정 생성 실패:", err);
             }
             Alert.alert("생성 실패", "서버와 통신 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.");
         }
@@ -243,8 +264,8 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             const payload = { ...tagToUpdate, userId: userId }; // 동적 userId 사용
             const response = await api.put<Tag>(`/tags/${tagToUpdate.id}`, payload);
             const updatedTag = response.data;
-            setTags(prevTags =>
-                prevTags.map(tag => (tag.id === updatedTag.id ? updatedTag : tag))
+            setTags(prevEvents =>
+                prevEvents.map(tag => (tag.id === updatedTag.id ? updatedTag : tag))
             );
         } catch (err) {
             console.error("태그 업데이트 실패:", err);
