@@ -1,12 +1,10 @@
 import styled from "styled-components/native";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import AntDesign from "react-native-vector-icons/AntDesign";
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 
 export const Container = styled.View`
     background-color: #ffffff;
     width: 100%;
     height: 100%;
-    align-items: center;
     padding: 10px;
 `
 
@@ -18,15 +16,23 @@ export const Header = styled.View`
     width: 100%;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
 `
 
 export const HeaderLeft = styled.View`
-    padding: 5px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 20px; /* 아이콘 좌측 여백 추가 */
+`
+
+export const TagEditBTN = styled.TouchableOpacity`
+    padding: 10px;
 `
 
 export const HeaderRight = styled.View`
     padding: 5px;
     flex-direction: row;
+    align-items: center; /* 아이콘과 텍스트의 수직 정렬을 맞춥니다. */
 `
 
 export const TodayText = styled.Text`
@@ -36,7 +42,8 @@ export const TodayText = styled.Text`
 
 export const ScheduleAddButton = styled(AntDesign).attrs({})`
     margin-left: 10px;
-    padding: 10px 5px;
+    padding: 10px 0; /* 터치 영역 확보 및 수직 정렬 */
+    color: mediumslateblue;
 `
 
 // ------- //
@@ -84,7 +91,7 @@ interface TextProps {
     $isChecked?: boolean;
 }
 
-export const ScheduleTextsWarp = styled.View`
+export const ScheduleTextsWrap = styled.View`
     width: 100%;
     flex-direction: row;
     justify-content: space-between;

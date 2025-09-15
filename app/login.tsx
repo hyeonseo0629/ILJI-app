@@ -14,6 +14,7 @@ import {
     GoogleSignin,
     statusCodes,
 } from '@react-native-google-signin/google-signin';
+import { useRouter } from 'expo-router';
 
 // app.json에서 클라이언트 ID들을 가져옵니다.
 const extra = Constants.expoConfig?.extra ?? {};
@@ -25,6 +26,7 @@ export default function LoginScreen(): React.JSX.Element {
     const { signIn, signOut, session, isLoading } = useSession();
     // 로그인 진행 중 상태를 관리합니다.
     const [busy, setBusy] = useState(false);
+    const router = useRouter();
 
     // useMemo를 사용하여 Google Sign-In 설정을 최적화합니다.
     const config = useMemo(
@@ -75,7 +77,7 @@ export default function LoginScreen(): React.JSX.Element {
             }
 
             // 플랫폼에 따라 백엔드 서버 주소를 다르게 설정합니다.
-            const backendUrl = Platform.OS === 'android' ? 'http://10.100.0.115:8090' : 'http://localhost:8090';
+            const backendUrl = Platform.OS === 'android' ? 'http://10.100.0.34:8090' : 'http://localhost:8090';
 
             const response = await fetch(`${backendUrl}/api/auth/google`, {
                 method: 'POST',
@@ -85,11 +87,24 @@ export default function LoginScreen(): React.JSX.Element {
 
             if (response.ok) {
                 const authResponse = await response.json();
+
+                // 백엔드 응답에 user 객체와 id가 있는지 확인합니다.
+                if (!authResponse.user || !authResponse.user.id) {
+                    Alert.alert('Login Failed', 'User data not found in server response.');
+                    return;
+                }
+
+                // 백엔드에서 받은 user 객체를 세션 user 타입에 맞게 매핑합니다.
                 const sessionUser: SessionUser = {
-                    user: { name: user.name, email: user.email, photo: user.photo },
+                    user: {
+                        id: authResponse.user.id,
+                        name: authResponse.user.name,
+                        email: authResponse.user.email,
+                        photo: authResponse.user.picture, // 'picture'를 'photo'로 매핑
+                    },
                     token: authResponse.appToken,
                 };
-                // useSession의 signIn 함수를 호출하여 세션을 시작합니다.
+
                 await signIn(sessionUser);
             } else {
                 const errorText = await response.text();

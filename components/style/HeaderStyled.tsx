@@ -1,12 +1,12 @@
 import styled, { css } from 'styled-components/native';
 import Octicons from "react-native-vector-icons/Octicons";
 
-interface HContainerProps {
+interface ContainerProps {
     $isMain?: boolean;
     $isSheetExpanded?: boolean;
 }
 
-const mainHeaderStyles = css<HContainerProps>`
+const mainHeaderStyles = css<ContainerProps>`
     /* iOS Shadow */
     shadow-color: #000;
     shadow-offset: 0px 2px;
@@ -18,7 +18,7 @@ const mainHeaderStyles = css<HContainerProps>`
     elevation: ${(props) => (props.$isSheetExpanded ? 0 : 5)};
 `;
 
-export const HContainer = styled.View<HContainerProps>`
+export const Container = styled.View<ContainerProps>`
     width: 100%;
     background-color: #ffffff;
     /* 바텀 시트가 확장되면 zIndex를 0으로, 아닐 때는 1로 설정합니다. */
@@ -29,13 +29,13 @@ export const HContainer = styled.View<HContainerProps>`
     padding-top: 10px;
 `;
 
-export const HWrap = styled.View`
+export const Wrap = styled.View`
     padding: 0 10px;
     flex-direction: row;
     justify-content: space-between;
 `
 
-export const HLogo = styled.Image.attrs((props) => ({
+export const Logo = styled.Image.attrs((props) => ({
     source: require('../../assets/images/logo.png'),
 }))`
     width: 65px;
@@ -43,23 +43,23 @@ export const HLogo = styled.Image.attrs((props) => ({
     margin: 0 5px;
 `;
 
-export const HIconWrap = styled.View`
+export const IconWrap = styled.View`
     width: 30%;
     margin: 15px 20px 0;
     flex-direction: row;
     justify-content: space-between;
 `
 
-export const HIconBell = styled(Octicons).attrs({})`
+export const IconBell = styled(Octicons).attrs({})`
     padding: 5px;
     color: mediumslateblue;
 `
-export const HIconMail = styled(Octicons).attrs({})`
+export const IconMail = styled(Octicons).attrs({})`
     padding: 5px;
     color: mediumslateblue;
 `
 
-export const HIconShare = styled(Octicons).attrs({})`
+export const IconShare = styled(Octicons).attrs({})`
     padding: 5px;
     color: mediumslateblue;
 `
