@@ -69,7 +69,7 @@ export default function LoginScreen(): React.JSX.Element {
                 return;
             }
 
-            const backendUrl = Platform.OS === 'android' ? 'http://192.168.0.113:8090' : 'http://localhost:8090';
+            const backendUrl = Platform.OS === 'android' ? 'http://10.100.0.88:8090' : 'http://localhost:8090';
 
             const response = await fetch(`${backendUrl}/api/auth/google`, {
                 method: 'POST',

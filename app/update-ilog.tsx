@@ -6,13 +6,16 @@ import * as I from "@/components/style/I-logStyled";
 import {AntDesign, SimpleLineIcons } from '@expo/vector-icons';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {AddImagePickerText} from "@/components/style/I-logStyled";
-import { ILogData } from "@/app/(tabs)/i-log";
+import { ILog, ILogUpdateRequest } from '@/src/types/ilog';
+import { uriToFile } from '@/src/utils/imageUtils';
+import { useILog } from '@/src/context/ILogContext';
 
 export default function UpdateILogScreen() {
     const insets = useSafeAreaInsets();
 
     const router = useRouter();
     const params = useLocalSearchParams();
+    const { ilogs, updateILog } = useILog();
 
     // --- 상태 관리 ---
     const [content, setContent] = useState('');
@@ -24,9 +27,9 @@ export default function UpdateILogScreen() {
     useEffect(() => {
         if (params.editLog) {
             try {
-                const logToEdit: ILogData = JSON.parse(params.editLog as string);
+                const logToEdit: ILog = JSON.parse(params.editLog as string);
                 setContent(logToEdit.content);
-                setImageUri(logToEdit.img_url || null);
+                setImageUri(logToEdit.images[0] || null);
                 if (logToEdit.tags) {
                     setSelectedTags(logToEdit.tags.split(' ').filter(tag => tag.startsWith('#')));
                 }
@@ -40,12 +43,11 @@ export default function UpdateILogScreen() {
 
     // 해시태그 제안 기능 관련 상태
     const allTags = useMemo(() => {
-        try {
-            return JSON.parse(params.uniqueTags as string || '[]');
-        } catch (e) {
-            return [];
-        }
-    }, [params.uniqueTags]);
+        const allExtractedTags = ilogs
+            .flatMap(log => log.tags?.split(' ') || []) // 모든 태그를 하나의 배열로 펼치기
+            .filter(tag => tag.startsWith('#')); // #으로 시작하는 태그만 필터링
+        return [...new Set(allExtractedTags)]; // Set을 사용하여 중복 제거
+    }, [ilogs]);
 
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [cursorPosition, setCursorPosition] = useState(0);
@@ -199,27 +201,67 @@ export default function UpdateILogScreen() {
         setSelectedTags(prev => prev.filter(tag => tag !== tagToRemove));
     };
 
+    // 편집 모드일 경우 기존 데이터 로드
+    useEffect(() => {
+        if (params.editLog) {
+            try {
+                const logToEdit: ILog = JSON.parse(params.editLog as string);
+                // Ensure date objects are correctly parsed if they were stringified
+                logToEdit.logDate = new Date(logToEdit.logDate);
+                logToEdit.createdAt = new Date(logToEdit.createdAt);
+
+                setContent(logToEdit.content);
+                setImageUri(logToEdit.images[0] || null);
+                if (logToEdit.tags) {
+                    setSelectedTags(logToEdit.tags.split(' ').filter(tag => tag.startsWith('#')));
+                }
+            } catch (e) {
+                console.error("Failed to parse editLog:", e);
+                Alert.alert("오류", "일기 데이터를 불러오는 데 실패했습니다.");
+                router.back();
+            }
+        }
+    }, [params.editLog]);
+
     // --- 저장 로직 ---
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!content.trim()) {
             Alert.alert('오류', '내용을 입력해주세요.');
             return;
         }
 
         const finalTagsString = selectedTags.join(' ');
+        const originalLog: ILog = JSON.parse(params.editLog as string);
 
-        const updatedLog: ILogData = {
-            ...(JSON.parse(params.editLog as string)), // 기존 로그 데이터 유지
+        const updateRequest: ILogUpdateRequest = {
             content: content.trim(),
-            tags: finalTagsString,
-            img_url: imageUri,
-            // log_date와 created_at은 업데이트 시 변경하지 않음
+            visibility: originalLog.visibility, // Assuming originalLog.visibility is a number (0, 1, 2)
+            existingImageUrls: [], // Default to empty, will be populated below
         };
 
-        router.push({
-            pathname: '/(tabs)/i-log',
-            params: { updatedLog: JSON.stringify(updatedLog) },
-        });
+        let newImagesToUpload: File[] | undefined;
+
+        if (imageUri) {
+            // If imageUri is set, it means a new image is selected or existing one is kept
+            if (imageUri === originalLog.images[0]) {
+                // User kept the existing image
+                updateRequest.existingImageUrls = originalLog.images; // Keep all existing images
+            } else {
+                // New image selected, so no existing images to keep
+                const filename = imageUri.split('/').pop() || 'image.jpg';
+                const filetype = 'image/jpeg'; // Or determine dynamically
+                const file = await uriToFile(imageUri, filename, filetype);
+                if (file) {
+                    newImagesToUpload = [file];
+                }
+            }
+        } else {
+            // imageUri is null, meaning user cleared the image or no image was selected
+            updateRequest.existingImageUrls = []; // Clear all existing images
+        }
+
+        await updateILog(originalLog.id, updateRequest, newImagesToUpload);
+        router.back();
     };
 
     return (

@@ -1,6 +1,6 @@
 import * as I from "@/components/style/I-logStyled";
 import {FlatList, View, Modal, TouchableOpacity, Text, TouchableWithoutFeedback} from "react-native";
-import {ILogData} from "@/app/(tabs)/i-log";
+import {ILog} from "@/src/types/ilog";
 import {format} from 'date-fns';
 import {AntDesign, EvilIcons} from '@expo/vector-icons';
 import React, {useState} from "react";
@@ -56,7 +56,7 @@ const MonthYearPickerModal = ({
 };
 
 // FlatList의 각 아이템을 렌더링하는 컴포넌트
-const ListItem = ({item}: { item: ILogData }) => {
+const ListItem = ({item}: { item: ILog }) => {
     const router = useRouter();
     const maxLength = 50; // 내용 글자 수 제한
 
@@ -70,13 +70,13 @@ const ListItem = ({item}: { item: ILogData }) => {
     return (
         <TouchableOpacity onPress={handlePress}>
             <I.ListWrap>
-                {item.img_url && (
-                    <I.ListThumbnail source={{uri: item.img_url}}/>
+                {item.images && item.images.length > 0 && (
+                    <I.ListThumbnail source={{uri: item.images[0]}}/>
                 )}
                 <I.ListMainContent>
                     <I.ListHeader>
-                        <I.ListDateText>{format(item.log_date, 'yyyy.MM.dd')}</I.ListDateText>
-                        <I.ListTimeText>{format(item.created_at, 'HH:mm:ss')}</I.ListTimeText>
+                        <I.ListDateText>{format(item.logDate, 'yyyy.MM.dd')}</I.ListDateText>
+                        <I.ListTimeText>{format(item.createdAt, 'HH:mm:ss')}</I.ListTimeText>
                     </I.ListHeader>
 
                     <I.ListContent>
@@ -87,11 +87,11 @@ const ListItem = ({item}: { item: ILogData }) => {
                     <I.ListStatsContainer>
                         <I.ListStatItem>
                             <AntDesign name="hearto" size={12} color="#777"/>
-                            <I.ListStatText>{item.like_count}</I.ListStatText>
+                            <I.ListStatText>{item.likeCount}</I.ListStatText>
                         </I.ListStatItem>
                         <I.ListStatItem>
                             <AntDesign name="message1" size={12} color="#777"/>
-                            <I.ListStatText>{item.comment_count}</I.ListStatText>
+                            <I.ListStatText>{item.commentCount}</I.ListStatText>
                         </I.ListStatItem>
                     </I.ListStatsContainer>
 
@@ -128,7 +128,7 @@ const ILogListView = ({
                           handleSelectMonth,
                           handleSelectYear,
                       }: {
-    ilogs: ILogData[];
+    ilogs: ILog[];
     listFilterType: 'day' | 'month' | 'year' | 'none';
     listFilterValue: string | null;
     openListCalendar: () => void;

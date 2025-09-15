@@ -91,7 +91,7 @@ interface TextProps {
     $isChecked?: boolean;
 }
 
-export const ScheduleTextsWarp = styled.View`
+export const ScheduleTextsWrap = styled.View`
     width: 100%;
     flex-direction: row;
     justify-content: space-between;

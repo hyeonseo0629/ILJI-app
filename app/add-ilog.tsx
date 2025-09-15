@@ -8,12 +8,25 @@ import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {AddImagePickerText} from "@/components/style/I-logStyled";
 import {Calendar, DateData} from 'react-native-calendars';
 import {format} from 'date-fns';
+import { useILog } from '@/src/context/ILogContext';
+import {ILog, ILogCreateRequestFrontend} from '@/src/types/ilog';
+import { useSession } from '@/hooks/useAuth';
+import { uriToFile } from '@/src/utils/imageUtils';
+
+const visibilityMap: { [key: number]: string } = {
+    0: "PUBLIC",
+    1: "FRIENDS_ONLY",
+    2: "PRIVATE",
+};
 
 export default function AddILogScreen() {
     const insets = useSafeAreaInsets();
 
     const router = useRouter();
     const params = useLocalSearchParams();
+    const { ilogs, createILog } = useILog();
+    const { session } = useSession();
+    const userId = session?.user?.id;
 
     // --- 상태 관리 ---
     const [content, setContent] = useState('');
@@ -26,14 +39,9 @@ export default function AddILogScreen() {
     const [isCalendarVisible, setCalendarVisible] = useState(false);
 
     // Existing logs to disable dates
-    const existingLogs: { id: number; log_date: string }[] = useMemo(() => {
-        try {
-            return JSON.parse(params.existingLogs as string || '[]');
-        } catch (e) {
-            console.error("Failed to parse existingLogs:", e);
-            return [];
-        }
-    }, [params.existingLogs]);
+    const existingLogs: { id: number; iLogDate: Date }[] = useMemo(() => {
+        return ilogs.map(log => ({ id: log.id, iLogDate: log.logDate }));
+    }, [ilogs]);
 
     // Marked dates for the calendar (disabling existing log dates)
     const markedDates = useMemo(() => {
@@ -45,10 +53,10 @@ export default function AddILogScreen() {
                 selectedColor?: string
             }
         } = {};
-        const logsByDate: { [key: string]: { id: number; log_date: string } } = existingLogs.reduce((acc, log) => {
-            acc[format(new Date(log.log_date), 'yyyy-MM-dd')] = log;
+        const logsByDate: { [key: string]: { id: number; iLogDate: Date } } = existingLogs.reduce((acc, log) => {
+            acc[format(log.iLogDate, 'yyyy-MM-dd')] = log;
             return acc;
-        }, {} as { [key: string]: { id: number; log_date: string } });
+        }, {} as { [key: string]: { id: number; iLogDate: Date } });
 
         // Mark existing log dates as disabled
         for (const dateString in logsByDate) {
@@ -64,12 +72,11 @@ export default function AddILogScreen() {
 
     // 해시태그 제안 기능 관련 상태
     const allTags = useMemo(() => {
-        try {
-            return JSON.parse(params.uniqueTags as string || '[]');
-        } catch (e) {
-            return [];
-        }
-    }, [params.uniqueTags]);
+        const allExtractedTags = ilogs
+            .flatMap(log => log.tags?.split(' ') || []) // 모든 태그를 하나의 배열로 펼치기
+            .filter(tag => tag.startsWith('#')); // #으로 시작하는 태그만 필터링
+        return [...new Set(allExtractedTags)]; // Set을 사용하여 중복 제거
+    }, [ilogs]);
 
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [cursorPosition, setCursorPosition] = useState(0);
@@ -230,32 +237,41 @@ export default function AddILogScreen() {
     };
 
     // --- 저장 로직 ---
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!content.trim()) {
             Alert.alert('오류', '내용을 입력해주세요.');
             return;
         }
 
+        if (userId === undefined) {
+            Alert.alert('오류', '로그인 정보가 없습니다. 다시 로그인해주세요.');
+            router.replace('/login'); // Redirect to login
+            return;
+        }
+
         const finalTagsString = selectedTags.join(' ');
 
-        const newLog = {
-            id: Date.now(), // Unique ID for new log
-            user_profile_id: 1,
+        const newLogRequest: ILogCreateRequestFrontend = {
+            writerId: userId, // Use userId from session
+            logDate: selectedLogDate, // Date 객체를 직접 할당
             content: content.trim(),
-            log_date: selectedLogDate, // Use selected date
-            created_at: new Date(),
-            like_count: 0,
-            comment_count: 0,
-            visibility: 1,
+            visibility: visibilityMap[1], // 문자열 "FRIENDS_ONLY"를 할당
+            friendTags: JSON.stringify([]),
             tags: finalTagsString,
-            friend_tags: JSON.stringify([]),
-            img_url: imageUri,
+            // imgUrl is not part of the request JSON, handled by multipart
         };
 
-        router.push({
-            pathname: '/(tabs)/i-log',
-            params: {newLog: JSON.stringify(newLog)},
-        });
+        let imageFile: File | undefined;
+        if (imageUri) {
+            // Assuming imageUri is a local file URI from ImagePicker
+            // You might need to extract filename and type from the URI or ImagePicker result
+            const filename = imageUri.split('/').pop() || 'image.jpg';
+            const filetype = 'image/jpeg'; // Or determine dynamically from URI
+            imageFile = await uriToFile(imageUri, filename, filetype) || undefined;
+        }
+
+        await createILog({ request: newLogRequest, images: imageFile ? [imageFile] : undefined });
+        router.back();
     };
 
     return (

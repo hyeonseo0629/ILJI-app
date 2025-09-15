@@ -1,5 +1,4 @@
-import { ILog } from './ilog';
-// DTO (Data Transfer Object)는 보통 백엔드와 프론트엔드 간의 데이터 전송에 사용되는 객체를 의미합니다.
+// DTO (Data Transfer Object)는 보통 백엔드와 프론트엔드 간의 데이터 전송에 사용되는 객체를 의미합니다。
 // ILogResponse DTO를 기반으로 프론트엔드에서 사용할 타입을 정의합니다.
 
 // 백엔드로부터 직접 받는 원시 i-log 데이터 타입
@@ -7,10 +6,12 @@ import { ILog } from './ilog';
 export interface RawILog {
   id: number;
   userId: number;
-  iLogDate: string; // ex: "2024-09-15"
+  writerNickname: string;
+  writerProfileImage: string;
+  logDate: string; // ex: "2024-09-15"
   content: string;
-  imgUrl: string | null;
-  visibility: 'PUBLIC' | 'FRIENDS_ONLY' | 'PRIVATE';
+  images: string[]; // List of image URLs as JSON string
+  visibility: string;
   friendTags: string | null;
   tags: string | null;
   likeCount: number;
@@ -23,13 +24,30 @@ export interface RawILog {
 export interface ILog {
   id: number;
   userId: number;
-  iLogDate: Date;
+  writerNickname: string;
+  writerProfileImage: string;
+  logDate: Date;
   content: string;
-  imgUrl: string | null;
-  visibility: 'PUBLIC' | 'FRIENDS_ONLY' | 'PRIVATE';
+  images: string[]; // List of image URLs
+  visibility: string;
   friendTags: string | null;
   tags: string | null;
   likeCount: number;
   commentCount: number;
   createdAt: Date;
+}
+
+export interface ILogCreateRequestFrontend {
+    writerId: number;
+    logDate: Date; // Changed from string to Date
+    content: string;
+    visibility: string; // Changed from number to string to match backend API expectation
+    friendTags?: string | null;
+    tags?: string | null;
+}
+
+export interface ILogUpdateRequest {
+    content: string;
+    visibility: number; // Backend expects int, so frontend sends number
+    existingImageUrls?: string[]; // Optional list of image URLs
 }

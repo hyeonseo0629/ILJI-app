@@ -20,7 +20,7 @@ export const ScheduleMainContent: React.FC<ToDoMainContentProps> = ({title, date
     const [isChecked, setIsChecked] = useState(false);
 
     return (
-        <BS.ScheduleTextsWarp>
+        <BS.ScheduleTextsWrap>
             <BS.ScheduleLeftWrap>
                 <TouchableOpacity onPress={() => setIsChecked(prev => !prev)}>
                     <BS.ScheduleCheckBox
@@ -36,7 +36,7 @@ export const ScheduleMainContent: React.FC<ToDoMainContentProps> = ({title, date
                 </BS.ScheduleTextWrap>
             </BS.ScheduleLeftWrap>
             <BS.ScheduleIcon $isChecked={isChecked}>{icon}</BS.ScheduleIcon>
-        </BS.ScheduleTextsWarp>
+        </BS.ScheduleTextsWrap>
     );
 };
 
