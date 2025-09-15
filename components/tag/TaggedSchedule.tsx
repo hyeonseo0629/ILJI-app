@@ -13,10 +13,9 @@ interface ToDoMainContentProps {
     title: string;
     date: string;
     time: string;
-    icon: string;
 }
 
-export const ScheduleMainContent: React.FC<ToDoMainContentProps> = ({title, date, time, icon}) => {
+export const ScheduleMainContent: React.FC<ToDoMainContentProps> = ({title, date, time}) => {
     const [isChecked, setIsChecked] = useState(false);
 
     return (
@@ -35,7 +34,6 @@ export const ScheduleMainContent: React.FC<ToDoMainContentProps> = ({title, date
                     <BS.ScheduleTitle $isChecked={isChecked}>{title}</BS.ScheduleTitle>
                 </BS.ScheduleTextWrap>
             </BS.ScheduleLeftWrap>
-            <BS.ScheduleIcon $isChecked={isChecked}>{icon}</BS.ScheduleIcon>
         </BS.ScheduleTextsWrap>
     );
 };
@@ -44,7 +42,6 @@ export const TaggedSchedule: React.FC<ToDoProps> = ({item}) => {
     // 'Schedule' 타입에는 'state'와 'icon' 속성이 없어, 임시 값을 사용합니다.
     // 추후 Schedule 타입에 해당 속성을 추가해야 할 수 있습니다.
     const state = "Planning"; // Placeholder
-    const icon = "📖"; // Placeholder
 
     return (
         <BS.ScheduleWrap>
@@ -54,7 +51,6 @@ export const TaggedSchedule: React.FC<ToDoProps> = ({item}) => {
                     title={item.title}
                     date={format(item.startTime, "yyyy / MM / dd")}
                     time={format(item.startTime, "HH:mm")}
-                    icon={icon}
                 />
             </BS.ScheduleListWrap>
         </BS.ScheduleWrap>

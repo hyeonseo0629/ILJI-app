@@ -94,7 +94,6 @@ interface TextProps {
 export const ScheduleTextsWrap = styled.View`
     width: 100%;
     flex-direction: row;
-    justify-content: space-between;
 `
 
 export const ScheduleLeftWrap = styled.View`
@@ -129,9 +128,4 @@ export const ScheduleTitle = styled.Text<TextProps>`
     padding: 5px 10px 0;
     color: ${(props) => (props.$isChecked ? '#aaa' : '#333')};
     text-decoration-line: ${(props) => (props.$isChecked ? 'line-through' : 'none')};
-`
-
-export const ScheduleIcon = styled.Text<TextProps>`
-    font-size: 50px;
-    opacity: ${(props) => (props.$isChecked ? 0.4 : 1)};
 `
