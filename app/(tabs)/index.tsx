@@ -4,9 +4,7 @@ import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import { useSharedValue } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Header from "@/components/header/Header";
-import {set} from "date-fns";
 import {Schedule} from "@/components/calendar/scheduleTypes";
-import {Tag} from "@/components/tag/TagTypes";
 import {CalendarContainer} from "@/components/style/CalendarStyled";
 import {
     MainContainer,

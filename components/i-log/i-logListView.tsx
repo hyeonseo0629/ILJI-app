@@ -79,7 +79,6 @@ const ListItem = ({item}: { item: ILogData }) => {
                         <I.ListTimeText>{format(item.created_at, 'HH:mm:ss')}</I.ListTimeText>
                     </I.ListHeader>
 
-                    <I.ListTitle>{item.title}</I.ListTitle>
                     <I.ListContent>
                         {previewText}
                         {singleLineContent.length > maxLength ? "..." : ""}

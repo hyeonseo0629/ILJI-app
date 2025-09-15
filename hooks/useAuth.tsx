@@ -5,7 +5,6 @@ const TOKEN_KEY = 'ilji_session';
 
 // Define the shape of the user session
 export type SessionUser = {
-  // [수정] user 객체에 id 필드 추가
   user: { id: number; name: string; email: string; photo?: string };
   token: string;
 };
@@ -31,7 +30,7 @@ export function useSession() {
 }
 
 // Provider component that manages authentication state
-export function AuthProvider({ children }: { children: React.ReactElement }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<SessionUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -73,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactElement }) {
     }
   };
 
+  // This comment is added to force a re-write of the file.
   return (
     <AuthContext.Provider value={{ signIn, signOut, session, isLoading }}>
       {children}
