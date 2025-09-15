@@ -5,8 +5,8 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import { Alert } from 'react-native';
 import api from '../lib/api'; // 1단계에서 만든 전화기!
-import { Schedule } from '@/components/calendar/types'; // 캘린더 UI가 사용하는 타입 가져오기
-import { Tag } from '@/components/ToDo/types';
+import { Schedule } from '@/components/calendar/scheduleTypes'; // 캘린더 UI가 사용하는 타입 가져오기
+import { Tag } from '@/components/tag/TagTypes';
 
 // --- 타입 정의 (TypeScript의 장점!) ---
 
@@ -97,7 +97,8 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
                 // 404 오류 발생: '/schedules/user/4' 경로가 없음. 기존에 작동하던 '/schedules'로 되돌립니다.
                 api.get<RawScheduleEvent[]>('/schedules'),
                 // 성공적으로 작동했던 사용자별 태그 주소를 사용합니다.
-                api.get<Tag[]>(`/tags/user/4`)
+                // api.get<Tag[]>(`/tags?userId=`+id)
+                api.get<Tag[]>(`/tags?userId=4`)
             ]);
 
             // 1. 4번 유저가 소유한 태그 ID 목록을 만듭니다. (Set을 사용하면 검색이 빠릅니다)

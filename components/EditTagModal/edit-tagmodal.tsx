@@ -3,7 +3,7 @@ import { Modal, Alert, ListRenderItem } from 'react-native';
 import ColorPicker from 'react-native-wheel-color-picker';
 import { AntDesign } from '@expo/vector-icons';
 import * as S from './EditTagModalStyled';
-import { Tag } from '@/components/ToDo/types';
+import { Tag } from '@/components/tag/TagTypes';
 import { useSchedule } from '@/src/context/ScheduleContext';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal'; // [추가] 커스텀 확인 모달 import
 

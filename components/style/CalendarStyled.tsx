@@ -143,8 +143,8 @@ export const EventBar = styled.View<{
     padding: 0 3px;
     position: absolute;
     top: ${props => props.$top}px;
-    left: ${props => (props.$position === 'middle' || props.$position === 'end') ? '-1px' : '0px'};
-    right: ${props => (props.$position === 'start' || props.$position === 'middle') ? '-1px' : '0px'};
+    left: ${props => (props.$position === 'middle' || props.$position === 'end') ? '-6px' : '0px'};
+    right: ${props => (props.$position === 'start' || props.$position === 'middle') ? '-6px' : '0px'};
     border-top-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '4px' : '0px'};
     border-bottom-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '4px' : '0px'};
     border-top-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '4px' : '0px'};
