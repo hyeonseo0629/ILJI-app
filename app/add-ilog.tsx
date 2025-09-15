@@ -11,7 +11,7 @@ import {format} from 'date-fns';
 import { useILog } from '@/src/context/ILogContext';
 import {ILog, ILogCreateRequestFrontend} from '@/src/types/ilog';
 import { useSession } from '@/hooks/useAuth';
-import { uriToFile } from '@/src/utils/imageUtils';
+
 
 const visibilityMap: { [key: number]: string } = {
     0: "PUBLIC",
@@ -30,7 +30,7 @@ export default function AddILogScreen() {
 
     // --- 상태 관리 ---
     const [content, setContent] = useState('');
-    const [imageUri, setImageUri] = useState<string | null>(null);
+    const [imageAsset, setImageAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
     const [selectedTags, setSelectedTags] = useState<string[]>([]); // 선택된 태그 목록
     const [textAreaHeight, setTextAreaHeight] = useState(200); // AddTextArea의 동적 높이 상태
 
@@ -139,7 +139,7 @@ export default function AddILogScreen() {
             quality: 1,
         });
         if (!result.canceled) {
-            setImageUri(result.assets[0].uri);
+            setImageAsset(result.assets[0]);
         }
     };
 
@@ -258,19 +258,9 @@ export default function AddILogScreen() {
             visibility: visibilityMap[1], // 문자열 "FRIENDS_ONLY"를 할당
             friendTags: JSON.stringify([]),
             tags: finalTagsString,
-            // imgUrl is not part of the request JSON, handled by multipart
         };
 
-        let imageFile: File | undefined;
-        if (imageUri) {
-            // Assuming imageUri is a local file URI from ImagePicker
-            // You might need to extract filename and type from the URI or ImagePicker result
-            const filename = imageUri.split('/').pop() || 'image.jpg';
-            const filetype = 'image/jpeg'; // Or determine dynamically from URI
-            imageFile = await uriToFile(imageUri, filename, filetype) || undefined;
-        }
-
-        await createILog({ request: newLogRequest, images: imageFile ? [imageFile] : undefined });
+        await createILog({ request: newLogRequest, images: imageAsset ? [imageAsset] : undefined });
         router.back();
     };
 
@@ -293,13 +283,13 @@ export default function AddILogScreen() {
                         </I.AddHeader>
 
                         <I.AddContentContainer>
-                            {imageUri ? (
+                            {imageAsset ? (
                                 <View>
                                     <TouchableOpacity onPress={pickImage}>
-                                        <I.AddImagePreview source={{uri: imageUri}}/>
+                                        <I.AddImagePreview source={{uri: imageAsset.uri}}/>
                                     </TouchableOpacity>
                                     <I.AddImageRemoveButton
-                                        onPress={() => setImageUri(null)}
+                                        onPress={() => setImageAsset(null)}
                                     >
                                         <AntDesign name="closecircle" size={30} color="white"/>
                                     </I.AddImageRemoveButton>

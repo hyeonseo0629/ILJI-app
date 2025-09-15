@@ -11,12 +11,12 @@ interface ILogContextType {
     loading: boolean;
     error: Error | null;
     fetchILogs: () => Promise<void>;
-    createILog: (data: { request: ILogCreateRequestFrontend; images?: File[] }) => Promise<ILog | null>;
+    createILog: (data: { request: ILogCreateRequestFrontend; images?: any[] }) => Promise<ILog | null>;
     deleteILog: (logId: number) => Promise<void>;
     getILogByDate: (date: Date) => Promise<ILog | null>;
     getPreviousILog: (date: Date) => Promise<ILog | null>;
     getNextILog: (date: Date) => Promise<ILog | null>;
-    updateILog: (logId: number, request: ILogUpdateRequest, newImages?: File[]) => Promise<ILog | null>;
+    updateILog: (logId: number, request: ILogUpdateRequest, newImages?: any[]) => Promise<ILog | null>;
 }
 
 const ILogContext = createContext<ILogContextType | undefined>(undefined);
@@ -83,39 +83,32 @@ export function ILogProvider({children}: ILogProviderProps) {
 
     const createILog = useCallback(async (data: {
         request: ILogCreateRequestFrontend;
-        images?: File[]
+        images?: any[]
     }): Promise<ILog | null> => {
         if (!userId) return null;
         setLoading(true);
 
-        console.log("createILog - request data:", data.request);
-        console.log("createILog - images data:", data.images);
-        if (data.images) {
-            data.images.forEach((image, index) => {
-                console.log(`createILog - image[${index}]:`, image); // Log the entire image object
-            });
-        }
-
         const formData = new FormData();
 
-        // The request object already has visibility as a string from frontend
         const formattedRequest = {
             ...data.request,
             logDate: data.request.logDate.toISOString().split('T')[0], // Convert Date to YYYY-MM-DD string
         };
         formData.append('request', new Blob([JSON.stringify(formattedRequest)], { type: "application/json" }));
+
         if (data.images) {
-            data.images.forEach(image => {
-                formData.append('images', image);
+            data.images.forEach(imageAsset => {
+                const imageForUpload = {
+                    uri: imageAsset.uri,
+                    name: imageAsset.fileName || 'image.jpg',
+                    type: imageAsset.mimeType || 'image/jpeg'
+                };
+                formData.append('images', imageForUpload as any);
             });
         }
 
-        // Log FormData content for debugging
-        for (let pair of formData.entries()) {
-            console.log(`FormData Entry - ${pair[0]}:`, pair[1]);
-        }
-
         try {
+            // Let Axios set the Content-Type header automatically for FormData
             const response = await api.post<RawILog>('/i-log', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -125,7 +118,22 @@ export function ILogProvider({children}: ILogProviderProps) {
             setIlogs(prev => [newLog, ...prev].sort((a, b) => b.logDate.getTime() - a.logDate.getTime()));
             return newLog;
         } catch (err) {
-            console.error("i-log 생성 실패:", err);
+            if (axios.isAxiosError(err)) {
+                console.error("--- Axios Error Details ---");
+                console.error("Message:", err.message);
+                if (err.response) {
+                    console.error("Response Status:", err.response.status);
+                    console.error("Response Data:", JSON.stringify(err.response.data, null, 2));
+                } else if (err.request) {
+                    console.error("Request made but no response received:", err.request);
+                } else {
+                    console.error("Error setting up request:", err.message);
+                }
+                console.error("Config:", JSON.stringify(err.config, null, 2));
+                console.error("--- End Axios Error Details ---");
+            } else {
+                console.error("A non-Axios error occurred:", err);
+            }
             Alert.alert("오류", "일기를 생성하는 데 실패했습니다.");
             return null;
         } finally {

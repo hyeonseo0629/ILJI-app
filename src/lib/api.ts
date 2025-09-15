@@ -11,9 +11,17 @@ const TOKEN_KEY = 'ilji_session'; // useAuth.tsx와 동일한 키
 // 백엔드와 통신할 전용 전화기(axios 인스턴스) 만들기
 const api = axios.create({
     baseURL: BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
+    // transformRequest를 사용하여 요청 직전에 헤더를 조작합니다.
+    transformRequest: [(data, headers) => {
+        // 데이터가 FormData인 경우, Axios가 올바른 Content-Type을 설정하도록 기존 헤더를 삭제합니다.
+        if (data instanceof FormData) {
+            delete headers['Content-Type'];
+        } else {
+            // 그 외의 경우, application/json을 기본값으로 설정합니다.
+            headers['Content-Type'] = 'application/json';
+        }
+        return data;
+    }],
 });
 
 // 요청 인터셉터: 모든 요청에 인증 토큰을 추가합니다.
