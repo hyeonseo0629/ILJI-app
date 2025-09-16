@@ -29,18 +29,21 @@ export default function SettingsStackLayout() {
         name="account-settings"
         options={{
           title: 'Account Settings',
+          headerLeft: () => <CustomBackButton />,
         }}
       />
       <Stack.Screen
         name="profile-edit"
         options={{
           title: 'Edit Profile',
+          headerLeft: () => <CustomBackButton />,
         }}
       />
       <Stack.Screen
         name="notification-settings"
         options={{
           title: 'Notification Settings',
+          headerLeft: () => <CustomBackButton />,
         }}
       />
     </Stack>

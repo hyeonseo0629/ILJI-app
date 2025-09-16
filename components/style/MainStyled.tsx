@@ -1,18 +1,18 @@
 import styled from "styled-components/native";
-import { Theme } from '@react-navigation/native';
+import { ThemeColors } from "@/types/theme";
 
 interface CategoryTabProps {
     $isActive?: boolean;
     activeColor?: string;
 }
 
-interface ThemeProps {
-    theme: Theme;
+interface StyledProps {
+    $colors?: ThemeColors;
 }
 
-export const MainContainer = styled.View<ThemeProps>`
+export const MainContainer = styled.View<StyledProps>`
     flex: 1;
-    background-color: ${(props) => props.theme?.colors?.background || '#F0F0F0'}; // 견고한 폴백 색상 사용
+    background-color: ${(props) => props.$colors?.background || '#F0F0F0'}; // 견고한 폴백 색상 사용
 `;
 
 export const MainContentWrap = styled.View`
@@ -20,12 +20,13 @@ export const MainContentWrap = styled.View`
     align-items: center;
 `;
 
-export const MainToDoCategoryWarp = styled.View<ThemeProps>`
+export const MainToDoCategoryWarp = styled.View<StyledProps>`
     flex-direction: row;
     padding: 16px 16px 0 16px;
     border-bottom-width: 1px;
-    border-bottom-color: ${(props) => props.theme?.colors?.border || '#E0E0E0'}; // 견고한 폴백 색상 사용
+    border-bottom-color: ${(props) => props.$colors?.border || '#E0E0E0'}; // 견고한 폴백 색상 사용
     align-items: flex-end;
+    background-color: ${(props) => props.$colors?.card || '#F0F0F0'}; // 배경색 추가
 `;
 
 export const MainToDoCategory = styled.TouchableOpacity<CategoryTabProps>`
@@ -36,8 +37,8 @@ export const MainToDoCategory = styled.TouchableOpacity<CategoryTabProps>`
     opacity: ${(props) => (props.$isActive ? 1 : 0.6)};
 `;
 
-export const MainToDoCategoryText = styled.Text<CategoryTabProps & ThemeProps>`
+export const MainToDoCategoryText = styled.Text<CategoryTabProps & StyledProps>`
     font-size: 15px;
     font-weight: ${(props) => (props.$isActive ? 'bold' : 'normal')};
-    color: ${(props) => props.theme?.colors?.text || '#333333'};
+    color: ${(props) => props.$colors?.text || '#333333'};
 `;

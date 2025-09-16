@@ -62,13 +62,15 @@ interface ScheduleProviderProps {
 
 export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const { session } = useSession();
-    const userId = session?.user?.id; // 로그인한 사용자의 DB ID를 가져옵니다.
+    const userId = session?.user?.id;
 
     const [events, setEvents] = useState<Schedule[]>([]);
     const [tags, setTags] = useState<Tag[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
+
+    console.log("ScheduleProvider rendered. Initial loading state:", loading); // 추가
 
     const formatRawSchedule = useCallback((rawEvent: RawScheduleEvent): Schedule => {
         if (!userId) {
@@ -83,7 +85,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             description: rawEvent.description ?? '',
             location: rawEvent.location ?? '',
             tagId: rawEvent.tagId ?? 0,
-            userId: userId, // 실제 로그인된 사용자의 ID를 사용합니다.
+            userId: userId,
             rrule: '',
             createdAt: new Date(rawEvent.createdAt),
             updatedAt: new Date(rawEvent.updatedAt),
@@ -92,14 +94,16 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     }, [userId]);
 
     const fetchSchedules = useCallback(async () => {
-        console.log("Fetching schedules for userId:", userId);
+        console.log("fetchSchedules called for userId:", userId); // 추가
         if (!userId) {
             console.warn("User ID is not available. Cannot fetch schedules.");
             setLoading(false);
+            console.log("setLoading(false) due to no userId."); // 추가
             return;
         }
 
         setLoading(true);
+        console.log("setLoading(true) before fetching."); // 추가
         try {
             const schedulesUrl = '/schedules';
             const tagsUrl = '/tags';
@@ -157,10 +161,12 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             }
         } finally {
             setLoading(false);
+            console.log("setLoading(false) in finally block."); // 추가
         }
     }, [userId, formatRawSchedule]);
 
     useEffect(() => {
+        console.log("ScheduleProvider useEffect triggered. userId:", userId); // 추가
         if (userId) {
             fetchSchedules();
         } else {
@@ -168,6 +174,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             setEvents([]);
             setTags([]);
             setLoading(false);
+            console.log("setLoading(false) due to no userId in useEffect."); // 추가
         }
     }, [userId, fetchSchedules]);
 

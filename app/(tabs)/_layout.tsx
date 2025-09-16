@@ -5,7 +5,7 @@ import {useTheme} from '@react-navigation/native';
 
 import {HapticTab} from '@/components/HapticTab';
 import {IconSymbol} from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
+// import TabBarBackground from '@/components/ui/TabBarBackground'; // TabBarBackground import 제거
 import {StatusBar} from "expo-status-bar";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 
@@ -20,19 +20,20 @@ export default function TabLayout() {
                     tabBarActiveTintColor: theme.colors.primary,
                     headerShown: false,
                     tabBarButton: HapticTab,
-                    tabBarBackground: TabBarBackground,
+                    // tabBarBackground: TabBarBackground, // TabBarBackground prop 제거
                     tabBarStyle: Platform.select({
                         ios: {
                             position: 'absolute',
                             height: 85,
                             paddingBottom: 25,
-                            backgroundColor: theme.colors.card, // iOS에도 배경색 추가
+                            backgroundColor: theme.colors.card, // iOS에도 배경색 다시 활성화
+                            borderTopWidth: 0,
                         },
                         default: {
                             height: 65,
                             paddingTop: 5,
                             paddingBottom: 8,
-                            backgroundColor: theme.colors.card, // 여기도 테마 배경색을 사용하도록 변경합니다.
+                            backgroundColor: theme.colors.card, // 여기도 테마 배경색 다시 활성화
                             borderTopWidth: 0,
                         },
                     }),

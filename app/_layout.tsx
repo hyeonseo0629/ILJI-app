@@ -4,19 +4,21 @@ import {Stack, useRouter, useSegments} from 'expo-router';
 import 'react-native-reanimated';
 import React, {useEffect} from 'react';
 import {ActivityIndicator, View} from 'react-native';
-import {ThemeProvider, Theme} from '@react-navigation/native';
+import {ThemeProvider, Theme, useTheme} from '@react-navigation/native';
 import ColorSchemeProvider, {useColorScheme} from '@/hooks/useColorScheme';
 import {StatusBar} from 'expo-status-bar';
 import {AuthProvider, useSession} from '@/hooks/useAuth';
 import {Colors} from '@/constants/Colors';
 import {ScheduleProvider} from '@/src/context/ScheduleContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Layout 컴포넌트는 그대로 유지됩니다.
 function Layout() {
     const {session, isLoading} = useSession();
     const segments = useSegments();
     const router = useRouter();
-    const {isDarkColorScheme} = useColorScheme(); // 이제 Context로부터 올바른 값을 받아옵니다.
+    const {isDarkColorScheme} = useColorScheme();
+    const theme = useTheme(); // theme 가져오기
     const [loaded] = useFonts({
         SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     });
@@ -40,12 +42,33 @@ function Layout() {
     }
 
     return (
-        <Stack key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}>
+        <Stack 
+            key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
+            screenOptions={{
+                headerStyle: {
+                    backgroundColor: theme.colors.card,
+                },
+                headerTintColor: theme.colors.text,
+                headerTitleStyle: {
+                    fontWeight: 'bold',
+                },
+            }}
+        >
             <Stack.Screen name="login" options={{headerShown: false}}/>
             <Stack.Screen name="(tabs)" options={{headerShown: false, title: ''}}/>
-            <Stack.Screen name="add-schedule" options={{title: 'New Schedule', presentation: 'modal'}}/>
+            <Stack.Screen 
+                name="add-schedule" 
+                options={{
+                    title: 'New Schedule', 
+                    presentation: 'modal',
+                    headerStyle: {
+                        backgroundColor: theme.colors.card,
+                    },
+                    headerTintColor: theme.colors.text,
+                }}
+            />
             <Stack.Screen name="(settings)" options={{headerShown: false}}/>
-            <Stack.Screen name="+not-found"/>
+            <Stack.Screen name="+not-found" options={{ title: 'Oops!' }}/>
         </Stack>
     );
 }
@@ -118,10 +141,12 @@ function ThemedAppLayout() {
 // 최상위 RootLayout은 Provider를 제공하는 역할만 합니다.
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ColorSchemeProvider>
-        <ThemedAppLayout />
-      </ColorSchemeProvider>
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ColorSchemeProvider>
+          <ThemedAppLayout />
+        </ColorSchemeProvider>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }

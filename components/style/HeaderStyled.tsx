@@ -1,14 +1,19 @@
 import styled, { css } from 'styled-components/native';
 import Octicons from "react-native-vector-icons/Octicons";
+import { ThemeColors } from "@/types/theme";
 
-interface ContainerProps {
+interface StyledProps {
+  $colors?: ThemeColors;
+}
+
+interface ContainerProps extends StyledProps {
     $isMain?: boolean;
     $isSheetExpanded?: boolean;
 }
 
 const mainHeaderStyles = css<ContainerProps>`
     /* iOS Shadow */
-    shadow-color: #000;
+    shadow-color: ${props => props.$colors?.text || '#000'};
     shadow-offset: 0px 2px;
     /* 바텀 시트가 열리면 그림자를 숨깁니다. */
     shadow-opacity: ${(props) => (props.$isSheetExpanded ? 0 : 0.08)};
@@ -20,7 +25,7 @@ const mainHeaderStyles = css<ContainerProps>`
 
 export const Container = styled.View<ContainerProps>`
     width: 100%;
-    background-color: #ffffff;
+    background-color: ${props => props.$colors?.card || '#ffffff'};
     /* 바텀 시트가 확장되면 zIndex를 0으로, 아닐 때는 1로 설정합니다. */
     z-index: ${(props) => (props.$isSheetExpanded ? 0 : 1)};
 
@@ -37,7 +42,7 @@ export const Wrap = styled.View`
 
 export const Logo = styled.Image.attrs((props) => ({
     source: require('../../assets/images/logo.png'),
-}))`
+}))<StyledProps>`
     width: 65px;
     height: 65px;
     margin: 0 5px;
@@ -50,16 +55,16 @@ export const IconWrap = styled.View`
     justify-content: space-between;
 `
 
-export const IconBell = styled(Octicons).attrs({})`
+export const IconBell = styled(Octicons).attrs({})<StyledProps>`
     padding: 5px;
-    color: mediumslateblue;
+    color: ${props => props.$colors?.primary || 'mediumslateblue'};
 `
-export const IconMail = styled(Octicons).attrs({})`
+export const IconMail = styled(Octicons).attrs({})<StyledProps>`
     padding: 5px;
-    color: mediumslateblue;
+    color: ${props => props.$colors?.primary || 'mediumslateblue'};
 `
 
-export const IconShare = styled(Octicons).attrs({})`
+export const IconShare = styled(Octicons).attrs({})<StyledProps>`
     padding: 5px;
-    color: mediumslateblue;
+    color: ${props => props.$colors?.primary || 'mediumslateblue'};
 `

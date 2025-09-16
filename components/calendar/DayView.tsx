@@ -17,6 +17,7 @@ import { Schedule } from '@/components/calendar/scheduleTypes';
 import { Tag } from '@/components/tag/TagTypes';
 import { differenceInMinutes, isToday, format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { ThemeColors } from "@/types/theme";
 
 const HOUR_HEIGHT = 40; // 1시간에 해당하는 높이 (px)
 
@@ -34,9 +35,10 @@ interface DayViewProps {
     schedules: Schedule[];
     tags?: Tag[];
     onEventPress?: (event: Schedule) => void;
+    colors: ThemeColors;
 }
 
-const DayView: React.FC<DayViewProps> = ({ date, schedules = [], tags = [], onEventPress }) => {
+const DayView: React.FC<DayViewProps> = ({ date, schedules = [], tags = [], onEventPress, colors }) => {
     const scrollViewRef = useRef<ScrollView>(null);
     const timeLabels = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
@@ -55,23 +57,23 @@ const DayView: React.FC<DayViewProps> = ({ date, schedules = [], tags = [], onEv
     }, [tags]);
 
     return (
-        <View style={{ flex: 1 }}>
-            <DayHeader>
-                <DayHeaderText>{format(date, 'yyyy년 M월 d일 EEEE', { locale: ko })}</DayHeaderText>
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
+            <DayHeader $colors={colors}>
+                <DayHeaderText $colors={colors}>{format(date, 'yyyy년 M월 d일 EEEE', { locale: ko })}</DayHeaderText>
             </DayHeader>
-            <TimetableWrapper>
+            <TimetableWrapper $colors={colors}>
                 <ScrollView ref={scrollViewRef}>
                     <TimetableGrid>
                         <TimeColumn>
                             {timeLabels.map(time => (
                                 <TimeLabelCell key={time}>
-                                    <TimeLabelText>{time}</TimeLabelText>
+                                    <TimeLabelText $colors={colors}>{time}</TimeLabelText>
                                 </TimeLabelCell>
                             ))}
                         </TimeColumn>
 
-                        <TimeTableDayColumn $isToday={isToday(date)}>
-                            {timeLabels.map(time => <HourCell key={time} />)}
+                        <TimeTableDayColumn $isToday={isToday(date)} $colors={colors}>
+                            {timeLabels.map(time => <HourCell key={time} $colors={colors} />)}
 
                             {schedules.map(event => {
                                 const eventColor = tagColorMap.get(event.tagId) || 'gray';

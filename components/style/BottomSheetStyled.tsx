@@ -1,8 +1,13 @@
 import styled from "styled-components/native";
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { ThemeColors } from "@/types/theme";
 
-export const Container = styled.View`
-    background-color: #ffffff;
+interface StyledProps {
+  $colors?: ThemeColors;
+}
+
+export const Container = styled.View<StyledProps>`
+    background-color: ${props => props.$colors?.card || '#ffffff'};
     width: 100%;
     height: 100%;
     padding: 10px;
@@ -12,11 +17,12 @@ export const Container = styled.View`
 // Header //
 // ------ //
 
-export const Header = styled.View`
+export const Header = styled.View<StyledProps>`
     width: 100%;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    background-color: ${props => props.$colors?.card || '#ffffff'};
 `
 
 export const HeaderLeft = styled.View`
@@ -35,15 +41,16 @@ export const HeaderRight = styled.View`
     align-items: center; /* 아이콘과 텍스트의 수직 정렬을 맞춥니다. */
 `
 
-export const TodayText = styled.Text`
+export const TodayText = styled.Text<StyledProps>`
     padding: 10px 0;
     font-size: 15px;
+    color: ${props => props.$colors?.text || '#000'};
 `
 
-export const ScheduleAddButton = styled(AntDesign).attrs({})`
+export const ScheduleAddButton = styled(AntDesign).attrs({})<StyledProps>`
     margin-left: 10px;
     padding: 10px 0; /* 터치 영역 확보 및 수직 정렬 */
-    color: mediumslateblue;
+    color: ${props => props.$colors?.primary || 'mediumslateblue'};
 `
 
 // ------- //
@@ -60,8 +67,8 @@ export const ScheduleListWrap = styled.View`
 
 `
 
-export const ScheduleWrap = styled.View`
-    border-color: #555;
+export const ScheduleWrap = styled.View<StyledProps>`
+    border-color: ${props => props.$colors?.border || '#555'};
     border-bottom-width: 1px;
     border-top-width: 1px;
     flex-direction: row;
@@ -70,24 +77,23 @@ export const ScheduleWrap = styled.View`
     justify-content: space-between;
 `
 
-export const ScheduleState = styled.Text`
+export const ScheduleState = styled.Text<StyledProps>`
     position: absolute;
     font-size: 18px;
     top: -16px;
-    background-color: #ffffff;
+    background-color: ${props => props.$colors?.card || '#ffffff'};
+    color: ${props => props.$colors?.text || '#000'};
     text-align: center;
     padding: 0 5px 0 0;
 `
 
-export const ScheduleCheckBox = styled(MaterialIcons).attrs({
-    // 체크박스의 기본 크기를 설정합니다.
+export const ScheduleCheckBox = styled(MaterialIcons).attrs<StyledProps>(props => ({
     size: 28,
-})`
-    /* 체크박스의 색상을 지정합니다. */
-    color: mediumslateblue;
+    color: props.$colors?.primary || 'mediumslateblue',
+}))<StyledProps>`
 `
 
-interface TextProps {
+interface TextProps extends StyledProps {
     $isChecked?: boolean;
 }
 
@@ -112,14 +118,14 @@ flex-direction: row;
 export const ScheduleDate = styled.Text<TextProps>`
     font-size: 20px;
     padding: 2px 5px;
-    color: ${(props) => (props.$isChecked ? '#ccc' : '#8e8e93')};
+    color: ${(props) => (props.$isChecked ? (props.$colors?.border || '#ccc') : (props.$colors?.text || '#8e8e93'))};
     text-decoration-line: ${(props) => (props.$isChecked ? 'line-through' : 'none')};
 `
 
 export const ScheduleTime = styled.Text<TextProps>`
     font-size: 20px;
     padding: 2px 5px;
-    color: ${(props) => (props.$isChecked ? '#ccc' : '#8e8e93')};
+    color: ${(props) => (props.$isChecked ? (props.$colors?.border || '#ccc') : (props.$colors?.text || '#8e8e93'))};
     text-decoration-line: ${(props) => (props.$isChecked ? 'line-through' : 'none')};
 `
 
@@ -127,7 +133,7 @@ export const ScheduleTitle = styled.Text<TextProps>`
     font-size: 25px;
     font-weight: bold;
     padding: 5px 10px 0;
-    color: ${(props) => (props.$isChecked ? '#aaa' : '#333')};
+    color: ${(props) => (props.$isChecked ? (props.$colors?.border || '#aaa') : (props.$colors?.text || '#333'))};
     text-decoration-line: ${(props) => (props.$isChecked ? 'line-through' : 'none')};
 `
 
