@@ -37,7 +37,7 @@ export default function ILogDetailScreen() {
     const handleEdit = () => {
         if (log) {
             router.push({
-                pathname: '/update-ilog',
+                pathname: '../update-ilog',
                 params: {
                     editLog: JSON.stringify(log),
                 },

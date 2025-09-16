@@ -11,12 +11,14 @@ import { useSchedule } from '@/src/context/ScheduleContext';
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {StatusBar} from "expo-status-bar";
 import {AntDesign} from "@expo/vector-icons";
-import CreateTagModal from "@/components/AddTagModal/add-tagmodal";
+import CreateTagModal from "@/components/addTagModal/Add-tagmodal";
+import {useTheme} from '@react-navigation/native'; // useTheme import 추가
 
 // 실제 앱에서는 이 화면으로 이동할 때 tags 목록을 prop으로 전달받거나
 // 전역 상태(global state)에서 가져와야 합니다. 여기서는 예시로 사용합니다.
 
 const AddScheduleScreen = () => {
+    const theme = useTheme(); // useTheme 훅 사용
 
     const router = useRouter();
     // [추가] 라우터 파라미터에서 initialDate를 가져옵니다.
@@ -132,88 +134,94 @@ const AddScheduleScreen = () => {
     return (
         <GestureHandlerRootView>
             <StatusBar style="dark"/>
-            <S.ASContainer contentContainerStyle={{paddingBottom: 120}}>
-                <ASHeader>New Reminder</ASHeader>
+            <S.ASContainer contentContainerStyle={{paddingBottom: 120}} $colors={theme.colors}>
+                <ASHeader $colors={theme.colors}>New Reminder</ASHeader>
                 <S.ASContentWrap>
 
-                    <S.ASLabel>Title</S.ASLabel>
+                    <S.ASLabel $colors={theme.colors}>Title</S.ASLabel>
                     <S.ASInput
                         value={title}
                         onChangeText={setTitle}
                         placeholder="제목"
+                        $colors={theme.colors}
+                        placeholderTextColor={theme.colors.text}
                     />
 
-                    <S.ASLabel>Memo</S.ASLabel>
+                    <S.ASLabel $colors={theme.colors}>Memo</S.ASLabel>
                     <S.ASInput value={description} onChangeText={setDescription} placeholder="메모" multiline
-                               style={{height: 100, textAlignVertical: 'top'}}/>
+                               style={{height: 100, textAlignVertical: 'top'}}
+                               $colors={theme.colors}
+                               placeholderTextColor={theme.colors.text}
+                    />
 
                     <S.ASSwitchRow>
-                        <S.ASLabel style={{marginTop: 0, marginBottom: 0}}>All Day</S.ASLabel>
+                        <S.ASLabel style={{marginTop: 0, marginBottom: 0}} $colors={theme.colors}>All Day</S.ASLabel>
                         <Switch
-                            trackColor={{false: "lavender", true: "mediumpurple"}}
-                            thumbColor={"mediumslateblue"}
-                            ios_backgroundColor="lavender"
+                            trackColor={{false: theme.colors.border, true: theme.colors.primary}}
+                            thumbColor={theme.colors.primary}
+                            ios_backgroundColor={theme.colors.border}
                             onValueChange={setIsAllDay}
                             value={isAllDay}
                         />
                     </S.ASSwitchRow>
 
-                    <S.ASLabel>Start</S.ASLabel>
+                    <S.ASLabel $colors={theme.colors}>Start</S.ASLabel>
                     <S.ASDateTimeRow>
-                        {/* 1. 날짜 선택 버튼 */}
-                        <S.ASDateTimeButton onPress={() => showMode('start', 'date')}>
-                            <S.ASDateTimeButtonText>{format(startTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
+                        <S.ASDateTimeButton onPress={() => showMode('start', 'date')} $colors={theme.colors}>
+                            <S.ASDateTimeButtonText $colors={theme.colors}>{format(startTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
                         </S.ASDateTimeButton>
-                        {/* 2. '종일'이 아닐 때만 시간 선택 버튼을 보여줍니다. */}
                         {!isAllDay && (
-                            <S.ASDateTimeButton onPress={() => showMode('start', 'time')}>
-                                <S.ASDateTimeButtonText>{format(startTime, 'HH:mm')}</S.ASDateTimeButtonText>
+                            <S.ASDateTimeButton onPress={() => showMode('start', 'time')} $colors={theme.colors}>
+                                <S.ASDateTimeButtonText $colors={theme.colors}>{format(startTime, 'HH:mm')}</S.ASDateTimeButtonText>
                             </S.ASDateTimeButton>
                         )}
                     </S.ASDateTimeRow>
 
-                    <S.ASLabel>End</S.ASLabel>
+                    <S.ASLabel $colors={theme.colors}>End</S.ASLabel>
                     <S.ASDateTimeRow>
-                        <S.ASDateTimeButton onPress={() => showMode('end', 'date')}>
-                            <S.ASDateTimeButtonText>{format(endTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
+                        <S.ASDateTimeButton onPress={() => showMode('end', 'date')} $colors={theme.colors}>
+                            <S.ASDateTimeButtonText $colors={theme.colors}>{format(endTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
                         </S.ASDateTimeButton>
                         {!isAllDay && (
-                            <S.ASDateTimeButton onPress={() => showMode('end', 'time')}>
-                                <S.ASDateTimeButtonText>{format(endTime, 'HH:mm')}</S.ASDateTimeButtonText>
+                            <S.ASDateTimeButton onPress={() => showMode('end', 'time')} $colors={theme.colors}>
+                                <S.ASDateTimeButtonText $colors={theme.colors}>{format(endTime, 'HH:mm')}</S.ASDateTimeButtonText>
                             </S.ASDateTimeButton>
                         )}
                     </S.ASDateTimeRow>
 
-                    <S.ASLabel>Location</S.ASLabel>
-                    <S.ASInput value={location} onChangeText={setLocation} placeholder="장소"/>
+                    <S.ASLabel $colors={theme.colors}>Location</S.ASLabel>
+                    <S.ASInput value={location} onChangeText={setLocation} placeholder="장소"
+                               $colors={theme.colors}
+                               placeholderTextColor={theme.colors.text}
+                    />
 
                     <S.ASTagHeaderRow>
-                        <S.ASLabel>Tag</S.ASLabel>
-                        <S.ASAddButton onPress={() => setIsTagModalVisible(true)}>
-                            <AntDesign name="pluscircleo" size={24} color="mediumslateblue" />
+                        <S.ASLabel $colors={theme.colors}>Tag</S.ASLabel>
+                        <S.ASAddButton onPress={() => setIsTagModalVisible(true)} $colors={theme.colors}>
+                            <AntDesign name="pluscircleo" size={24} color={theme.colors.primary} />
                         </S.ASAddButton>
                     </S.ASTagHeaderRow>
-                    <S.ASPickerWrap>
+                    <S.ASPickerWrap $colors={theme.colors}>
                         {loading ? (
-                            <ActivityIndicator size="small" color="mediumslateblue" />
+                            <ActivityIndicator size="small" color={theme.colors.primary} />
                         ) : (
                             <Picker selectedValue={tagId}
                                     onValueChange={(itemValue) => setTagId(itemValue)}
-                                    style={{ color: 'mediumslateblue' }}
+                                    style={{ color: theme.colors.text }}
+                                    dropdownIconColor={theme.colors.text}
                             >
                                 <Picker.Item label="-- No Tag --" value={0} />
                                 {tags && tags.map((tag) => (
-                                    <Picker.Item key={tag.id} label={tag.label} value={tag.id}/>
+                                    <Picker.Item key={tag.id} label={tag.label} value={tag.id} color={theme.colors.text}/>
                                 ))}
                             </Picker>
                         )}
                     </S.ASPickerWrap>
 
-                    {/* 2. 선택된 태그가 있을 경우, 해시태그 스타일로 화면에 표시합니다. */}
                     {selectedTag && (
                         <S.ASSelectedTagWrap>
-                            <S.ASSelectedTag color={selectedTag.color || 'gray'}>
-                                <S.ASSelectedTagText>#{selectedTag.label}</S.ASSelectedTagText>
+                            <S.ASSelectedTag color={selectedTag.color || theme.colors.border} $colors={theme.colors}>
+                                <S.ASSelectedTagText $colors={theme.colors}>#{selectedTag.label}</S.ASSelectedTagText>
                             </S.ASSelectedTag>
                         </S.ASSelectedTagWrap>
                     )}
@@ -227,6 +235,7 @@ const AddScheduleScreen = () => {
                         is24Hour={true}
                         display="default"
                         onChange={onDateTimeChange}
+                        textColor={theme.colors.text}
                     />
                 )}
 
@@ -234,6 +243,7 @@ const AddScheduleScreen = () => {
                     visible={isTagModalVisible}
                     onClose={() => setIsTagModalVisible(false)}
                     onSave={handleSaveTag}
+                    colors={theme.colors}
                 />
 
             </S.ASContainer>
@@ -244,27 +254,26 @@ const AddScheduleScreen = () => {
                 backdropComponent={renderBackdrop}
                 backgroundStyle={{
                     borderTopWidth: 1,
-                    borderTopColor: '#e0e0e0', // 부드러운 회색 경계선
-                    borderRadius: 0
+                    borderTopColor: theme.colors.border,
+                    borderRadius: 0,
+                    backgroundColor: theme.colors.card,
                 }}
                 handleIndicatorStyle={{
-                    backgroundColor: 'mediumpurple', // 1. 핸들 바의 색상을 변경합니다.
-                    width: 200,                     // 2. 핸들 바의 너비를 조절합니다.
+                    backgroundColor: theme.colors.primary,
+                    width: 200,
                     height: 5,
                     margin:10,
                 }}
             >
-                {/* BottomSheet 내부에 표시될 내용을 여기에 추가합니다. */}
                 <S.ASContentWrap>
                 </S.ASContentWrap>
             </BottomSheet>
-            <ASButtonWrap>
-                {/* Cancel 버튼은 단순히 이전 화면으로 돌아가도록 router.back()을 사용합니다. */}
-                <S.ASCancelButton onPress={() => router.back()}>
-                    <ASCancelButtonText>Cancel</ASCancelButtonText>
+            <ASButtonWrap $colors={theme.colors}>
+                <S.ASCancelButton onPress={() => router.back()} $colors={theme.colors}>
+                    <ASCancelButtonText $colors={theme.colors}>Cancel</ASCancelButtonText>
                 </S.ASCancelButton>
-                <S.ASSaveButton onPress={handleSave} disabled={loading}>
-                    <S.ASSaveButtonText>Save</S.ASSaveButtonText>
+                <S.ASSaveButton onPress={handleSave} disabled={loading} $colors={theme.colors}>
+                    <S.ASSaveButtonText $colors={theme.colors}>Save</S.ASSaveButtonText>
                 </S.ASSaveButton>
             </ASButtonWrap>
         </GestureHandlerRootView>

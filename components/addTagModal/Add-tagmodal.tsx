@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { Modal, Alert } from 'react-native';
 import ColorPicker from 'react-native-wheel-color-picker';
 import * as S from './AddTagModalStyled';
+import { ThemeColors } from "@/types/theme"; // ThemeColors import 추가
 
 interface CreateTagModalProps {
     visible: boolean;
     onClose: () => void;
     // onSave는 태그 이름과 색상을 받아 비동기 작업을 처리합니다.
     onSave: (name: string, color: string) => Promise<void>;
+    colors: ThemeColors; // colors prop 추가
 }
 
-const CreateTagModal: React.FC<CreateTagModalProps> = ({ visible, onClose, onSave }) => {
+const CreateTagModal: React.FC<CreateTagModalProps> = ({ visible, onClose, onSave, colors }) => {
     const [name, setName] = useState('');
     const [selectedColor, setSelectedColor] = useState('#FF6B6B'); // 기본 색상
     const [isSaving, setIsSaving] = useState(false);
@@ -46,19 +48,21 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({ visible, onClose, onSav
             onRequestClose={handleClose}
         >
             <S.ModalOverlay>
-                <S.ModalContainer>
-                    <S.ModalHeader>New Tag</S.ModalHeader>
+                <S.ModalContainer $colors={colors}> {/* colors prop 전달 */}
+                    <S.ModalHeader $colors={colors}>New Tag</S.ModalHeader> {/* colors prop 전달 */}
 
-                    <S.InputLabel>Tag Name</S.InputLabel>
+                    <S.InputLabel $colors={colors}>Tag Name</S.InputLabel> {/* colors prop 전달 */}
                     <S.StyledInput
                         value={name}
                         onChangeText={setName}
                         placeholder="ex: work, exercise, study"
+                        $colors={colors} // colors prop 전달
+                        placeholderTextColor={colors.text} // placeholderTextColor 설정
                     />
 
                     <S.ColorPickerHeader>
-                        <S.InputLabel>Tag Color</S.InputLabel>
-                        <S.ColorPreview color={selectedColor} />
+                        <S.InputLabel $colors={colors}>Tag Color</S.InputLabel> {/* colors prop 전달 */}
+                        <S.ColorPreview color={selectedColor} $colors={colors}/> {/* colors prop 전달 */}
                     </S.ColorPickerHeader>
                     <S.ColorPickerWrapper>
                         <ColorPicker
@@ -68,11 +72,11 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({ visible, onClose, onSav
                     </S.ColorPickerWrapper>
 
                     <S.ButtonContainer>
-                        <S.ActionButton onPress={handleClose}>
-                            <S.ButtonText>Cancel</S.ButtonText>
+                        <S.ActionButton onPress={handleClose} $colors={colors}> {/* colors prop 전달 */}
+                            <S.ButtonText $colors={colors}>Cancel</S.ButtonText> {/* colors prop 전달 */}
                         </S.ActionButton>
-                        <S.ActionButton primary onPress={handleSave} disabled={isSaving}>
-                            <S.ButtonText primary>{isSaving ? 'Save...' : 'Save'}</S.ButtonText>
+                        <S.ActionButton primary onPress={handleSave} disabled={isSaving} $colors={colors}> {/* colors prop 전달 */}
+                            <S.ButtonText primary $colors={colors}>{isSaving ? 'Save...' : 'Save'}</S.ButtonText> {/* colors prop 전달 */}
                         </S.ActionButton>
                     </S.ButtonContainer>
                 </S.ModalContainer>

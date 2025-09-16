@@ -64,7 +64,7 @@ const ListItem = ({item}: { item: ILog }) => {
     const previewText = singleLineContent.substring(0, maxLength);
 
     const handlePress = () => {
-        router.push({pathname: '/i-log/[id]', params: {id: item.id.toString()}});
+        router.push({pathname: './[id]', params: {id: item.id.toString()}});
     };
 
     return (

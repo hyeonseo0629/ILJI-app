@@ -1,42 +1,44 @@
 import styled from "styled-components/native";
+import { ThemeColors } from "@/types/theme";
 
 interface CategoryTabProps {
     $isActive?: boolean;
     activeColor?: string;
 }
 
-export const MainContainer = styled.View`
+interface StyledProps {
+    $colors?: ThemeColors;
+}
+
+export const MainContainer = styled.View<StyledProps>`
     flex: 1;
-`
+    background-color: ${(props) => props.$colors?.background || '#F0F0F0'}; // 견고한 폴백 색상 사용
+`;
 
 export const MainContentWrap = styled.View`
     flex: 1;
     align-items: center;
-`
+`;
 
-export const MainToDoCategoryWarp = styled.View`
+export const MainToDoCategoryWarp = styled.View<StyledProps>`
     flex-direction: row;
-    /* 탭이 바텀시트의 헤더 역할을 하도록 스타일 조정 */
-    padding: 16px 16px 0 16px; /* 상, 좌우, 하단 여백 */
+    padding: 16px 16px 0 16px;
     border-bottom-width: 1px;
-    border-bottom-color: #f0f0f0; /* 콘텐츠와 구분되는 연한 선 */
-    /* 높이가 다른 탭들을 하단에 정렬하여 보기 좋게 만듭니다. */
+    border-bottom-color: ${(props) => props.$colors?.border || '#E0E0E0'}; // 견고한 폴백 색상 사용
     align-items: flex-end;
-    color: mediumslateblue;
-`
+    background-color: ${(props) => props.$colors?.card || '#F0F0F0'}; // 배경색 추가
+`;
 
 export const MainToDoCategory = styled.TouchableOpacity<CategoryTabProps>`
     background-color: ${(props) => props.activeColor};
-    /* $isActive prop에 따라 패딩 값을 다르게 주어 크기를 조절합니다. */
     padding: ${(props) => (props.$isActive ? '12px 20px' : '8px 16px')};
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    opacity: ${(props) => (props.$isActive ? '1' : '0.6')};
-`
+    opacity: ${(props) => (props.$isActive ? 1 : 0.6)};
+`;
 
-export const MainTodoCategoryText = styled.Text<CategoryTabProps>`
+export const MainToDoCategoryText = styled.Text<CategoryTabProps & StyledProps>`
     font-size: 15px;
     font-weight: ${(props) => (props.$isActive ? 'bold' : 'normal')};
-    color: ${(props) => '#333333'};
-    font-weight: bold;
-`
+    color: ${(props) => props.$colors?.text || '#333333'};
+`;

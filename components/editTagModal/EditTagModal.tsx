@@ -5,14 +5,16 @@ import { AntDesign } from '@expo/vector-icons';
 import * as S from './EditTagModalStyled';
 import { Tag } from '@/components/tag/TagTypes';
 import { useSchedule } from '@/src/context/ScheduleContext';
-import ConfirmModal from '@/components/ConfirmModal/ConfirmModal'; // [추가] 커스텀 확인 모달 import
+import ConfirmModal from '@/components/confirmModal/ConfirmModal';
+import { ThemeColors } from "@/types/theme";
 
 interface EditTagModalProps {
     visible: boolean;
     onClose: () => void;
+    colors: ThemeColors;
 }
 
-const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
+const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose, colors }) => {
     const { tags, updateTag, deleteTag } = useSchedule();
 
     const [tagToEdit, setTagToEdit] = useState<Tag | null>(null);
@@ -20,29 +22,25 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
     const [editColor, setEditColor] = useState('#FF6B6B');
     const [isSaving, setIsSaving] = useState(false);
 
-    // [추가] 삭제 확인 모달 관련 상태
     const [isConfirmModalVisible, setConfirmModalVisible] = useState(false);
     const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
 
     useEffect(() => {
         if (tagToEdit) {
             setEditName(tagToEdit.label);
-
             if (tagToEdit.color && tagToEdit.color.trim() !== '') {
                 setEditColor(tagToEdit.color);
             } else {
-                setEditColor('#FF6B6B'); // Default color if existing color is invalid/empty
+                setEditColor('#FF6B6B');
             }
         }
     }, [tagToEdit]);
 
-    // [수정] 삭제 버튼 클릭 시, 어떤 태그를 삭제할지 상태에 저장하고 확인 모달을 엽니다.
     const handleDelete = (tag: Tag) => {
         setTagToDelete(tag);
         setConfirmModalVisible(true);
     };
 
-    // [추가] 확인 모달에서 '확인'을 눌렀을 때 실행될 실제 삭제 처리 함수
     const handleConfirmDelete = async () => {
         if (tagToDelete) {
             try {
@@ -77,43 +75,45 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
     };
 
     const renderTagItem: ListRenderItem<Tag> = ({ item }) => (
-        <S.TagItem onPress={() => setTagToEdit(item)}>
+        <S.TagItem onPress={() => setTagToEdit(item)} $colors={colors}>
             <S.TagInfo>
                 <S.ColorPreview color={item.color || 'gray'} />
-                <S.TagLabel>{item.label}</S.TagLabel>
+                <S.TagLabel $colors={colors}>{item.label}</S.TagLabel>
             </S.TagInfo>
             <S.DeleteButton onPress={(e) => { e.stopPropagation(); handleDelete(item); }}>
-                <AntDesign name="delete" size={20} color="#FF6B6B" />
+                <AntDesign name="delete" size={20} color={colors.notification} />
             </S.DeleteButton>
         </S.TagItem>
     );
 
     const renderListView = () => (
         <>
-            <S.ModalHeader>Tag Edit</S.ModalHeader>
+            <S.ModalHeader $colors={colors}>Tag Edit</S.ModalHeader>
             <S.TagList
                 data={tags.filter(tag => tag.id !== 0)}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderTagItem}
             />
-            <S.CloseButton onPress={handleCloseModal}>
-                <S.CloseButtonText>close</S.CloseButtonText>
+            <S.CloseButton onPress={handleCloseModal} $colors={colors}>
+                <S.CloseButtonText $colors={colors}>close</S.CloseButtonText>
             </S.CloseButton>
         </>
     );
 
     const renderEditForm = () => (
         <>
-            <S.ModalHeader>Tag Edit</S.ModalHeader>
-            <S.InputLabel>Tag Name</S.InputLabel>
+            <S.ModalHeader $colors={colors}>Tag Edit</S.ModalHeader>
+            <S.InputLabel $colors={colors}>Tag Name</S.InputLabel>
             <S.StyledInput
                 value={editName}
                 onChangeText={setEditName}
                 placeholder="예: work, exercise, study"
+                $colors={colors}
+                placeholderTextColor={colors.text}
             />
             <S.ColorPickerHeader>
-                <S.InputLabel>Tag Color</S.InputLabel>
-                <S.ColorPreview color={editColor} />
+                <S.InputLabel $colors={colors}>Tag Color</S.InputLabel>
+                <S.ColorPreview color={editColor} $colors={colors} />
             </S.ColorPickerHeader>
             <S.ColorPickerWrapper>
                 <ColorPicker
@@ -123,11 +123,11 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
                 />
             </S.ColorPickerWrapper>
             <S.ButtonContainer>
-                <S.ActionButton onPress={() => setTagToEdit(null)}>
-                    <S.ButtonText>Cancel</S.ButtonText>
+                <S.ActionButton onPress={() => setTagToEdit(null)} $colors={colors}>
+                    <S.ButtonText $colors={colors}>Cancel</S.ButtonText>
                 </S.ActionButton>
-                <S.ActionButton primary onPress={handleSaveEdit} disabled={isSaving}>
-                    <S.ButtonText primary>{isSaving ? 'Save...' : 'Edit'}</S.ButtonText>
+                <S.ActionButton primary onPress={handleSaveEdit} disabled={isSaving} $colors={colors}>
+                    <S.ButtonText primary $colors={colors}>{isSaving ? 'Save...' : 'Edit'}</S.ButtonText>
                 </S.ActionButton>
             </S.ButtonContainer>
         </>
@@ -141,11 +141,10 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
             onRequestClose={handleCloseModal}
         >
             <S.ModalOverlay>
-                <S.ModalContainer>
+                <S.ModalContainer $colors={colors}>
                     {tagToEdit ? renderEditForm() : renderListView()}
                 </S.ModalContainer>
             </S.ModalOverlay>
-            {/* [추가] 커스텀 확인 모달을 렌더링합니다. */}
             <ConfirmModal
                 visible={isConfirmModalVisible}
                 title="Delete Tag"
@@ -155,6 +154,7 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
                     setTagToDelete(null);
                 }}
                 onConfirm={handleConfirmDelete}
+                colors={colors}
             />
         </Modal>
     );

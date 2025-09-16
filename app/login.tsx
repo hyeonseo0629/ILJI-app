@@ -15,6 +15,7 @@ import {
     statusCodes,
 } from '@react-native-google-signin/google-signin';
 import { useSchedule } from '@/src/context/ScheduleContext'; // 스케줄 컨텍스트 import
+import { useRouter } from 'expo-router';
 
 // app.json에서 클라이언트 ID들을 가져옵니다.
 const extra = Constants.expoConfig?.extra ?? {};
@@ -25,6 +26,7 @@ export default function LoginScreen(): React.JSX.Element {
     const { signIn, signOut, session, isLoading } = useSession();
     const { fetchSchedules } = useSchedule(); // fetchSchedules 함수를 가져옵니다.
     const [busy, setBusy] = useState(false);
+    const router = useRouter();
 
     const config = useMemo(
         () => ({
@@ -69,7 +71,9 @@ export default function LoginScreen(): React.JSX.Element {
                 return;
             }
 
-            const backendUrl = Platform.OS === 'android' ? 'http://10.100.0.88:8090' : 'http://localhost:8090';
+            // 플랫폼에 따라 백엔드 서버 주소를 다르게 설정합니다.
+            // Android 에뮬레이터는 10.0.2.2를 사용하여 호스트 머신에 접근합니다.
+            const backendUrl = Platform.OS === 'android' ? 'http://10.0.2.2:8090' : 'http://localhost:8090';
 
             const response = await fetch(`${backendUrl}/api/auth/google`, {
                 method: 'POST',
@@ -96,7 +100,7 @@ export default function LoginScreen(): React.JSX.Element {
                     },
                     token: authResponse.appToken,
                 };
-                
+
                 console.log('[LoginScreen] Calling signIn with user ID:', sessionUser.user.id);
                 await signIn(sessionUser);
 

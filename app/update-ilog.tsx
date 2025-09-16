@@ -9,9 +9,11 @@ import {AddImagePickerText} from "@/components/style/I-logStyled";
 import { ILog, ILogUpdateRequest } from '@/src/types/ilog';
 import { uriToFile } from '@/src/utils/imageUtils';
 import { useILog } from '@/src/context/ILogContext';
+import {useTheme} from '@react-navigation/native'; // useTheme import 추가
 
 export default function UpdateILogScreen() {
     const insets = useSafeAreaInsets();
+    const theme = useTheme(); // useTheme 훅 사용
 
     const router = useRouter();
     const params = useLocalSearchParams();
@@ -265,9 +267,9 @@ export default function UpdateILogScreen() {
     };
 
     return (
-        <I.ScreenContainer>
+        <I.ScreenContainer $colors={theme.colors}> {/* theme.colors를 $colors prop으로 전달 */}
             <View style={{flex: 1}}>
-                <I.Container>
+                <I.Container $colors={theme.colors}> {/* $colors prop 전달 */}
                     <I.AddWrap
                         contentContainerStyle={{paddingBottom: 40 + keyboardHeight}}
                         ref={scrollViewRef}
@@ -285,16 +287,16 @@ export default function UpdateILogScreen() {
                                     </I.AddImageRemoveButton>
                                 </View>
                             ) : (
-                                <I.AddImagePlaceholder onPress={pickImage}>
-                                    <SimpleLineIcons name="picture" size={150} color="#ddd" />
-                                    <AddImagePickerText>Add a picture...</AddImagePickerText>
+                                <I.AddImagePlaceholder onPress={pickImage} $colors={theme.colors}> {/* $colors prop 전달 */}
+                                    <SimpleLineIcons name="picture" size={150} color={theme.colors.border} /> {/* theme.colors.border 사용 */}
+                                    <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText> {/* $colors prop 전달 */}
                                 </I.AddImagePlaceholder>
                             )}
                             {selectedTags.length > 0 && (
                                 <I.AddTagBadgeContainer>
                                     {selectedTags.map((tag) => (
-                                        <I.AddTagBadge key={tag}>
-                                            <I.AddTagBadgeText>{tag}</I.AddTagBadgeText>
+                                        <I.AddTagBadge key={tag} $colors={theme.colors}> {/* $colors prop 전달 */}
+                                            <I.AddTagBadgeText $colors={theme.colors}>{tag}</I.AddTagBadgeText> {/* $colors prop 전달 */}
                                             <AntDesign name="closecircle" size={14} color="white"
                                                        onPress={() => handleRemoveTag(tag)}/>
                                         </I.AddTagBadge>
@@ -316,24 +318,26 @@ export default function UpdateILogScreen() {
                                 onFocus={handleTextAreaFocus}
                                 onContentSizeChange={handleContentSizeChange}
                                 autoFocus={true}
+                                $colors={theme.colors} // $colors prop 전달
+                                placeholderTextColor={theme.colors.text} // placeholderTextColor 설정
                             />
                         </I.AddContentContainer>
                     </I.AddWrap>
                 </I.Container>
 
-                <I.AddSuggestionContainer $bottom={keyboardHeight}>
-                    <I.AddButtonWrap>
-                        <I.AddCancelButton onPress={() => router.back()}>
-                            <I.AddButtonText>Cancel</I.AddButtonText>
+                <I.AddSuggestionContainer $bottom={keyboardHeight} $colors={theme.colors}> {/* $colors prop 전달 */}
+                    <I.AddButtonWrap $colors={theme.colors}> {/* $colors prop 전달 */}
+                        <I.AddCancelButton onPress={() => router.back()} $colors={theme.colors}> {/* $colors prop 전달 */}
+                            <I.AddButtonText $colors={theme.colors}>Cancel</I.AddButtonText> {/* $colors prop 전달 */}
                         </I.AddCancelButton>
-                        <I.AddSaveButton onPress={handleSave}>
-                            <I.AddButtonText>Update</I.AddButtonText>
+                        <I.AddSaveButton onPress={handleSave} $colors={theme.colors}> {/* $colors prop 전달 */}
+                            <I.AddButtonText $colors={theme.colors}>Update</I.AddButtonText> {/* $colors prop 전달 */}
                         </I.AddSaveButton>
                     </I.AddButtonWrap>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{borderWidth: 1, borderColor: 'mediumslateblue'}}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{borderWidth: 1, borderColor: theme.colors.primary}}>
                         {suggestions.map((tag) => (
-                            <I.AddSuggestionButton key={tag} onPress={() => handleSuggestionTap(tag)}>
-                                <I.AddSuggestionButtonText>{tag}</I.AddSuggestionButtonText>
+                            <I.AddSuggestionButton key={tag} onPress={() => handleSuggestionTap(tag)} $colors={theme.colors}> {/* $colors prop 전달 */}
+                                <I.AddSuggestionButtonText $colors={theme.colors}>{tag}</I.AddSuggestionButtonText> {/* $colors prop 전달 */}
                             </I.AddSuggestionButton>
                         ))}
                     </ScrollView>

@@ -8,9 +8,11 @@ import { TabsContainer, TabsButton, TabsButtonText } from "@/components/style/I-
 import * as I from "@/components/style/I-logStyled";
 import { LocaleConfig, DateData, Calendar } from 'react-native-calendars';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { Modal, TouchableOpacity, View } from 'react-native';
+import { Modal, TouchableOpacity, View, SafeAreaView  } from 'react-native';
 import { useILog } from '@/src/context/ILogContext';
 import { ILog } from '@/src/types/ilog';
+import { useTheme } from '@react-navigation/native';
+
 
 // Set calendar locale to Korean
 LocaleConfig.locales['ko'] = {
@@ -23,6 +25,7 @@ LocaleConfig.locales['ko'] = {
 LocaleConfig.defaultLocale = 'ko';
 
 export default function DiaryScreen() {
+    const theme = useTheme(); // 테마 객체 가져오기
     const router = useRouter();
     const params = useLocalSearchParams();
     const [viewMode, setViewMode] = useState('page');
@@ -118,14 +121,14 @@ export default function DiaryScreen() {
             const dateString = format(day, 'yyyy-MM-dd');
             if (logsByDate[dateString]) {
                 // Date has a log
-                markings[dateString] = { marked: true, dotColor: 'mediumslateblue' };
+                markings[dateString] = { marked: true, dotColor: theme.colors.primary };
             } else {
                 markings[dateString] = { disabled: true, disableTouchEvent: true };
             }
         });
 
         return markings;
-    }, [ilogs, currentCalendarMonth]);
+    }, [ilogs, currentCalendarMonth, theme.colors.primary]);
 
     const openCalendar = () => {
         // Set currentCalendarMonth to the month of the currently viewed log explicitly
@@ -168,14 +171,14 @@ export default function DiaryScreen() {
         daysInMonth.forEach(day => {
             const dateString = format(day, 'yyyy-MM-dd');
             if (logsByDate[dateString]) {
-                markings[dateString] = { marked: true, dotColor: 'mediumslateblue' };
+                markings[dateString] = { marked: true, dotColor: theme.colors.primary };
             } else {
                 markings[dateString] = { disabled: true, disableTouchEvent: true };
             }
         });
 
         return markings;
-    }, [ilogs, currentListCalendarMonth]);
+    }, [ilogs, currentListCalendarMonth, theme.colors.primary]);
 
     const handleListDateSelect = (day: DateData) => {
         setListFilterType('day');
@@ -259,7 +262,7 @@ export default function DiaryScreen() {
         }));
 
         router.push({
-            pathname: '/add-ilog',
+            pathname: '../add-ilog',
             params: {
                 uniqueTags: JSON.stringify(uniqueTags),
                 existingLogs: JSON.stringify(simplifiedIlogs),
@@ -269,50 +272,54 @@ export default function DiaryScreen() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <MainContainer>
-                <TabsContainer>
-                    <TabsButton onPress={() => setViewMode('list')} $isActive={viewMode === 'list'}>
-                        <TabsButtonText>List View</TabsButtonText>
-                    </TabsButton>
-                    <TabsButton onPress={() => setViewMode('page')} $isActive={viewMode === 'page'}>
-                        <TabsButtonText>Page View</TabsButtonText>
-                    </TabsButton>
-                </TabsContainer>
+            <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+                <MainContainer $colors={theme.colors} >
+                    <TabsContainer $colors={theme.colors}>
+                        <TabsButton onPress={() => setViewMode('list')} $isActive={viewMode === 'list'} $colors={theme.colors}>
+                            <TabsButtonText $colors={theme.colors}>List View</TabsButtonText>
+                        </TabsButton>
+                        <TabsButton onPress={() => setViewMode('page')} $isActive={viewMode === 'page'} $colors={theme.colors}>
+                            <TabsButtonText $colors={theme.colors}>Page View</TabsButtonText>
+                        </TabsButton>
+                    </TabsContainer>
 
-                {viewMode === 'list' ? (
-                    <ILogListView
-                        ilogs={filteredListIlogs} // Pass filtered ilogs
-                        listFilterType={listFilterType}
-                        listFilterValue={listFilterValue}
-                        openListCalendar={openListCalendar}
-                        isListCalendarVisible={isListCalendarVisible}
-                        setListCalendarVisible={setListCalendarVisible}
-                        markedDatesForListCalendar={markedDatesForListCalendar}
-                        handleListDateSelect={handleListDateSelect}
-                        currentListCalendarMonth={currentListCalendarMonth}
-                        setCurrentListCalendarMonth={setCurrentListCalendarMonth}
-                        handleListMonthFilter={handleListMonthFilter}
-                        handleListYearFilter={handleListYearFilter}
-                        resetListFilter={resetListFilter}
-                        isMonthPickerVisible={isMonthPickerVisible}
-                        setMonthPickerVisible={setMonthPickerVisible}
-                        isYearPickerVisible={isYearPickerVisible}
-                        setYearPickerVisible={setYearPickerVisible}
-                        handleSelectMonth={handleSelectMonth}
-                        handleSelectYear={handleSelectYear}
-                    />
-                ) : (
-                    <ILogPageView
-                        ilogs={ilogs}
-                        onDatePress={openCalendar}
-                        scrollToIndex={selectedLogIndex}
-                        onPageChange={handlePageChange} // Pass the new prop
-                    />
-                )}
-            </MainContainer>
+                    {viewMode === 'list' ? (
+                        <ILogListView
+                            ilogs={filteredListIlogs} // Pass filtered ilogs
+                            listFilterType={listFilterType}
+                            listFilterValue={listFilterValue}
+                            openListCalendar={openListCalendar}
+                            isListCalendarVisible={isListCalendarVisible}
+                            setListCalendarVisible={setListCalendarVisible}
+                            markedDatesForListCalendar={markedDatesForListCalendar}
+                            handleListDateSelect={handleListDateSelect}
+                            currentListCalendarMonth={currentListCalendarMonth}
+                            setCurrentListCalendarMonth={setCurrentListCalendarMonth}
+                            handleListMonthFilter={handleListMonthFilter}
+                            handleListYearFilter={handleListYearFilter}
+                            resetListFilter={resetListFilter}
+                            isMonthPickerVisible={isMonthPickerVisible}
+                            setMonthPickerVisible={setMonthPickerVisible}
+                            isYearPickerVisible={isYearPickerVisible}
+                            setYearPickerVisible={setYearPickerVisible}
+                            handleSelectMonth={handleSelectMonth}
+                            handleSelectYear={handleSelectYear}
+                            colors={theme.colors}
+                        />
+                    ) : (
+                        <ILogPageView
+                            ilogs={ilogs}
+                            onDatePress={openCalendar}
+                            scrollToIndex={selectedLogIndex}
+                            onPageChange={handlePageChange} // Pass the new prop
+                            colors={theme.colors}
+                        />
+                    )}
+                </MainContainer>
+            </SafeAreaView>
 
             <I.ButtonIconWrap onPress={handleAddPress}>
-                <I.ButtonIcon name="square-edit-outline" />
+                <I.ButtonIcon name="square-edit-outline" $colors={theme.colors} />
             </I.ButtonIconWrap>
 
             {/* Page View Calendar Modal (Restored) */}
@@ -327,7 +334,7 @@ export default function DiaryScreen() {
                     activeOpacity={1}
                     onPressOut={() => setCalendarVisible(false)}
                 >
-                    <View style={{ width: '90%', backgroundColor: 'white', borderRadius: 10, padding: 10 }} onStartShouldSetResponder={() => true}>
+                    <View style={{ width: '90%', backgroundColor: theme.colors.card, borderRadius: 10, padding: 10 }} onStartShouldSetResponder={() => true}>
                         <Calendar
                             key={isCalendarVisible ? 'page-calendar-open' : 'page-calendar-closed'}
                             markedDates={markedDates}
@@ -335,6 +342,18 @@ export default function DiaryScreen() {
                             current={currentCalendarMonth}
                             onMonthChange={(month) => {
                                 setCurrentCalendarMonth(month.dateString);
+                            }}
+                            theme={{
+                                backgroundColor: theme.colors.card,
+                                calendarBackground: theme.colors.card,
+                                dayTextColor: theme.colors.text,
+                                textDisabledColor: theme.colors.border,
+                                monthTextColor: theme.colors.text,
+                                arrowColor: theme.colors.primary,
+                                selectedDayBackgroundColor: theme.colors.primary,
+                                selectedDayTextColor: '#ffffff',
+                                todayTextColor: theme.colors.primary,
+                                dotColor: theme.colors.primary,
                             }}
                         />
                     </View>

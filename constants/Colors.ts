@@ -14,13 +14,19 @@ export const Colors = {
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+    card: '#f2f2f2',
+    border: 'rgb(216, 216, 216)', // Default border color
+    notification: 'rgb(255, 59, 48)', // Default notification color
   },
   dark: {
     text: '#ECEDEE',
-    background: '#151718',
+    background: '#000000',
     tint: tintColorDark,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+    card: '#000000',
+    border: 'rgb(39, 39, 41)', // Dark border color
+    notification: 'rgb(255, 69, 58)', // Dark notification color
   },
 };

@@ -70,6 +70,8 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const [error, setError] = useState<Error | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
 
+    console.log("ScheduleProvider rendered. Initial loading state:", loading); // 추가
+
     const formatRawSchedule = useCallback((rawEvent: RawScheduleEvent): Schedule => {
         if (!userId) {
             throw new Error("User not logged in, cannot format schedule");
@@ -92,20 +94,38 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     }, [userId]);
 
     const fetchSchedules = useCallback(async () => {
-        if (!userId) return;
+        console.log("fetchSchedules called for userId:", userId); // 추가
+        if (!userId) {
+            console.warn("User ID is not available. Cannot fetch schedules.");
+            setLoading(false);
+            console.log("setLoading(false) due to no userId."); // 추가
+            return;
+        }
 
         setLoading(true);
+        console.log("setLoading(true) before fetching."); // 추가
         try {
-            // 백엔드에서 이미 사용자별로 필터링된 데이터를 보내줍니다.
+            const schedulesUrl = '/schedules';
+            const tagsUrl = '/tags';
+            console.log("Requesting schedules from URL:", schedulesUrl);
+            console.log("Requesting tags from URL:", tagsUrl);
+
             const [schedulesResponse, tagsResponse] = await Promise.all([
-                api.get<RawScheduleEvent[]>('/schedules'),
-                api.get<Tag[]>('/tags')
+                api.get<RawScheduleEvent[]>(schedulesUrl),
+                api.get<Tag[]>(tagsUrl)
             ]);
 
-            // 클라이언트 필터링이 더 이상 필요 없습니다.
-            const formattedEvents = schedulesResponse.data.map(formatRawSchedule);
-            setEvents(formattedEvents);
+            console.log("Schedules API response data:", schedulesResponse.data);
+            console.log("Tags API response data:", tagsResponse.data);
 
+            const userTagIds = new Set(tagsResponse.data.map(tag => tag.id));
+
+            const mySchedules = schedulesResponse.data.filter(event =>
+                event.tagId === null || userTagIds.has(event.tagId!)
+            );
+
+            const formattedEvents = mySchedules.map(formatRawSchedule);
+            setEvents(formattedEvents);
             const processedTags = tagsResponse.data.map(tag => ({
                 ...tag,
                 color: (tag.color && tag.color.trim() !== '') ? tag.color : '#FF6B6B'
@@ -113,29 +133,48 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             setTags(processedTags);
             setError(null);
         } catch (err) {
-            if (axios.isAxiosError(err) && err.response?.status === 404) {
-                // 404는 이제 발생하지 않아야 하지만, 만약을 위해 유지합니다.
-                console.warn("404 Not Found: 서버에 데이터가 없는 것으로 간주합니다.");
-                setEvents([]);
-                setTags([]);
-                setError(null);
+            if (axios.isAxiosError(err)) {
+                console.error("Axios error during fetchSchedules:", err.message);
+                if (err.response) {
+                    console.error("Axios error response status:", err.response.status);
+                    console.error("Axios error response data:", err.response.data);
+                    console.error("Axios error response config URL:", err.response.config.url);
+                } else if (err.request) {
+                    console.error("Axios error request:", err.request);
+                } else {
+                    console.error("Axios error config:", err.config);
+                }
+
+                if (err.response?.status === 404) {
+                    console.warn(`404 Not Found for user ${userId}: 서버에 데이터가 없는 것으로 간주합니다.`, err.response?.config?.url);
+                    setEvents([]);
+                    setTags([]);
+                    setError(null);
+                } else {
+                    setError(err as Error);
+                    Alert.alert("오류", "데이터를 불러오는 데 실패했습니다.");
+                }
             } else {
-                console.error("초기 데이터 로딩 실패:", err);
+                console.error("초기 데이터 로딩 실패 (non-Axios error):", err);
                 setError(err as Error);
                 Alert.alert("오류", "데이터를 불러오는 데 실패했습니다.");
             }
         } finally {
             setLoading(false);
+            console.log("setLoading(false) in finally block."); // 추가
         }
     }, [userId, formatRawSchedule]);
 
     useEffect(() => {
+        console.log("ScheduleProvider useEffect triggered. userId:", userId); // 추가
         if (userId) {
             fetchSchedules();
         } else {
+            // 로그아웃 상태일 때 데이터 초기화
             setEvents([]);
             setTags([]);
             setLoading(false);
+            console.log("setLoading(false) due to no userId in useEffect."); // 추가
         }
     }, [userId, fetchSchedules]);
 
@@ -144,9 +183,13 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         try {
             const payload = {
                 ...scheduleToUpdate,
-                userId: userId,
-                startTime: format(scheduleToUpdate.startTime, scheduleToUpdate.isAllDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm:ss"),
-                endTime: format(scheduleToUpdate.endTime, scheduleToUpdate.isAllDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm:ss"),
+                userId: userId, // 동적 userId 사용
+                startTime: scheduleToUpdate.isAllDay
+                    ? format(scheduleToUpdate.startTime, "yyyy-MM-dd'T'00:00:00")
+                    : format(scheduleToUpdate.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
+                endTime: scheduleToUpdate.isAllDay
+                    ? format(scheduleToUpdate.endTime, "yyyy-MM-dd'T'23:59:59")
+                    : format(scheduleToUpdate.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
                 tagId: scheduleToUpdate.tagId === 0 ? null : scheduleToUpdate.tagId,
             };
 
@@ -161,6 +204,10 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error("Axios 업데이트 에러:", err.message);
+                if (err.config) {
+                    const { method, baseURL, url } = err.config;
+                    console.error("요청 정보:", method?.toUpperCase(), (baseURL ?? '') + (url ?? ''));
+                }
             } else {
                 console.error("일정 업데이트 실패:", err);
             }
@@ -173,18 +220,30 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         try {
             const payload = {
                 ...newScheduleData,
-                userId: userId,
-                startTime: format(newScheduleData.startTime, newScheduleData.isAllDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm:ss"),
-                endTime: format(newScheduleData.endTime, newScheduleData.isAllDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm:ss"),
+                userId: userId, // 동적 userId 사용
+                startTime: newScheduleData.isAllDay
+                    ? format(newScheduleData.startTime, "yyyy-MM-dd'T'00:00:00")
+                    : format(newScheduleData.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
+                endTime: newScheduleData.isAllDay
+                    ? format(newScheduleData.endTime, "yyyy-MM-dd'T'23:59:59")
+                    : format(newScheduleData.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
                 tagId: newScheduleData.tagId === 0 ? null : newScheduleData.tagId,
             };
 
+            // 2. 변환된 payload를 백엔드 서버에 전송합니다.
             const response = await api.post<RawScheduleEvent>('/schedules', payload);
             const newEvent = formatRawSchedule(response.data);
+
+            // 4. 화면의 상태(State)에 새 일정을 추가하여 즉시 반영합니다.
             setEvents(prevEvents => [...prevEvents, newEvent]);
+
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error("Axios 생성 에러:", err.message);
+                if (err.config) {
+                    const { method, baseURL, url } = err.config;
+                    console.error("요청 정보:", method?.toUpperCase(), (baseURL ?? '') + (url ?? ''));
+                }
             } else {
                 console.error("일정 생성 실패:", err);
             }
@@ -195,8 +254,12 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const deleteSchedule = useCallback(async (scheduleId: number) => {
         if (!userId) return;
         try {
+            // 1. 서버에 삭제 요청을 보냅니다. (DELETE /schedules/{id})
             await api.delete(`/schedules/${scheduleId}`);
+
+            // 2. 서버에서 성공적으로 삭제되면, 화면(events 상태)에서도 해당 일정을 제거합니다.
             setEvents(prevEvents => prevEvents.filter(event => event.id !== scheduleId));
+
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error("Axios 삭제 에러:", err.message);
@@ -210,14 +273,19 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const createTag = useCallback(async (tagData: { label: string, color: string }): Promise<Tag> => {
         if (!userId) throw new Error("User not logged in");
         try {
-            const payload = { ...tagData, userId: userId };
+            const payload = { ...tagData, userId: userId }; // 동적 userId 사용
             const response = await api.post<Tag>('/tags', payload);
             const newTag = response.data;
+
+            // 2. Context의 tags 상태를 업데이트하여 앱 전체에 변경사항을 반영합니다.
             setTags(prevTags => [...prevTags, newTag]);
+
+            // 3. 새로 생성된 태그 객체를 반환하여, 호출한 쪽에서 바로 사용할 수 있게 합니다.
             return newTag;
         } catch (err) {
             console.error("태그 생성 실패:", err);
             Alert.alert("생성 실패", "새로운 태그를 만드는 중 오류가 발생했습니다.");
+            // 에러를 다시 던져서 호출한 쪽(handleSaveTag)에서 catch 할 수 있도록 합니다.
             throw err;
         }
     }, [userId]);
@@ -225,11 +293,11 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const updateTag = useCallback(async (tagToUpdate: Tag) => {
         if (!userId) return;
         try {
-            const payload = { ...tagToUpdate, userId: userId };
+            const payload = { ...tagToUpdate, userId: userId }; // 동적 userId 사용
             const response = await api.put<Tag>(`/tags/${tagToUpdate.id}`, payload);
             const updatedTag = response.data;
-            setTags(prevTags =>
-                prevTags.map(tag => (tag.id === updatedTag.id ? updatedTag : tag))
+            setTags(prevEvents =>
+                prevEvents.map(tag => (tag.id === updatedTag.id ? updatedTag : tag))
             );
         } catch (err) {
             console.error("태그 업데이트 실패:", err);
@@ -241,9 +309,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const deleteTag = useCallback(async (tagId: number) => {
         if (!userId) return;
         try {
-            // TagController에 따라 userId를 body로 보낼 필요가 없습니다.
-            await api.delete(`/tags/${tagId}`);
-            // 태그가 삭제되면, 관련 스케줄의 tagId가 null이 될 수 있으므로 전체 데이터를 새로고침합니다.
+            await api.delete(`/tags/${tagId}`, { data: { userId: userId } }); // 동적 userId 사용
             await fetchSchedules();
         } catch (err) {
             console.error("태그 삭제 실패:", err);

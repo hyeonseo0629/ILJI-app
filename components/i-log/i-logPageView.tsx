@@ -20,7 +20,7 @@ const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void })
     }
 
     const handleNavigateToDetail = () => {
-        router.push({ pathname: '/i-log/[id]', params: { id: item.id.toString() } });
+        router.push({ pathname: './[id]', params: { id: item.id.toString() } });
     };
 
     return (
