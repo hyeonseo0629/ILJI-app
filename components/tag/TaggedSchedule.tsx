@@ -38,7 +38,6 @@ export const ScheduleMainContent: React.FC<ToDoMainContentProps> = ({title, date
                     <BS.ScheduleTitle $isChecked={isChecked} $colors={colors}>{title}</BS.ScheduleTitle>
                 </BS.ScheduleTextWrap>
             </BS.ScheduleLeftWrap>
-            <BS.ScheduleIcon $isChecked={isChecked}>{icon}</BS.ScheduleIcon>
         </BS.ScheduleTextsWrap>
     );
 };
@@ -46,7 +45,7 @@ export const ScheduleMainContent: React.FC<ToDoMainContentProps> = ({title, date
 export const TaggedSchedule: React.FC<ToDoProps> = ({item, colors}) => {
     const state = "Planning";
     const icon = "📖";
-
+    
     return (
         <BS.ScheduleWrap $colors={colors}>
             <BS.ScheduleState $colors={colors}>{state}</BS.ScheduleState>

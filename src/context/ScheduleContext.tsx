@@ -204,6 +204,12 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error("Axios 업데이트 에러:", err.message);
+                if (err.config) {
+                    const { method, baseURL, url } = err.config;
+                    console.error("요청 정보:", method?.toUpperCase(), (baseURL ?? '') + (url ?? ''));
+                }
+            } else {
+                console.error("일정 업데이트 실패:", err);
             }
             Alert.alert("업데이트 실패", "서버와 통신 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.");
         }
@@ -224,12 +230,24 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
                 tagId: newScheduleData.tagId === 0 ? null : newScheduleData.tagId,
             };
 
+            // 2. 변환된 payload를 백엔드 서버에 전송합니다.
             const response = await api.post<RawScheduleEvent>('/schedules', payload);
+
+            // 3. 서버로부터 받은, id가 포함된 완전한 데이터를 캘린더 형식으로 변환합니다.
             const newEvent = formatRawSchedule(response.data);
+
+            // 4. 화면의 상태(State)에 새 일정을 추가하여 즉시 반영합니다.
             setEvents(prevEvents => [...prevEvents, newEvent]);
+
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error("Axios 생성 에러:", err.message);
+                if (err.config) {
+                    const { method, baseURL, url } = err.config;
+                    console.error("요청 정보:", method?.toUpperCase(), (baseURL ?? '') + (url ?? ''));
+                }
+            } else {
+                console.error("일정 생성 실패:", err);
             }
             Alert.alert("생성 실패", "서버와 통신 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.");
         }
@@ -238,11 +256,17 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const deleteSchedule = useCallback(async (scheduleId: number) => {
         if (!userId) return;
         try {
+            // 1. 서버에 삭제 요청을 보냅니다. (DELETE /schedules/{id})
             await api.delete(`/schedules/${scheduleId}`);
+
+            // 2. 서버에서 성공적으로 삭제되면, 화면(events 상태)에서도 해당 일정을 제거합니다.
             setEvents(prevEvents => prevEvents.filter(event => event.id !== scheduleId));
+
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error("Axios 삭제 에러:", err.message);
+            } else {
+                console.error("일정 삭제 실패:", err);
             }
             Alert.alert("삭제 실패", "일정을 삭제하는 중 오류가 발생했습니다.");
         }
@@ -254,6 +278,8 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             const payload = { ...tagData, userId: userId }; // 동적 userId 사용
             const response = await api.post<Tag>('/tags', payload);
             const newTag = response.data;
+
+            // 2. Context의 tags 상태를 업데이트하여 앱 전체에 변경사항을 반영합니다.
             setTags(prevTags => [...prevTags, newTag]);
 
             // 3. 새로 생성된 태그 객체를 반환하여, 호출한 쪽에서 바로 사용할 수 있게 합니다.
@@ -261,6 +287,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         } catch (err) {
             console.error("태그 생성 실패:", err);
             Alert.alert("생성 실패", "새로운 태그를 만드는 중 오류가 발생했습니다.");
+            // 에러를 다시 던져서 호출한 쪽(handleSaveTag)에서 catch 할 수 있도록 합니다.
             throw err;
         }
     }, [userId]);
