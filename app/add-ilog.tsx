@@ -8,9 +8,11 @@ import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {AddImagePickerText} from "@/components/style/I-logStyled";
 import {Calendar, DateData} from 'react-native-calendars';
 import {format} from 'date-fns';
+import {useTheme} from '@react-navigation/native'; // useTheme import 추가
 
 export default function AddILogScreen() {
     const insets = useSafeAreaInsets();
+    const theme = useTheme(); // useTheme 훅 사용
 
     const router = useRouter();
     const params = useLocalSearchParams();
@@ -56,10 +58,10 @@ export default function AddILogScreen() {
         }
 
         // Mark the currently selected date
-        markings[format(selectedLogDate, 'yyyy-MM-dd')] = {selected: true, selectedColor: 'blue'};
+        markings[format(selectedLogDate, 'yyyy-MM-dd')] = {selected: true, selectedColor: theme.colors.primary};
 
         return markings;
-    }, [existingLogs, selectedLogDate]);
+    }, [existingLogs, selectedLogDate, theme.colors.primary]);
 
 
     // 해시태그 제안 기능 관련 상태
@@ -259,7 +261,7 @@ export default function AddILogScreen() {
     };
 
     return (
-        <I.ScreenContainer>
+        <I.ScreenContainer $colors={theme.colors}> {/* theme.colors를 $colors prop으로 전달 */}
             <View style={{flex: 1}}>
                 <I.Container>
                     <I.AddWrap
@@ -267,11 +269,11 @@ export default function AddILogScreen() {
                         stickyHeaderIndices={[0]}
                         ref={scrollViewRef}
                     >
-                        <I.AddHeader onPress={() => setCalendarVisible(true)}>
+                        <I.AddHeader onPress={() => setCalendarVisible(true)} $colors={theme.colors}> {/* $colors prop 전달 */}
                             <I.AddIconWrap>
-                                <AntDesign name="calendar" size={30} color="mediumslateblue"/>
+                                <AntDesign name="calendar" size={30} color={theme.colors.primary}/> {/* theme.colors.primary 사용 */}
                             </I.AddIconWrap>
-                            <I.AddHeaderText>
+                            <I.AddHeaderText $colors={theme.colors}> {/* $colors prop 전달 */}
                                 {format(selectedLogDate, 'yyyy년 MM월 dd일')}
                             </I.AddHeaderText>
                         </I.AddHeader>
@@ -289,16 +291,16 @@ export default function AddILogScreen() {
                                     </I.AddImageRemoveButton>
                                 </View>
                             ) : (
-                                <I.AddImagePlaceholder onPress={pickImage}>
-                                    <SimpleLineIcons name="picture" size={150} color="#ddd"/>
-                                    <AddImagePickerText>Add a picture...</AddImagePickerText>
+                                <I.AddImagePlaceholder onPress={pickImage} $colors={theme.colors}> {/* $colors prop 전달 */}
+                                    <SimpleLineIcons name="picture" size={150} color={theme.colors.border}/> {/* theme.colors.border 사용 */}
+                                    <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText> {/* $colors prop 전달 */}
                                 </I.AddImagePlaceholder>
                             )}
                             {selectedTags.length > 0 && (
                                 <I.AddTagBadgeContainer>
                                     {selectedTags.map((tag) => (
-                                        <I.AddTagBadge key={tag}>
-                                            <I.AddTagBadgeText>{tag}</I.AddTagBadgeText>
+                                        <I.AddTagBadge key={tag} $colors={theme.colors}> {/* $colors prop 전달 */}
+                                            <I.AddTagBadgeText $colors={theme.colors}>{tag}</I.AddTagBadgeText> {/* $colors prop 전달 */}
                                             <AntDesign name="closecircle" size={14} color="white"
                                                        onPress={() => handleRemoveTag(tag)}/>
                                         </I.AddTagBadge>
@@ -320,25 +322,27 @@ export default function AddILogScreen() {
                                 onFocus={handleTextAreaFocus}
                                 onContentSizeChange={handleContentSizeChange}
                                 autoFocus={true}
+                                $colors={theme.colors} // $colors prop 전달
+                                placeholderTextColor={theme.colors.text} // placeholderTextColor 설정
                             />
                         </I.AddContentContainer>
                     </I.AddWrap>
                 </I.Container>
 
-                <I.AddSuggestionContainer $bottom={keyboardHeight}>
-                    <I.AddButtonWrap>
-                        <I.AddCancelButton onPress={() => router.back()}>
-                            <I.AddButtonText>Cancel</I.AddButtonText>
+                <I.AddSuggestionContainer $bottom={keyboardHeight} $colors={theme.colors}> {/* $colors prop 전달 */}
+                    <I.AddButtonWrap $colors={theme.colors}> {/* $colors prop 전달 */}
+                        <I.AddCancelButton onPress={() => router.back()} $colors={theme.colors}> {/* $colors prop 전달 */}
+                            <I.AddButtonText $colors={theme.colors}>Cancel</I.AddButtonText> {/* $colors prop 전달 */}
                         </I.AddCancelButton>
-                        <I.AddSaveButton onPress={handleSave}>
-                            <I.AddButtonText>Save</I.AddButtonText>
+                        <I.AddSaveButton onPress={handleSave} $colors={theme.colors}> {/* $colors prop 전달 */}
+                            <I.AddButtonText $colors={theme.colors}>Save</I.AddButtonText> {/* $colors prop 전달 */}
                         </I.AddSaveButton>
                     </I.AddButtonWrap>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}
-                                style={{borderWidth: 1, borderColor: 'mediumslateblue'}}>
+                                style={{borderWidth: 1, borderColor: theme.colors.primary}}>
                         {suggestions.map((tag) => (
-                            <I.AddSuggestionButton key={tag} onPress={() => handleSuggestionTap(tag)}>
-                                <I.AddSuggestionButtonText>{tag}</I.AddSuggestionButtonText>
+                            <I.AddSuggestionButton key={tag} onPress={() => handleSuggestionTap(tag)} $colors={theme.colors}> {/* $colors prop 전달 */}
+                                <I.AddSuggestionButtonText $colors={theme.colors}>{tag}</I.AddSuggestionButtonText> {/* $colors prop 전달 */}
                             </I.AddSuggestionButton>
                         ))}
                     </ScrollView>
@@ -362,12 +366,24 @@ export default function AddILogScreen() {
                     activeOpacity={1}
                     onPressOut={() => setCalendarVisible(false)}
                 >
-                    <View style={{width: '90%', backgroundColor: 'white', borderRadius: 10, padding: 10}}
+                    <View style={{width: '90%', backgroundColor: theme.colors.card, borderRadius: 10, padding: 10}}
                           onStartShouldSetResponder={() => true}>
                         <Calendar
                             markedDates={markedDates}
                             onDayPress={handleDateSelect}
                             current={selectedLogDate.toISOString().split('T')[0]}
+                            theme={{
+                                backgroundColor: theme.colors.card,
+                                calendarBackground: theme.colors.card,
+                                dayTextColor: theme.colors.text,
+                                textDisabledColor: theme.colors.border,
+                                monthTextColor: theme.colors.text,
+                                textSectionTitleColor: theme.colors.text,
+                                selectedDayBackgroundColor: theme.colors.primary,
+                                selectedDayTextColor: 'white',
+                                todayTextColor: theme.colors.primary,
+                                arrowColor: theme.colors.primary,
+                            }}
                         />
                     </View>
                 </TouchableOpacity>

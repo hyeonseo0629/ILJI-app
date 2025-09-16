@@ -77,7 +77,8 @@ export default function LoginScreen(): React.JSX.Element {
             }
 
             // 플랫폼에 따라 백엔드 서버 주소를 다르게 설정합니다.
-            const backendUrl = Platform.OS === 'android' ? 'http://10.100.0.218:8090' : 'http://localhost:8090';
+            // Android 에뮬레이터는 10.0.2.2를 사용하여 호스트 머신에 접근합니다.
+            const backendUrl = Platform.OS === 'android' ? 'http://10.0.2.2:8090' : 'http://localhost:8090';
 
             const response = await fetch(`${backendUrl}/api/auth/google`, {
                 method: 'POST',

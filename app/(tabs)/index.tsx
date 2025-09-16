@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo, useRef, useState, useEffect} from 'react';
-import {Pressable, View, Text, StyleSheet, ActivityIndicator} from 'react-native';
+import {Pressable, View, Text, StyleSheet, ActivityIndicator, SafeAreaView} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import { useSharedValue } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -31,30 +31,23 @@ export default function HomeScreen() {
     const theme = useTheme();
     const [sheetIndex, setSheetIndex] = useState(0);
 
-    // [추가] 상세 모달을 제어하기 위한 상태와 핸들러 함수들
     const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
     const handleSchedulePress = useCallback((schedule: Schedule) => { setSelectedSchedule(schedule); }, []);
     const handleCloseModal = useCallback(() => { setSelectedSchedule(null); }, []);
 
-    // --- 데이터 연결 ---
-    // 1. ScheduleContext에서 필요한 모든 것을 가져옵니다.
     const { events: schedules, tags, loading, error, setSelectedDate } = useSchedule();
 
-    // [추가] 날짜가 변경될 때 로컬 상태와 전역(Context) 상태를 모두 업데이트하는 함수
     const handleDateChange = (newDate: Date) => {
-        setCurrentDate(newDate); // 캘린더 뷰의 날짜를 업데이트
-        setSelectedDate(newDate); // 앱의 전역 선택 날짜를 업데이트
+        setCurrentDate(newDate);
+        setSelectedDate(newDate);
     };
 
-    // [수정] 탭의 label을 상태로 관리하여 로직을 통일하고, 기본값을 'All'로 설정합니다.
     const [activeTab, setActiveTab] = useState<string>('All');
 
-    // [개선] 'All' 탭을 다른 태그들과 동일한 데이터 구조로 만들어 렌더링 로직을 통합합니다.
     const displayTags = useMemo(() => {
-        // 'All' 탭을 위한 가상 태그 객체를 생성합니다.
-        const allTag = { id: 'all-tab', label: 'All', color: 'mediumslateblue' };
+        const allTag = { id: 'all-tab', label: 'All', color: theme.colors.primary };
         return [allTag, ...tags];
-    }, [tags]);
+    }, [tags, theme.colors.primary]);
 
     const handleSheetChanges = useCallback((index: number) => {
         setSheetIndex(index);
@@ -69,7 +62,7 @@ export default function HomeScreen() {
                 disappearsOnIndex={0}
                 appearsOnIndex={1}
                 pressBehavior="collapse"
-                opacity={0.10} // Adjust the opacity here for a lighter grey
+                opacity={0.10}
             />
         ),
         []
@@ -93,14 +86,9 @@ export default function HomeScreen() {
         }
     };
 
-    const handleSheetChange = useCallback((index: number) => {
-        setSheetIndex(index);
-    }, []);
-
     const TabHandle = () => (
         <Pressable onPress={handleSheetToggle}>
-            <MainToDoCategoryWarp>
-                {/* [수정] 통합된 displayTags 배열을 사용해 모든 탭을 일관된 방식으로 렌더링합니다. */}
+            <MainToDoCategoryWarp $colors={theme.colors}>
                 {displayTags.map(tag => (
                     <MainToDoCategory
                         key={tag.id}
@@ -108,7 +96,7 @@ export default function HomeScreen() {
                         activeColor={tag.color}
                         onPress={() => handleTabPress(tag.label)}
                     >
-                        <MainToDoCategoryText $isActive={activeTab === tag.label}>
+                        <MainToDoCategoryText $isActive={activeTab === tag.label} $colors={theme.colors}>
                             {tag.label}
                         </MainToDoCategoryText>
                     </MainToDoCategory>
@@ -117,54 +105,53 @@ export default function HomeScreen() {
         </Pressable>
     );
 
-    // 3. 로딩 중일 때 보여줄 화면
     if (loading) {
         return (
-            <View style={styles.centered}>
-                <ActivityIndicator size="large" />
-                <Text>일정을 불러오는 중...</Text>
+            <View style={[styles.centered, { backgroundColor: theme.colors.background }]}>
+                <ActivityIndicator size="large" color={theme.colors.primary} />
+                <Text style={{ color: theme.colors.text }}>일정을 불러오는 중...</Text>
             </View>
         );
     }
 
     return (
-        // GestureHandlerRootView는 앱의 최상단에서 전체 화면을 차지해야 합니다.
         <GestureHandlerRootView style={{flex: 1}}>
-            <MainContainer>
-                <Header sheetIndex={sheetIndex} />
-                <CalendarContainer>
-                    <CalendarView
-                        date={currentDate}
-                        onDateChange={handleDateChange} // [수정] 새로 만든 핸들러 함수를 전달
-                        schedules={schedules} // Context에서 가져온 'schedules'를 전달합니다.
-                        tags={tags}
-                        // [수정] DayView/WeekView의 일정 클릭 시 모달을 열도록 함수를 연결하고, 불필요한 prop은 제거합니다.
-                        onEventPress={handleSchedulePress}
-                    />
-                </CalendarContainer>
-                <BottomSheet
-                    ref={bottomSheetRef}
-                    index={0}
-                    snapPoints={snapPoints}
-                    handleComponent={TabHandle}
-                    onChange={handleSheetChanges}
-                    backdropComponent={renderBackdrop}
-                    backgroundStyle={{
-                        backgroundColor: 'transparent',
-                    }}
-                >
-                    {/* 5. BottomSheetContent에는 activeTab 정보만 넘겨줍니다. */}
-                    <MainContentWrap>
-                        <BottomSheetContent activeTab={activeTab} />
-                    </MainContentWrap>
-                </BottomSheet>
-            </MainContainer>
+            <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+                <MainContainer $colors={theme.colors}>
+                    <Header sheetIndex={sheetIndex} colors={theme.colors} />
+                    <CalendarContainer $colors={theme.colors}>
+                        <CalendarView
+                            date={currentDate}
+                            onDateChange={handleDateChange}
+                            schedules={schedules}
+                            tags={tags}
+                            onEventPress={handleSchedulePress}
+                            colors={theme.colors}
+                        />
+                    </CalendarContainer>
+                    <BottomSheet
+                        ref={bottomSheetRef}
+                        index={0}
+                        snapPoints={snapPoints}
+                        handleComponent={TabHandle}
+                        onChange={handleSheetChanges}
+                        backdropComponent={renderBackdrop}
+                        backgroundStyle={{
+                            backgroundColor: theme.colors.card,
+                        }}
+                    >
+                        <MainContentWrap>
+                            <BottomSheetContent activeTab={activeTab} colors={theme.colors} />
+                        </MainContentWrap>
+                    </BottomSheet>
+                </MainContainer>
+            </SafeAreaView>
 
-            {/* [추가] 상세 모달을 화면에 렌더링하고 상태와 연결합니다. */}
             <DetailSchedule
                 visible={selectedSchedule !== null}
                 schedule={selectedSchedule}
                 onClose={handleCloseModal}
+                colors={theme.colors}
             />
         </GestureHandlerRootView>
     );
@@ -175,7 +162,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff', // 배경색 추가
     },
     errorText: {
         color: 'red',

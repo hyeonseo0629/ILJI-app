@@ -1,13 +1,8 @@
-// C:/LGE/ILJI-app/lib/api.ts
-
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const TOKEN_KEY = 'ilji_session';
-
-// 🚨 백엔드 개발용 API 서버의 기본 주소 🚨
-// 백엔드에 만들어 둔 DevScheduleController의 경로를 포함합니다.
-const BASE_URL = 'http://10.0.2.2:8090/api'; // 안드로이드 에뮬레이터용 기본 주소
+const BASE_URL = 'http://localhost:8090/api'; // 안드로이드 에뮬레이터/실제 기기 연결용 IP 주소
+const TOKEN_KEY = 'ilji_session'; // useAuth.tsx와 동일한 키
 
 // 백엔드와 통신할 전용 전화기(axios 인스턴스) 만들기
 const api = axios.create({
