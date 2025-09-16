@@ -1,5 +1,3 @@
-// C:/LGE/ILJI-app/lib/api.ts
-
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
