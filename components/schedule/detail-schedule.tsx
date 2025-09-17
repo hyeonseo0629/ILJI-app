@@ -172,7 +172,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                                                 key={tag.id}
                                                 color={tag.color}
                                                 selected={formData.tagId === tag.id}
-                                                onPress={() => handleInputChange('tagId', formData.tagId === tag.id ? 0 : tag.id)}
+                                                onPress={() => handleInputChange('tagId', tag.id)}
                                             >
                                                 <DS.TagSelectorText selected={formData.tagId === tag.id}>
                                                     #{tag.label}

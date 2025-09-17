@@ -29,10 +29,21 @@ const AddScheduleScreen = () => {
     const { createSchedule, tags, loading, createTag } = useSchedule();
 
     const [title, setTitle] = useState('');
-    const [tagId, setTagId] = useState<number>(0); // '태그 없음'을 기본값으로 설정
+    const [tagId, setTagId] = useState<number | null>(null); // 태그 ID 상태 (초기값 null)
     const [location, setLocation] = useState('');
     const [description, setDescription] = useState('');
     const [isAllDay, setIsAllDay] = useState(false);
+
+    useEffect(() => {
+        // 태그가 로드되었고, 아직 기본 태그가 설정되지 않았을 때 '일정' 태그를 기본값으로 설정합니다.
+        if (tags && tags.length > 0 && tagId === null) {
+            const scheduleTag = tags.find(tag => tag.label === '일정');
+            if (scheduleTag) {
+                setTagId(scheduleTag.id);
+            }
+        }
+    }, [tags]);
+
     // [수정] 상태 초기값으로 initialDateFromParams를 사용합니다.
     const [startTime, setStartTime] = useState(initialDateFromParams);
     const [endTime, setEndTime] = useState(new Date(initialDateFromParams.getTime() + 60 * 60 * 1000)); // 기본 1시간 뒤
@@ -201,7 +212,6 @@ const AddScheduleScreen = () => {
                                     onValueChange={(itemValue) => setTagId(itemValue)}
                                     style={{ color: 'mediumslateblue' }}
                             >
-                                <Picker.Item label="-- No Tag --" value={0} />
                                 {tags && tags.map((tag) => (
                                     <Picker.Item key={tag.id} label={tag.label} value={tag.id}/>
                                 ))}

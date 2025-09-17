@@ -92,7 +92,7 @@ const EditTagModal: React.FC<EditTagModalProps> = ({ visible, onClose }) => {
         <>
             <S.ModalHeader>Tag Edit</S.ModalHeader>
             <S.TagList
-                data={tags.filter(tag => tag.id !== 0)}
+                data={tags.filter(tag => tag.label !== '일정')}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderTagItem}
             />

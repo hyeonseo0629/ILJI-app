@@ -46,14 +46,12 @@ export default function HomeScreen() {
         setSelectedDate(newDate); // 앱의 전역 선택 날짜를 업데이트
     };
 
-    // [수정] 탭의 label을 상태로 관리하여 로직을 통일하고, 기본값을 'All'로 설정합니다.
-    const [activeTab, setActiveTab] = useState<string>('All');
+    // [수정] 탭의 label을 상태로 관리하여 로직을 통일하고, 기본값을 '일정'으로 설정합니다.
+    const [activeTab, setActiveTab] = useState<string>('일정');
 
-    // [개선] 'All' 탭을 다른 태그들과 동일한 데이터 구조로 만들어 렌더링 로직을 통합합니다.
+    // [개선] 'All' 탭을 제거하고 태그 목록을 직접 사용합니다.
     const displayTags = useMemo(() => {
-        // 'All' 탭을 위한 가상 태그 객체를 생성합니다.
-        const allTag = { id: 'all-tab', label: 'All', color: 'mediumslateblue' };
-        return [allTag, ...tags];
+        return tags;
     }, [tags]);
 
     const handleSheetChanges = useCallback((index: number) => {

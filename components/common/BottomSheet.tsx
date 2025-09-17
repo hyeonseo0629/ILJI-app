@@ -28,10 +28,10 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
         {label: "priority", value: "priority"},
     ];
 
-    // [개선] '전체' 탭이 선택된 경우와 특정 태그가 선택된 경우를 모두 처리하도록 로직을 개선합니다.
+    // [개선] '일정' 탭이 선택된 경우와 특정 태그가 선택된 경우를 모두 처리하도록 로직을 개선합니다.
     const filteredSchedules = useMemo(() => {
-        // '전체' 탭이 활성화된 경우, 필터링 없이 모든 스케줄을 반환합니다.
-        if (activeTab === 'All') {
+        // '일정' 탭이 활성화된 경우, 필터링 없이 모든 스케줄을 반환합니다. (기존 'All'의 역할)
+        if (activeTab === '일정') {
             return schedules;
         }
 
