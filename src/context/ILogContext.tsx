@@ -1,9 +1,9 @@
-import React, {createContext, useContext, useState, useEffect, useCallback, ReactNode} from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import axios from 'axios';
-import {Alert} from 'react-native';
+import { Alert } from 'react-native';
 import api from '../lib/api';
-import {useSession} from '@/hooks/useAuth';
-import {ILog, ILogCreateRequestFrontend, ILogUpdateRequest, RawILog} from '@/src/types/ilog';
+import { useSession } from '@/hooks/useAuth';
+import { ILog, ILogCreateRequestFrontend, ILogUpdateRequest, RawILog } from '@/src/types/ilog';
 
 // --- Context 타입 정의 ---
 interface ILogContextType {
@@ -23,9 +23,7 @@ const ILogContext = createContext<ILogContextType | undefined>(undefined);
 
 export const useILog = () => {
     const context = useContext(ILogContext);
-    if (!context) {
-        throw new Error("useILog must be used within an ILogProvider");
-    }
+    if (!context) throw new Error("useILog must be used within an ILogProvider");
     return context;
 };
 
@@ -34,8 +32,8 @@ interface ILogProviderProps {
     children: ReactNode;
 }
 
-export function ILogProvider({children}: ILogProviderProps) {
-    const {session} = useSession();
+export function ILogProvider({ children }: ILogProviderProps) {
+    const { session } = useSession();
     const userId = session?.user?.id;
 
     const [ilogs, setIlogs] = useState<ILog[]>([]);
@@ -63,9 +61,7 @@ export function ILogProvider({children}: ILogProviderProps) {
         setLoading(true);
         try {
             const response = await api.get<RawILog[]>('/i-log');
-            const formatted = response.data.map(formatRawILog);
-            setIlogs(formatted);
-            console.log("Fetched ILogs:", formatted); // Added for debugging
+            setIlogs(response.data.map(formatRawILog));
             setError(null);
         } catch (err) {
             console.error("i-log 목록 로딩 실패:", err);
@@ -76,63 +72,50 @@ export function ILogProvider({children}: ILogProviderProps) {
     }, [userId, formatRawILog]);
 
     useEffect(() => {
-        if (userId) {
-            fetchILogs();
-        }
+        if (userId) fetchILogs();
     }, [userId, fetchILogs]);
 
-    const createILog = useCallback(async (data: {
-        request: ILogCreateRequestFrontend;
-        images?: any[]
-    }): Promise<ILog | null> => {
+    const createILog = useCallback(async (data: { request: ILogCreateRequestFrontend; images?: any[] }): Promise<ILog | null> => {
         if (!userId) return null;
         setLoading(true);
 
-        const formData = new FormData();
-
-        const formattedRequest = {
-            ...data.request,
-            logDate: data.request.logDate.toISOString().split('T')[0], // Convert Date to YYYY-MM-DD string
-        };
-        formData.append('request', new Blob([JSON.stringify(formattedRequest)], { type: "application/json" }));
-
-        if (data.images) {
-            data.images.forEach(imageAsset => {
-                const imageForUpload = {
-                    uri: imageAsset.uri,
-                    name: imageAsset.fileName || 'image.jpg',
-                    type: imageAsset.mimeType || 'image/jpeg'
-                };
-                formData.append('images', imageForUpload as any);
-            });
-        }
-
         try {
-            // Let Axios set the Content-Type header automatically for FormData
-            const response = await api.post<RawILog>('/i-log', formData, {
+            const formData = new FormData();
+
+            // JSON 데이터를 Blob으로 변환하여 FormData에 추가
+            formData.append('request', JSON.stringify(data.request));
+
+            // 이미지 추가
+            data.images?.forEach((image, idx) => {
+                formData.append('images', {
+                    uri: image.uri,
+                    name: image.fileName || `image-${Date.now()}-${idx}.jpg`,
+                    type: image.type || 'image/jpeg',
+                } as any);
+            });
+
+            console.log('FormData being sent for createILog:', formData);
+
+            const response = await api.post<RawILog>('/mobile/i-log', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
-            });
+                           });
             const newLog = formatRawILog(response.data);
             setIlogs(prev => [newLog, ...prev].sort((a, b) => b.logDate.getTime() - a.logDate.getTime()));
+
             return newLog;
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error("--- Axios Error Details ---");
                 console.error("Message:", err.message);
+                console.error(err.status);
                 if (err.response) {
                     console.error("Response Status:", err.response.status);
                     console.error("Response Data:", JSON.stringify(err.response.data, null, 2));
-                } else if (err.request) {
-                    console.error("Request made but no response received:", err.request);
-                } else {
-                    console.error("Error setting up request:", err.message);
                 }
-                console.error("Config:", JSON.stringify(err.config, null, 2));
-                console.error("--- End Axios Error Details ---");
             } else {
-                console.error("A non-Axios error occurred:", err);
+                console.error(err);
             }
             Alert.alert("오류", "일기를 생성하는 데 실패했습니다.");
             return null;
@@ -154,16 +137,15 @@ export function ILogProvider({children}: ILogProviderProps) {
 
     const getILogByDate = useCallback(async (date: Date): Promise<ILog | null> => {
         if (!userId) return null;
+        const dateStr = date.toISOString().split('T')[0];
         try {
-            const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
             const response = await api.get<RawILog>(`/i-log/date/${dateStr}`);
             return formatRawILog(response.data);
         } catch (err) {
-            // 404는 오류가 아닐 수 있으므로 콘솔에만 기록
             if (axios.isAxiosError(err) && err.response?.status === 404) {
-                console.log(`No i-log found for date: ${date.toISOString().split('T')[0]}`);
+                console.log(`No i-log found for date: ${dateStr}`);
             } else {
-                console.error(`i-log (date: ${date.toISOString().split('T')[0]}) 조회 실패:`, err);
+                console.error(`i-log (date: ${dateStr}) 조회 실패:`, err);
             }
             return null;
         }
@@ -171,39 +153,44 @@ export function ILogProvider({children}: ILogProviderProps) {
 
     const getPreviousILog = useCallback(async (date: Date): Promise<ILog | null> => {
         if (!userId) return null;
+        const dateStr = date.toISOString().split('T')[0];
         try {
-            const dateStr = date.toISOString().split('T')[0];
             const response = await api.get<RawILog>(`/i-log/previous/${dateStr}`);
             return formatRawILog(response.data);
-        } catch (err) {
-            return null; // 단순히 이전/다음 일기가 없는 경우이므로 오류 처리는 하지 않음
+        } catch {
+            return null;
         }
     }, [userId, formatRawILog]);
 
     const getNextILog = useCallback(async (date: Date): Promise<ILog | null> => {
         if (!userId) return null;
+        const dateStr = date.toISOString().split('T')[0];
         try {
-            const dateStr = date.toISOString().split('T')[0];
             const response = await api.get<RawILog>(`/i-log/next/${dateStr}`);
             return formatRawILog(response.data);
-        } catch (err) {
-            return null; // 단순히 이전/다음 일기가 없는 경우이므로 오류 처리는 하지 않음
+        } catch {
+            return null;
         }
     }, [userId, formatRawILog]);
 
-    const updateILog = useCallback(async (logId: number, request: ILogUpdateRequest, newImages?: File[]): Promise<ILog | null> => {
+    const updateILog = useCallback(async (logId: number, request: ILogUpdateRequest, newImages?: any[]): Promise<ILog | null> => {
         if (!userId) return null;
         setLoading(true);
 
-        const formData = new FormData();
-        formData.append('request', new Blob([JSON.stringify(request)], { type: "application/json" }));
-        if (newImages) {
-            newImages.forEach(image => {
-                formData.append('newImages', image);
-            });
-        }
-
         try {
+            const formData = new FormData();
+            formData.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }) as any);
+
+            newImages?.forEach((image, index) => {
+                formData.append('newImages', {
+                    uri: image.uri,
+                    name: image.fileName || `image-${Date.now()}-${index}.jpg`,
+                    type: image.type || 'image/jpeg',
+                } as any);
+            });
+
+            console.log('FormData being sent for updateILog:', formData);
+
             const response = await api.put<RawILog>(`/i-log/${logId}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -221,7 +208,7 @@ export function ILogProvider({children}: ILogProviderProps) {
         }
     }, [userId, formatRawILog]);
 
-    const value = {
+    const value: ILogContextType = {
         ilogs,
         loading,
         error,
@@ -240,5 +227,3 @@ export function ILogProvider({children}: ILogProviderProps) {
         </ILogContext.Provider>
     );
 }
-
-

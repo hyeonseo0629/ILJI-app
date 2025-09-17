@@ -335,7 +335,6 @@ export const DetailHeader = styled.TouchableOpacity<StyledProps>`
     shadow-color: ${props => props.$colors?.text || '#000'};
     shadow-offset: 0px 2px; /* Corrected: Combined width and height into shadow-offset */
     shadow-opacity: 0.25;
-    shadow-radius: 3.84; /* Corrected: Removed 'px' */
 
     /* Android Shadow */
     elevation: 5;
@@ -392,7 +391,6 @@ export const DetailActionButton = styled.TouchableOpacity<StyledProps>`
     shadow-color: ${props => props.$colors?.text || '#000'};
     shadow-offset: 0px 2px;
     shadow-opacity: 0.25;
-    shadow-radius: 3.84;
 `;
 
 export const DetailImageContainer = styled.View`
@@ -609,7 +607,6 @@ export const AddImagePickerText = styled.Text<StyledProps>`
     shadow-color: ${props => props.$colors?.text || '#000'};
     shadow-offset: 0px 2px; /* Corrected: Combined width and height into shadow-offset */
     shadow-opacity: 0.25;
-    shadow-radius: 3.84; /* Corrected: Removed 'px' */
 
     /* Android Shadow (기존 코드) */
     elevation: 5;
@@ -648,7 +645,6 @@ export const AddImageRemoveButton = styled.TouchableOpacity`
     shadow-color: #000;
     shadow-offset: 0px 2px;
     shadow-opacity: 0.25;
-    shadow-radius: 3.84;
 `;
 
 export const AddSuggestionContainer = styled.View<StyledProps & { $bottom?: number }>`

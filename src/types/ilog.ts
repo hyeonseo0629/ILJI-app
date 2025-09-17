@@ -39,11 +39,11 @@ export interface ILog {
 
 export interface ILogCreateRequestFrontend {
     writerId: number;
-    logDate: Date; // Changed from string to Date
+    logDate: string; // YYYY-MM-DD 형식의 문자열
     content: string;
-    visibility: string; // Changed from number to string to match backend API expectation
+    visibility: number; // 백엔드 enum의 ordinal 값 (0, 1, 2)
     friendTags?: string | null;
-    tags?: string | null;
+    tags?: string | null; // 태그 배열을 JSON 문자열로 변환
 }
 
 export interface ILogUpdateRequest {

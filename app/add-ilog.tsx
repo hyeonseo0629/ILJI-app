@@ -255,11 +255,11 @@ export default function AddILogScreen() {
 
         const newLogRequest: ILogCreateRequestFrontend = {
             writerId: userId, // Use userId from session
-            logDate: selectedLogDate, // Date 객체를 직접 할당
+            logDate: format(selectedLogDate, 'yyyy-MM-dd'), // YYYY-MM-DD 형식의 문자열로 변환
             content: content.trim(),
-            visibility: visibilityMap[1], // 문자열 "FRIENDS_ONLY"를 할당
-            friendTags: JSON.stringify([]),
-            tags: finalTagsString,
+            visibility: 1, // 백엔드 enum의 ordinal 값 (1 = FRIENDS_ONLY)
+            friendTags: JSON.stringify([]), // 현재는 빈 배열
+            tags: JSON.stringify(selectedTags), // 태그 배열을 JSON 문자열로 변환
         };
 
         await createILog({ request: newLogRequest, images: imageAsset ? [imageAsset] : undefined });
