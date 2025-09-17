@@ -23,6 +23,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+    const [pickerTarget, setPickerTarget] = useState<'start' | 'end'>('start');
     // [추가] 삭제 확인 모달의 표시 상태를 관리합니다.
     const [isConfirmModalVisible, setConfirmModalVisible] = useState(false);
 
@@ -70,9 +71,23 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
     const onDateChange = (event: any, selectedDate?: Date) => {
         setShowDatePicker(Platform.OS === 'ios');
         if (selectedDate) {
-            const newStartTime = set(formData.startTime, { year: selectedDate.getFullYear(), month: selectedDate.getMonth(), date: selectedDate.getDate() });
-            const newEndTime = set(formData.endTime, { year: selectedDate.getFullYear(), month: selectedDate.getMonth(), date: selectedDate.getDate() });
-            setFormData(prev => prev ? { ...prev, startTime: newStartTime, endTime: newEndTime } : null);
+            if (pickerTarget === 'start') {
+                const newStartTime = set(formData.startTime, { year: selectedDate.getFullYear(), month: selectedDate.getMonth(), date: selectedDate.getDate() });
+                // If the new start time is after the end time, adjust the end time as well.
+                if (newStartTime > formData.endTime) {
+                    setFormData(prev => prev ? { ...prev, startTime: newStartTime, endTime: newStartTime } : null);
+                } else {
+                    setFormData(prev => prev ? { ...prev, startTime: newStartTime } : null);
+                }
+            } else { // pickerTarget === 'end'
+                const newEndTime = set(formData.endTime, { year: selectedDate.getFullYear(), month: selectedDate.getMonth(), date: selectedDate.getDate() });
+                // If the new end time is before the start time, don't allow it (or adjust start time). Let's just set it to the start time.
+                if (newEndTime < formData.startTime) {
+                    setFormData(prev => prev ? { ...prev, endTime: formData.startTime } : null);
+                } else {
+                    setFormData(prev => prev ? { ...prev, endTime: newEndTime } : null);
+                }
+            }
         }
     };
 
@@ -128,8 +143,14 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                                             value={formData.isAllDay}
                                         />
                                     </DS.AllDayRow>
-                                    <DS.DateTimePickerButton onPress={() => setShowDatePicker(true)}>
+                                    <DS.Label>Start Date</DS.Label>
+                                    <DS.DateTimePickerButton onPress={() => { setPickerTarget('start'); setShowDatePicker(true); }}>
                                         <DS.DateTimePickerButtonText>{format(formData.startTime, 'yyyy. MM. dd')}</DS.DateTimePickerButtonText>
+                                    </DS.DateTimePickerButton>
+
+                                    <DS.Label>End Date</DS.Label>
+                                    <DS.DateTimePickerButton onPress={() => { setPickerTarget('end'); setShowDatePicker(true); }}>
+                                        <DS.DateTimePickerButtonText>{format(formData.endTime, 'yyyy. MM. dd')}</DS.DateTimePickerButtonText>
                                     </DS.DateTimePickerButton>
                                     {!formData.isAllDay && (
                                         <DS.DateTimePickersRow style={{ marginTop: 15 }}>
@@ -237,7 +258,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                 {/* ... DateTimePicker 모달들 ... */}
                 {showDatePicker && (
                     <DateTimePicker
-                        value={formData.startTime}
+                        value={pickerTarget === 'start' ? formData.startTime : formData.endTime}
                         mode="date"
                         display="spinner"
                         onChange={onDateChange}
