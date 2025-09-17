@@ -29,7 +29,7 @@ export const MainToDoCategoryWarp = styled.View<ThemeProps>`
 `;
 
 export const MainToDoCategory = styled.TouchableOpacity<CategoryTabProps>`
-    background-color: ${(props) => props.activeColor};
+    background-color: ${(props) => props.activeColor || '#DDDDDD'};
     padding: ${(props) => (props.$isActive ? '12px 20px' : '8px 16px')};
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;

@@ -53,7 +53,7 @@ export default function LoginScreen(): React.JSX.Element {
 
     const handleGoogleSignIn = async (): Promise<void> => {
         if (!GOOGLE_WEB_CLIENT_ID) {
-            const errorMessage = 'Google Web Client ID is missing. Please check your app.json.';
+            const errorMessage = 'Google Web Client ID is missing. Please check your app10.json.';
             Alert.alert('Configuration Error', errorMessage);
             return;
         }
@@ -77,7 +77,7 @@ export default function LoginScreen(): React.JSX.Element {
             }
 
             // 플랫폼에 따라 백엔드 서버 주소를 다르게 설정합니다.
-            const backendUrl = Platform.OS === 'android' ? 'http://10.100.0.218:8090' : 'http://localhost:8090';
+            const backendUrl = Platform.OS === 'android' ? 'http://10.100.1.29:8090' : 'http://localhost:8090';
 
             const response = await fetch(`${backendUrl}/api/auth/google`, {
                 method: 'POST',
@@ -128,7 +128,7 @@ export default function LoginScreen(): React.JSX.Element {
             if (error?.code === '10') { // DEVELOPER_ERROR
                  Alert.alert(
                     'Developer Error',
-                    'There is a configuration issue with Google Sign-In. Please check your `app.json` and Google Cloud Console settings.'
+                    'There is a configuration issue with Google Sign-In. Please check your `app10.json` and Google Cloud Console settings.'
                 );
                 return;
             }

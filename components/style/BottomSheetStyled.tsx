@@ -105,7 +105,7 @@ export const ScheduleTextWrap = styled.View`
 `
 
 export const ScheduleDayWrap = styled.View`
-flex-direction: row;
+    flex-direction: row;
 `
 
 export const ScheduleDate = styled.Text<TextProps>`
