@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-const getProfileStyles = (isDarkMode: boolean) => {
+const getProfileStylesAndTheme = (isDarkMode: boolean) => {
     const theme = {
         background: isDarkMode ? '#121212' : '#fff',
         text: isDarkMode ? '#fff' : '#000',
@@ -14,7 +14,7 @@ const getProfileStyles = (isDarkMode: boolean) => {
         placeholder: isDarkMode ? '#444' : '#ccc',
     };
 
-    return StyleSheet.create({
+    const styles = StyleSheet.create({
         container: {
             flex: 1,
             backgroundColor: theme.background,
@@ -129,6 +129,8 @@ const getProfileStyles = (isDarkMode: boolean) => {
             color: theme.modalText,
         },
     });
+
+    return { styles, theme };
 };
 
-export default getProfileStyles;
+export default getProfileStylesAndTheme;

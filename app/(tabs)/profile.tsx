@@ -13,13 +13,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import getProfileStyles from '@/components/style/ProfileStyled';
+import getProfileStylesAndTheme from '@/components/style/ProfileStyled';
 
 export default function ProfileScreen(): React.JSX.Element {
     const { session } = useSession();
     const [menuVisible, setMenuVisible] = useState(false);
     const { isDarkColorScheme } = useColorScheme(); // Get dark mode state
-    const styles = getProfileStyles(isDarkColorScheme); // Get styles based on dark mode
+    const { styles, theme } = getProfileStylesAndTheme(isDarkColorScheme); // Get styles and theme based on dark mode
 
     const navigateToSettings = () => {
         setMenuVisible(false);
@@ -66,7 +66,7 @@ export default function ProfileScreen(): React.JSX.Element {
                 <View style={styles.profileHeader}>
                     <View style={styles.banner}>
                         <TouchableOpacity style={styles.menuIcon} onPress={() => setMenuVisible(true)}>
-                            <Ionicons name="menu" size={32} color={styles.menuIcon.color} />
+                            <Ionicons name="menu" size={32} color={theme.iconColor} />
                         </TouchableOpacity>
                     </View>
                     <View style={styles.profilePictureContainer}>
