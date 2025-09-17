@@ -8,12 +8,12 @@ export default function AccountSettingsScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Change Password */}
-      <TouchableOpacity style={styles.settingItem} onPress={() => console.log('비밀번호 변경 클릭')}>
+      <TouchableOpacity style={[styles.settingItem, { borderBottomColor: theme.colors.border }]} onPress={() => console.log('비밀번호 변경 클릭')}>
         <Text style={[styles.settingText, { color: theme.colors.text }]}>비밀번호 변경</Text>
       </TouchableOpacity>
 
       {/* Delete Account */}
-      <TouchableOpacity style={styles.settingItem} onPress={() => console.log('계정 탈퇴 클릭')}>
+      <TouchableOpacity style={[styles.settingItem, { borderBottomColor: theme.colors.border }]} onPress={() => console.log('계정 탈퇴 클릭')}>
         <Text style={[styles.settingText, { color: theme.colors.text }]}>계정 탈퇴</Text>
       </TouchableOpacity>
 
@@ -33,7 +33,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
   },
   settingText: {
     fontSize: 18,
