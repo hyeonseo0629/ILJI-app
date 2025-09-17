@@ -141,12 +141,12 @@ const MonthView: React.FC<MonthViewProps> = ({date, schedules = [], tags = [], o
                                     {daySchedules.length > 2 && (
                                         daySchedules.length > 3 ? (
                                             // 4개 이상일 경우: "+n" 텍스트를 보여줍니다.
-                                            <CS.MoreScheduleText>
+                                            <CS.MoreScheduleText $top={2 * 14}>
                                                 + {daySchedules.length - 2} more
                                             </CS.MoreScheduleText>
                                         ) : (
                                             // 정확히 3개일 경우: 세 번째 이벤트를 그대로 보여줍니다.
-                                            <CS.ScheduleTitleText key={daySchedules[2].id} color={tagColorMap.get(daySchedules[2].tagId) || 'gray'}>
+                                            <CS.ScheduleTitleText key={daySchedules[2].id} color={tagColorMap.get(daySchedules[2].tagId) || 'gray'} $top={2 * 14}>
                                                 {daySchedules[2].title}
                                             </CS.ScheduleTitleText>
                                         )

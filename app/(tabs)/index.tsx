@@ -49,9 +49,15 @@ export default function HomeScreen() {
     // [수정] 탭의 label을 상태로 관리하여 로직을 통일하고, 기본값을 '일정'으로 설정합니다.
     const [activeTab, setActiveTab] = useState<string>('일정');
 
-    // [개선] 'All' 탭을 제거하고 태그 목록을 직접 사용합니다.
+    // [개선] '일정' 태그가 항상 가장 앞에 오도록 정렬합니다.
     const displayTags = useMemo(() => {
-        return tags;
+        const scheduleTag = tags.find(tag => tag.label === '일정');
+        const otherTags = tags.filter(tag => tag.label !== '일정');
+
+        if (scheduleTag) {
+            return [scheduleTag, ...otherTags];
+        }
+        return tags; // '일정' 태그가 없는 경우, 원래 순서대로 반환
     }, [tags]);
 
     const handleSheetChanges = useCallback((index: number) => {
@@ -153,7 +159,7 @@ export default function HomeScreen() {
                 >
                     {/* 5. BottomSheetContent에는 activeTab 정보만 넘겨줍니다. */}
                     <MainContentWrap>
-                        <BottomSheetContent activeTab={activeTab} />
+                        <BottomSheetContent activeTab={activeTab} selectedDate={currentDate} />
                     </MainContentWrap>
                 </BottomSheet>
             </MainContainer>

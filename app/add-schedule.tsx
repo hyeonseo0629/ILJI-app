@@ -123,6 +123,15 @@ const AddScheduleScreen = () => {
         return tags.find(tag => tag.id === tagId);
     }, [tagId, tags]);
 
+    const sortedTags = useMemo(() => {
+        if (!tags) return [];
+        return [...tags].sort((a, b) => {
+            if (a.label === '일정') return -1;
+            if (b.label === '일정') return 1;
+            return 0;
+        });
+    }, [tags]);
+
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ['16%', '90%'], []);
 
@@ -212,7 +221,7 @@ const AddScheduleScreen = () => {
                                     onValueChange={(itemValue) => setTagId(itemValue)}
                                     style={{ color: 'mediumslateblue' }}
                             >
-                                {tags && tags.map((tag) => (
+                                {sortedTags && sortedTags.map((tag) => (
                                     <Picker.Item key={tag.id} label={tag.label} value={tag.id}/>
                                 ))}
                             </Picker>

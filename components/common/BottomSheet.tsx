@@ -11,13 +11,14 @@ import {useSchedule} from "@/src/context/ScheduleContext";
 import EditTagModal from "@/components/editTagModal/EditTagModal";
 
 interface BottomSheetContentProps {
-    activeTab: string; // e.g., "All", "Work", "Personal", "Study"
+    activeTab: string;
+    selectedDate: Date;
 }
 
-export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab}) => {
+export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab, selectedDate}) => {
     const router = useRouter();
-    // [수정] Context에서 selectedDate를 추가로 가져옵니다.
-    const { events: schedules, tags, selectedDate } = useSchedule();
+    // [수정] Context에서 selectedDate를 제거하고 props에서 받은 selectedDate를 사용합니다.
+    const { events: schedules, tags } = useSchedule();
     const [sortBy, setSortBy] = useState('latest');
     // 태그 편집 모달의 표시 상태를 관리합니다.
     const [isEditTagModalVisible, setIsEditTagModalVisible] = useState(false);
@@ -69,7 +70,7 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
                     />
                 </BS.HeaderLeft>
                 <BS.HeaderRight>
-                    <BS.TodayText>{format(new Date(), "yyyy-MM-dd")}</BS.TodayText>
+                    <BS.TodayText>{format(selectedDate, "yyyy-MM-dd")}</BS.TodayText>
                     {/* 2. 분리된 핸들러 함수를 onPress에 적용 */}
                     <TouchableOpacity onPress={handleAddPress}>
                         <BS.ScheduleAddButton name="pluscircleo" size={20}/>
