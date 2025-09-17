@@ -3,7 +3,7 @@ import {useFonts} from 'expo-font';
 import {Stack, useRouter, useSegments} from 'expo-router';
 import 'react-native-reanimated';
 import React, {useEffect} from 'react';
-import {ActivityIndicator, View} from 'react-native';
+import {ActivityIndicator, View, Platform} from 'react-native';
 import {ThemeProvider, Theme, useTheme} from '@react-navigation/native';
 import ColorSchemeProvider, {useColorScheme} from '@/hooks/useColorScheme';
 import {StatusBar} from 'expo-status-bar';
@@ -12,28 +12,75 @@ import {Colors} from '@/constants/Colors';
 import {ScheduleProvider} from '@/src/context/ScheduleContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-// Layout 컴포넌트는 그대로 유지됩니다.
 function Layout() {
     const {session, isLoading} = useSession();
     const segments = useSegments();
     const router = useRouter();
     const {isDarkColorScheme} = useColorScheme();
-    const theme = useTheme(); // theme 가져오기
+    const theme = useTheme();
     const [loaded] = useFonts({
         SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     });
 
     useEffect(() => {
-        if (isLoading) return;
-        const inAuthGroup = segments[0] === 'login';
-        if (!session && !inAuthGroup) {
-            router.replace('/login');
-        } else if (session && inAuthGroup) {
-            router.replace('/(tabs)');
+        const isAppLoading = isLoading || !loaded;
+        if (isAppLoading) {
+            return;
         }
-    }, [session, isLoading, segments]);
 
-    if (isLoading) {
+        const inAuthGroup = segments[0] === 'login';
+        const inSetupScreen = segments[0] === 'initial-profile-setup';
+
+        // 1. 세션이 없는 경우의 로직
+        if (!session) {
+            // 로그인 화면이 아니라면, 로그인 화면으로 보냅니다.
+            if (!inAuthGroup) {
+                router.replace('/login');
+            }
+            return;
+        }
+
+        // 2. 세션이 있는 경우의 로직
+        const checkProfileAndRedirect = async () => {
+            let hasNickname = false;
+            try {
+                const backendUrl = Platform.OS === 'android' ? 'http://10.0.2.2:8090' : 'http://localhost:8090';
+                const response = await fetch(`${backendUrl}/api/user/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${session.token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const profile = await response.json();
+                    if (profile && profile.nickname) {
+                        hasNickname = true;
+                    }
+                }
+            } catch (error) {
+                console.error("프로필 확인 중 오류 발생:", error);
+            }
+
+            // --- 최종 화면 전환 규칙 ---
+            if (hasNickname) {
+                // 닉네임이 있는 사용자: 로그인/설정 화면에 있다면 메인으로 보냅니다.
+                if (inAuthGroup || inSetupScreen) {
+                    router.replace('/(tabs)');
+                }
+            } else {
+                // 닉네임이 없는 사용자: 설정 화면이 아니라면 설정 화면으로 보냅니다.
+                if (!inSetupScreen) {
+                    router.replace('/initial-profile-setup');
+                }
+            }
+        };
+
+        checkProfileAndRedirect();
+
+    }, [session, isLoading, segments, loaded]);
+
+    // 로딩이 완료될 때까지 로딩 화면을 표시합니다.
+    if (isLoading || !loaded) {
         return (
             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                 <ActivityIndicator/>
@@ -42,7 +89,7 @@ function Layout() {
     }
 
     return (
-        <Stack 
+        <Stack
             key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
             screenOptions={{
                 headerStyle: {
@@ -56,10 +103,11 @@ function Layout() {
         >
             <Stack.Screen name="login" options={{headerShown: false}}/>
             <Stack.Screen name="(tabs)" options={{headerShown: false, title: ''}}/>
-            <Stack.Screen 
-                name="add-schedule" 
+            <Stack.Screen name="initial-profile-setup" options={{headerShown: false}} />
+            <Stack.Screen
+                name="add-schedule"
                 options={{
-                    title: 'New Schedule', 
+                    title: 'New Schedule',
                     presentation: 'modal',
                     headerStyle: {
                         backgroundColor: theme.colors.card,
@@ -73,7 +121,6 @@ function Layout() {
     );
 }
 
-// ColorSchemeProvider 내부에서 테마를 사용하는 새로운 핵심 컴포넌트입니다.
 function ThemedAppLayout() {
     const {isDarkColorScheme, isColorSchemeLoading} = useColorScheme();
     const [loaded] = useFonts({
@@ -138,7 +185,6 @@ function ThemedAppLayout() {
   );
 }
 
-// 최상위 RootLayout은 Provider를 제공하는 역할만 합니다.
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
