@@ -3,10 +3,7 @@ import {TouchableOpacity} from "react-native";
 import {format} from "date-fns";
 import * as BS from "@/components/style/BottomSheetStyled";
 import {Schedule} from "@/components/calendar/scheduleTypes";
-<<<<<<< HEAD:components/ToDo/ToDo.tsx
-=======
 import {ScheduleTextsWrap} from "@/components/style/BottomSheetStyled";
->>>>>>> 18cf6a90759187cbac38b1a2b827cb97ff55c676:components/todo/ToDo.tsx
 
 interface ToDoProps {
     item: Schedule;

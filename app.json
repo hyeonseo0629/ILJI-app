@@ -2,7 +2,6 @@
   "expo": {
     "name": "ilji_app",
     "slug": "ilji_app",
-    "owner": "nostep_nolife",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -50,7 +49,7 @@
         "@react-native-google-signin/google-signin",
         {
           "iosClientId": "292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7.apps.googleusercontent.com",
-          "serverClientId": "292298493030-l45okif1kf6pjm7llngs94jvlv56hrus.apps.googleusercontent.com",
+          "serverClientId": "292298493030-hd9mqh166896s35q8aeanc4rlah3ednt.apps.googleusercontent.com",
           "reservedClientId": "com.googleusercontent.apps.292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7",
           "iosUrlScheme": "com.googleusercontent.apps.292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7"
         }
@@ -60,14 +59,13 @@
     "experiments": {
       "typedRoutes": true
     },
-
     "extra": {
-      "GOOGLE_WEB_CLIENT_ID": "292298493030-l45okif1kf6pjm7llngs94jvlv56hrus.apps.googleusercontent.com",
+      "GOOGLE_WEB_CLIENT_ID": "292298493030-hd9mqh166896s35q8aeanc4rlah3ednt.apps.googleusercontent.com",
       "GOOGLE_IOS_CLIENT_ID": "292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7.apps.googleusercontent.com",
-      "API_BASE_URL": "http://localhost:8090",
+      "API_BASE_URL": "http://10.100.1.44:8090",
       "router": {},
       "eas": {
-        "projectId": "bdcf405c-968d-4397-839b-f9f73495ebed"
+        "projectId": "3fe826ef-7486-4776-9466-f7b2709be4ab"
       }
     }
   }

@@ -12,6 +12,7 @@ import {Colors} from '@/constants/Colors';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {ScheduleProvider} from "@/src/context/ScheduleContext";
+import {ILogProvider} from "@/src/context/ILogContext";
 
 
 // Layout 컴포넌트는 그대로 유지됩니다.
@@ -167,7 +168,9 @@ function ThemedAppLayout() {
     <ThemeProvider value={currentTheme}>
       <AuthProvider>
         <ScheduleProvider>
-          <Layout />
+          <ILogProvider>
+            <Layout />
+          </ILogProvider>
         </ScheduleProvider>
       </AuthProvider>
       <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />

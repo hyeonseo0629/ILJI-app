@@ -57,13 +57,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (user: SessionUser) => {
-    console.log('[AuthProvider] signIn called with user ID:', user.user.id);
+    console.log('[AuthProvider] Attempting to sign in and set session for user ID:', user.user.id);
+    console.log('[AuthProvider] Session data being set:', JSON.stringify(user, null, 2));
     setSession(user);
     try {
       await SecureStore.setItemAsync(TOKEN_KEY, JSON.stringify(user));
-      console.log('[AuthProvider] Session saved to store.');
+      console.log('[AuthProvider] ✅ Session successfully saved to secure store.');
     } catch (e) {
-      console.error("Failed to save session to SecureStore", e);
+      console.error("[AuthProvider] 🛑 Failed to save session to SecureStore", e);
     }
   };
 
