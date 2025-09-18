@@ -193,6 +193,7 @@ export const MonthSchedulesContainer = styled.View`
     position: relative;
     flex: 1; /* 날짜 텍스트를 제외한 나머지 세로 공간을 모두 차지합니다. */
     width: 100%; /* 부모 컨테이너의 너비에 맞춥니다. */
+    margin-top: 4px; /* 날짜와 일정 사이의 간격 */
 `;
 
 

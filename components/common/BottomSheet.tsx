@@ -26,7 +26,6 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
     const pickerItems = [
         {label: "latest", value: "latest"},
         {label: "oldest", value: "oldest"},
-        {label: "priority", value: "priority"},
     ];
 
     // [개선] '일정' 탭이 선택된 경우와 특정 태그가 선택된 경우를 모두 처리하도록 로직을 개선합니다.
@@ -45,6 +44,19 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
 
         return schedules.filter(schedule => schedule.tagId === currentTag.id);
     }, [activeTab, schedules, tags]);
+
+    const sortedSchedules = useMemo(() => {
+        const sorted = [...filteredSchedules];
+        switch (sortBy) {
+            case 'latest':
+                sorted.sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+                break;
+            case 'oldest':
+                sorted.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+                break;
+        }
+        return sorted;
+    }, [filteredSchedules, sortBy]);
 
     // 1. 핸들러 함수 분리
     const handleAddSchedulePress = () => {
@@ -82,7 +94,7 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
             </BS.Header>
             <BottomSheetScrollView style={{flex:1}}>
                 <BS.ContentWrap>
-                    {filteredSchedules.map(schedule => (
+                    {sortedSchedules.map(schedule => (
                         <TaggedSchedule key={schedule.id} item={schedule} />
                     ))}
                 </BS.ContentWrap>
