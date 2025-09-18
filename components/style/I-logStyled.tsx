@@ -236,7 +236,8 @@ export const PageDateText = styled.Text<StyledProps>`
 export const PageTimeText = styled.Text<StyledProps>`
     font-size: 14px;
     color: ${props => props.$colors?.text || '#888'};
-`;
+    padding-top: 40px;
+`
 
 export const PageTitle = styled.Text<StyledProps>`
     font-size: 20px;
@@ -613,7 +614,7 @@ export const AddImagePickerText = styled.Text<StyledProps>`
 
 `;
 
-export const AddImagePreview = styled.Image`
+export const AddImagePreview = styled.Image<StyledProps>`
     width: 100%;
     height: 375px;
     border-radius: 8px;

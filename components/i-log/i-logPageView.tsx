@@ -41,6 +41,7 @@ const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void })
 
                     {item.images && (
                         <I.PageImageContainer>
+                            {console.log("Page View Image URI:", item.images[0])}
                             <I.PageImage source={{uri: item.images[0]}}/>
                             <I.PageStatsContainer>
                                 <I.PageStatItem>

@@ -47,7 +47,18 @@ export function ILogProvider({ children }: ILogProviderProps) {
         writerProfileImage: raw.writerProfileImage,
         logDate: new Date(raw.logDate),
         content: raw.content,
-        images: raw.images,
+        images: raw.images.map(url => {
+            // Regex to capture the object path between /o/ and ? or end of string
+            const regex = /\/o\/(.*?)(?:\?|$)/;
+            const match = url.match(regex);
+            if (match && match[1]) {
+                const objectPath = match[1]; // e.g., ilog/image.jpeg
+                // Replace all / with %2F within the object path
+                const encodedObjectPath = objectPath.replace(/\//g, '%2F');
+                return url.replace(objectPath, encodedObjectPath);
+            }
+            return url; // Return original URL if regex doesn't match
+        }),
         visibility: raw.visibility,
         friendTags: raw.friendTags,
         tags: raw.tags,
@@ -60,7 +71,7 @@ export function ILogProvider({ children }: ILogProviderProps) {
         if (!userId) return;
         setLoading(true);
         try {
-            const response = await api.get<RawILog[]>('/i-log');
+            const response = await api.get<RawILog[]>('/mobile/i-log');
             setIlogs(response.data.map(formatRawILog));
             setError(null);
         } catch (err) {
@@ -77,6 +88,7 @@ export function ILogProvider({ children }: ILogProviderProps) {
 
     const createILog = useCallback(async (data: { request: ILogCreateRequestFrontend; images?: any[] }): Promise<ILog | null> => {
         if (!userId) return null;
+        console.log('--- Starting createILog process ---');
         setLoading(true);
 
         try {
@@ -84,23 +96,27 @@ export function ILogProvider({ children }: ILogProviderProps) {
 
             // JSON 데이터를 Blob으로 변환하여 FormData에 추가
             formData.append('request', JSON.stringify(data.request));
+            console.log('Appended request data:', data.request);
 
             // 이미지 추가
             data.images?.forEach((image, idx) => {
+                console.log(`--- Processing image ${idx} ---`);
+                console.log('Image asset details:', JSON.stringify(image, null, 2));
                 formData.append('images', {
                     uri: image.uri,
                     name: image.fileName || `image-${Date.now()}-${idx}.jpg`,
-                    type: image.type || 'image/jpeg',
+                    type: image.mimeType || 'image/jpeg',
                 } as any);
             });
 
-            console.log('FormData being sent for createILog:', formData);
+            console.log('Final FormData object being sent:', JSON.stringify(formData, null, 2));
+            console.log('--- Sending request to /mobile/i-log ---');
 
             const response = await api.post<RawILog>('/mobile/i-log', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
-                           });
+            });
             const newLog = formatRawILog(response.data);
             setIlogs(prev => [newLog, ...prev].sort((a, b) => b.logDate.getTime() - a.logDate.getTime()));
 
@@ -109,25 +125,28 @@ export function ILogProvider({ children }: ILogProviderProps) {
             if (axios.isAxiosError(err)) {
                 console.error("--- Axios Error Details ---");
                 console.error("Message:", err.message);
-                console.error(err.status);
+                console.error("Status:", err.status);
+                console.error("Request Config:", JSON.stringify(err.config, null, 2));
                 if (err.response) {
                     console.error("Response Status:", err.response.status);
                     console.error("Response Data:", JSON.stringify(err.response.data, null, 2));
                 }
             } else {
+                console.error("--- Non-Axios Error ---");
                 console.error(err);
             }
             Alert.alert("오류", "일기를 생성하는 데 실패했습니다.");
             return null;
         } finally {
             setLoading(false);
+            console.log('--- Finished createILog process ---');
         }
     }, [userId, formatRawILog]);
 
     const deleteILog = useCallback(async (logId: number) => {
         if (!userId) return;
         try {
-            await api.delete(`/i-log/${logId}`);
+            await api.delete(`/mobile/i-log/${logId}`);
             setIlogs(prev => prev.filter(log => log.id !== logId));
         } catch (err) {
             console.error(`i-log (id: ${logId}) 삭제 실패:`, err);
@@ -139,7 +158,7 @@ export function ILogProvider({ children }: ILogProviderProps) {
         if (!userId) return null;
         const dateStr = date.toISOString().split('T')[0];
         try {
-            const response = await api.get<RawILog>(`/i-log/date/${dateStr}`);
+            const response = await api.get<RawILog>(`/mobile/i-log/date/${dateStr}`);
             return formatRawILog(response.data);
         } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 404) {
@@ -155,7 +174,7 @@ export function ILogProvider({ children }: ILogProviderProps) {
         if (!userId) return null;
         const dateStr = date.toISOString().split('T')[0];
         try {
-            const response = await api.get<RawILog>(`/i-log/previous/${dateStr}`);
+            const response = await api.get<RawILog>(`/mobile/i-log/previous/${dateStr}`);
             return formatRawILog(response.data);
         } catch {
             return null;
@@ -166,7 +185,7 @@ export function ILogProvider({ children }: ILogProviderProps) {
         if (!userId) return null;
         const dateStr = date.toISOString().split('T')[0];
         try {
-            const response = await api.get<RawILog>(`/i-log/next/${dateStr}`);
+            const response = await api.get<RawILog>(`/mobile/i-log/next/${dateStr}`);
             return formatRawILog(response.data);
         } catch {
             return null;
@@ -179,19 +198,19 @@ export function ILogProvider({ children }: ILogProviderProps) {
 
         try {
             const formData = new FormData();
-            formData.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }) as any);
+            formData.append('request', JSON.stringify(request));
 
             newImages?.forEach((image, index) => {
-                formData.append('newImages', {
+                formData.append('images', {
                     uri: image.uri,
                     name: image.fileName || `image-${Date.now()}-${index}.jpg`,
-                    type: image.type || 'image/jpeg',
+                    type: image.mimeType || 'image/jpeg',
                 } as any);
             });
 
             console.log('FormData being sent for updateILog:', formData);
 
-            const response = await api.put<RawILog>(`/i-log/${logId}`, formData, {
+            const response = await api.put<RawILog>(`/mobile/i-log/${logId}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

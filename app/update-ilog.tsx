@@ -5,33 +5,48 @@ import * as ImagePicker from 'expo-image-picker';
 import * as I from "@/components/style/I-logStyled";
 import {AntDesign, SimpleLineIcons } from '@expo/vector-icons';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
-import {AddImagePickerText} from "@/components/style/I-logStyled";
+import { AddImagePickerText } from "@/components/style/I-logStyled";
 import { ILog, ILogUpdateRequest } from '@/src/types/ilog';
-import { uriToFile } from '@/src/utils/imageUtils';
 import { useILog } from '@/src/context/ILogContext';
-import {useTheme} from '@react-navigation/native'; // useTheme import 추가
+import {useTheme} from '@react-navigation/native';
 
 export default function UpdateILogScreen() {
     const insets = useSafeAreaInsets();
-    const theme = useTheme(); // useTheme 훅 사용
-
+    const theme = useTheme();
     const router = useRouter();
     const params = useLocalSearchParams();
     const { ilogs, updateILog } = useILog();
 
-    // --- 상태 관리 ---
+    // --- State Management ---
+    const [originalLog, setOriginalLog] = useState<ILog | null>(null);
     const [content, setContent] = useState('');
-    const [imageUri, setImageUri] = useState<string | null>(null);
-    const [selectedTags, setSelectedTags] = useState<string[]>([]); // 선택된 태그 목록
-    const [textAreaHeight, setTextAreaHeight] = useState(200); // AddTextArea의 동적 높이 상태
+    const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+    const [newImageAsset, setNewImageAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [textAreaHeight, setTextAreaHeight] = useState(200);
 
-    // 편집 모드일 경우 기존 데이터 로드
+    // --- Load existing data for editing ---
     useEffect(() => {
         if (params.editLog) {
             try {
                 const logToEdit: ILog = JSON.parse(params.editLog as string);
+                // Re-encode the image URLs after parsing due to expo-router's automatic decoding
+                if (logToEdit.images && logToEdit.images.length > 0) {
+                    logToEdit.images = logToEdit.images.map(url => {
+                        const regex = /\/o\/(.*?)(?:\?|$)/;
+                        const match = url.match(regex);
+                        if (match && match[1]) {
+                            const objectPath = match[1];
+                            const encodedObjectPath = objectPath.replace(/\//g, '%2F');
+                            return url.replace(objectPath, encodedObjectPath);
+                        }
+                        return url;
+                    });
+                }
+                console.log("Log to edit:", JSON.stringify(logToEdit, null, 2)); // DEBUG LOG
+                setOriginalLog(logToEdit);
                 setContent(logToEdit.content);
-                setImageUri(logToEdit.images[0] || null);
+                setExistingImageUrls(logToEdit.images || []);
                 if (logToEdit.tags) {
                     setSelectedTags(logToEdit.tags.split(' ').filter(tag => tag.startsWith('#')));
                 }
@@ -43,62 +58,35 @@ export default function UpdateILogScreen() {
         }
     }, [params.editLog]);
 
-    // 해시태그 제안 기능 관련 상태
+    // --- Hashtag Suggestions ---
     const allTags = useMemo(() => {
         const allExtractedTags = ilogs
-            .flatMap(log => log.tags?.split(' ') || []) // 모든 태그를 하나의 배열로 펼치기
-            .filter(tag => tag.startsWith('#')); // #으로 시작하는 태그만 필터링
-        return [...new Set(allExtractedTags)]; // Set을 사용하여 중복 제거
+            .flatMap(log => log.tags?.split(' ') || [])
+            .filter(tag => tag.startsWith('#'));
+        return [...new Set(allExtractedTags)];
     }, [ilogs]);
 
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [cursorPosition, setCursorPosition] = useState(0);
 
-    // 키보드 높이 상태
+    // --- Keyboard and Layout ---
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const scrollViewRef = useRef<ScrollView>(null);
 
-    // 키보드 이벤트 리스너
     useEffect(() => {
-        const keyboardDidShowListener = Keyboard.addListener(
-            'keyboardDidShow',
-            (e) => {
-                setKeyboardHeight(e.endCoordinates.height);
-            }
-        );
-        const keyboardDidHideListener = Keyboard.addListener(
-            'keyboardDidHide',
-            () => {
-                setKeyboardHeight(0);
-            }
-        );
-
+        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => setKeyboardHeight(e.endCoordinates.height));
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => setKeyboardHeight(0));
         return () => {
             keyboardDidShowListener.remove();
             keyboardDidHideListener.remove();
         };
     }, []);
 
-    // --- Text Area 자동 스크롤 로직 ---
-    const scrollViewRef = useRef<ScrollView>(null);
-    const isCursorAtEnd = useRef(true);
-
     const handleContentSizeChange = (e: any) => {
         setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height));
-
-        if (isCursorAtEnd.current) {
-            setTimeout(() => {
-                scrollViewRef.current?.scrollToEnd({ animated: true });
-            }, 100);
-        }
     };
 
-    const handleTextAreaFocus = () => {
-        setTimeout(() => {
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 100);
-    };
-
-    // --- 이미지 선택 로직 ---
+    // --- Image Picker Logic ---
     const pickImage = async () => {
         const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
@@ -112,38 +100,34 @@ export default function UpdateILogScreen() {
             quality: 1,
         });
         if (!result.canceled) {
-            setImageUri(result.assets[0].uri);
+            setNewImageAsset(result.assets[0]);
         }
     };
 
-    // --- 해시태그 제안 및 관리 로직 ---
+    const removeImage = () => {
+        setNewImageAsset(null);
+        setExistingImageUrls([]);
+    }
+
+    // --- Hashtag Management ---
     const handleContentChange = (text: string) => {
         let currentText = text;
-        // --- 본문 글자 수 제한 ---
         if (currentText.length > 2000) {
             Alert.alert('오류', '본문은 2000자를 초과할 수 없습니다.');
             currentText = currentText.substring(0, 2000);
         }
         setContent(currentText);
 
-        // --- 태그 확정 로직 (스페이스 또는 줄바꿈 입력 시) ---
         if (currentText.endsWith(' ')) {
-            const lastWord = currentText.slice(0, -1).split(/[\s\n]/).pop();
-
+            const lastWord = currentText.slice(0, -1).split(/\s/).pop();
             if (lastWord && lastWord.startsWith('#') && lastWord.length > 1) {
                 const newTag = lastWord;
-
-                // --- 태그 글자 수 제한 ---
                 const currentTagsString = selectedTags.join(' ');
                 const potentialLength = currentTagsString.length + (currentTagsString.length > 0 ? 1 : 0) + newTag.length;
                 if (potentialLength > 1000) {
                     Alert.alert('오류', '태그의 총 길이는 1000자를 초과할 수 없습니다.');
-                    const newContent = currentText.substring(0, currentText.lastIndexOf(newTag));
-                    setContent(newContent);
-                    setSuggestions([]);
                     return;
                 }
-
                 if (!selectedTags.includes(newTag)) {
                     setSelectedTags(prev => [...prev, newTag]);
                     const newContent = currentText.substring(0, currentText.lastIndexOf(newTag)) + '';
@@ -154,10 +138,8 @@ export default function UpdateILogScreen() {
             }
         }
 
-        // --- 태그 제안 로직 ---
         const lastHashIndex = currentText.lastIndexOf('#');
         const lastSeparatorIndex = Math.max(currentText.lastIndexOf(' '), currentText.lastIndexOf('\n'));
-
         if (lastHashIndex > lastSeparatorIndex) {
             const currentTagCandidate = currentText.substring(lastHashIndex);
             const filtered = allTags.filter((tag: string) =>
@@ -168,9 +150,7 @@ export default function UpdateILogScreen() {
             setSuggestions([]);
         }
     };
-
     const handleSuggestionTap = (suggestion: string) => {
-        // --- 태그 글자 수 제한 ---
         const currentTagsString = selectedTags.join(' ');
         const potentialLength = currentTagsString.length + (currentTagsString.length > 0 ? 1 : 0) + suggestion.length;
         if (potentialLength > 1000) {
@@ -179,19 +159,15 @@ export default function UpdateILogScreen() {
             Keyboard.dismiss();
             return;
         }
-
         const textBeforeCursor = content.substring(0, cursorPosition);
         const lastHashIndex = textBeforeCursor.lastIndexOf('#');
-
         if (lastHashIndex === -1) {
             setSuggestions([]);
             Keyboard.dismiss();
             return;
         }
-
         const newContent = content.substring(0, lastHashIndex) + content.substring(cursorPosition);
         setContent(newContent);
-
         if (!selectedTags.includes(suggestion)) {
             setSelectedTags(prev => [...prev, suggestion]);
         }
@@ -203,141 +179,105 @@ export default function UpdateILogScreen() {
         setSelectedTags(prev => prev.filter(tag => tag !== tagToRemove));
     };
 
-    // 편집 모드일 경우 기존 데이터 로드
-    useEffect(() => {
-        if (params.editLog) {
-            try {
-                const logToEdit: ILog = JSON.parse(params.editLog as string);
-                // Ensure date objects are correctly parsed if they were stringified
-                logToEdit.logDate = new Date(logToEdit.logDate);
-                logToEdit.createdAt = new Date(logToEdit.createdAt);
-
-                setContent(logToEdit.content);
-                setImageUri(logToEdit.images[0] || null);
-                if (logToEdit.tags) {
-                    setSelectedTags(logToEdit.tags.split(' ').filter(tag => tag.startsWith('#')));
-                }
-            } catch (e) {
-                console.error("Failed to parse editLog:", e);
-                Alert.alert("오류", "일기 데이터를 불러오는 데 실패했습니다.");
-                router.back();
-            }
-        }
-    }, [params.editLog]);
-
-    // --- 저장 로직 ---
+    // --- Save Logic ---
     const handleSave = async () => {
+        if (!originalLog) {
+            Alert.alert('오류', '원본 일기 데이터가 없습니다.');
+            return;
+        }
         if (!content.trim()) {
             Alert.alert('오류', '내용을 입력해주세요.');
             return;
         }
 
-        const finalTagsString = selectedTags.join(' ');
-        const originalLog: ILog = JSON.parse(params.editLog as string);
+        const visibilityStringToNumber: { [key: string]: number } = {
+            "PUBLIC": 0,
+            "FRIENDS_ONLY": 1,
+            "PRIVATE": 2,
+        };
 
         const updateRequest: ILogUpdateRequest = {
             content: content.trim(),
-            visibility: originalLog.visibility, // Assuming originalLog.visibility is a number (0, 1, 2)
-            existingImageUrls: [], // Default to empty, will be populated below
+            visibility: visibilityStringToNumber[originalLog.visibility] ?? 1, // Convert string to number, default to 1
+            existingImageUrls: newImageAsset ? [] : existingImageUrls, // If new image, clear existing
         };
 
-        let newImagesToUpload: File[] | undefined;
+        const imagesToUpload = newImageAsset ? [newImageAsset] : undefined;
 
-        if (imageUri) {
-            // If imageUri is set, it means a new image is selected or existing one is kept
-            if (imageUri === originalLog.images[0]) {
-                // User kept the existing image
-                updateRequest.existingImageUrls = originalLog.images; // Keep all existing images
-            } else {
-                // New image selected, so no existing images to keep
-                const filename = imageUri.split('/').pop() || 'image.jpg';
-                const filetype = 'image/jpeg'; // Or determine dynamically
-                const file = await uriToFile(imageUri, filename, filetype);
-                if (file) {
-                    newImagesToUpload = [file];
-                }
-            }
-        } else {
-            // imageUri is null, meaning user cleared the image or no image was selected
-            updateRequest.existingImageUrls = []; // Clear all existing images
-        }
-
-        await updateILog(originalLog.id, updateRequest, newImagesToUpload);
+        await updateILog(originalLog.id, updateRequest, imagesToUpload);
         router.back();
     };
 
+    // Determine which image URI to display
+    const displayImageUri = newImageAsset?.uri || existingImageUrls[0] || null;
+    console.log("Displaying image URI:", displayImageUri); // DEBUG LOG
+
     return (
-        <I.ScreenContainer $colors={theme.colors}> {/* theme.colors를 $colors prop으로 전달 */}
+        <I.ScreenContainer $colors={theme.colors}>
             <View style={{flex: 1}}>
-                <I.Container $colors={theme.colors}> {/* $colors prop 전달 */}
+                <I.Container $colors={theme.colors}>
                     <I.AddWrap
                         contentContainerStyle={{paddingBottom: 40 + keyboardHeight}}
                         ref={scrollViewRef}
                     >
                         <I.AddContentContainer>
-                            {imageUri ? (
+                            {displayImageUri ? (
                                 <View>
                                     <TouchableOpacity onPress={pickImage}>
-                                        <I.AddImagePreview source={{uri: imageUri}}/>
+                                        <I.AddImagePreview source={{uri: displayImageUri}}/>
                                     </TouchableOpacity>
-                                    <I.AddImageRemoveButton
-                                        onPress={() => setImageUri(null)}
-                                    >
+                                    <I.AddImageRemoveButton onPress={removeImage}>
                                         <AntDesign name="closecircle" size={30} color="white"/>
                                     </I.AddImageRemoveButton>
                                 </View>
                             ) : (
-                                <I.AddImagePlaceholder onPress={pickImage} $colors={theme.colors}> {/* $colors prop 전달 */}
-                                    <SimpleLineIcons name="picture" size={150} color={theme.colors.border} /> {/* theme.colors.border 사용 */}
-                                    <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText> {/* $colors prop 전달 */}
+                                <I.AddImagePlaceholder onPress={pickImage} $colors={theme.colors}>
+                                    <SimpleLineIcons name="picture" size={150} color={theme.colors.border} />
+                                    <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText>
                                 </I.AddImagePlaceholder>
                             )}
                             {selectedTags.length > 0 && (
                                 <I.AddTagBadgeContainer>
                                     {selectedTags.map((tag) => (
-                                        <I.AddTagBadge key={tag} $colors={theme.colors}> {/* $colors prop 전달 */}
-                                            <I.AddTagBadgeText $colors={theme.colors}>{tag}</I.AddTagBadgeText> {/* $colors prop 전달 */}
-                                            <AntDesign name="closecircle" size={14} color="white"
-                                                       onPress={() => handleRemoveTag(tag)}/>
+                                        <I.AddTagBadge key={tag} $colors={theme.colors}>
+                                            <I.AddTagBadgeText $colors={theme.colors}>{tag}</I.AddTagBadgeText>
+                                            <AntDesign name="closecircle" size={14} color="white"/>
                                         </I.AddTagBadge>
                                     ))}
                                 </I.AddTagBadgeContainer>
                             )}
                             <I.AddTextArea
-                                placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...\n\n (#을 입력하고 원하는 태그를 입력해보세요.)
-                                `}
+                                placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...\n\n (#을 입력하고 원하는 태그를 입력해보세요.)`}
                                 value={content}
                                 onChangeText={handleContentChange}
                                 onSelectionChange={e => {
                                     const { selection } = e.nativeEvent;
                                     setCursorPosition(selection.start);
-                                    isCursorAtEnd.current = selection.start >= content.length;
                                 }}
                                 multiline
                                 height={textAreaHeight}
-                                onFocus={handleTextAreaFocus}
                                 onContentSizeChange={handleContentSizeChange}
                                 autoFocus={true}
-                                $colors={theme.colors} // $colors prop 전달
-                                placeholderTextColor={theme.colors.text} // placeholderTextColor 설정
+                                $colors={theme.colors}
+                                placeholderTextColor={theme.colors.text}
                             />
                         </I.AddContentContainer>
                     </I.AddWrap>
                 </I.Container>
 
-                <I.AddSuggestionContainer $bottom={keyboardHeight} $colors={theme.colors}> {/* $colors prop 전달 */}
-                    <I.AddButtonWrap $colors={theme.colors}> {/* $colors prop 전달 */}
-                        <I.AddCancelButton onPress={() => router.back()} $colors={theme.colors}> {/* $colors prop 전달 */}
-                            <I.AddButtonText $colors={theme.colors}>Cancel</I.AddButtonText> {/* $colors prop 전달 */}
+                <I.AddSuggestionContainer $bottom={keyboardHeight} $colors={theme.colors}>
+                    <I.AddButtonWrap $colors={theme.colors}>
+                        <I.AddCancelButton onPress={() => router.back()} $colors={theme.colors}>
+                            <I.AddButtonText $colors={theme.colors}>Cancel</I.AddButtonText>
                         </I.AddCancelButton>
-                        <I.AddSaveButton onPress={handleSave} $colors={theme.colors}> {/* $colors prop 전달 */}
-                            <I.AddButtonText $colors={theme.colors}>Update</I.AddButtonText> {/* $colors prop 전달 */}
+                        <I.AddSaveButton onPress={handleSave} $colors={theme.colors}>
+                            <I.AddButtonText $colors={theme.colors}>Update</I.AddButtonText>
                         </I.AddSaveButton>
                     </I.AddButtonWrap>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{borderWidth: 1, borderColor: theme.colors.primary}}>
                         {suggestions.map((tag) => (
-                            <I.AddSuggestionButton key={tag} onPress={() => handleSuggestionTap(tag)} $colors={theme.colors}> {/* $colors prop 전달 */}
-                                <I.AddSuggestionButtonText $colors={theme.colors}>{tag}</I.AddSuggestionButtonText> {/* $colors prop 전달 */}
+                            <I.AddSuggestionButton key={tag} onPress={() => handleSuggestionTap(tag)} $colors={theme.colors}>
+                                <I.AddSuggestionButtonText $colors={theme.colors}>{tag}</I.AddSuggestionButtonText>
                             </I.AddSuggestionButton>
                         ))}
                     </ScrollView>

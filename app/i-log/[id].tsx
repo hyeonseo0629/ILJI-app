@@ -36,6 +36,7 @@ export default function ILogDetailScreen() {
 
     const handleEdit = () => {
         if (log) {
+            console.log("Detail Screen Log Image URI (before stringify):", log.images[0]); // DEBUG LOG
             router.push({
                 pathname: '../update-ilog',
                 params: {

@@ -185,7 +185,7 @@ export default function AddILogScreen() {
 
         // --- 태그 제안 로직 ---
         const lastHashIndex = currentText.lastIndexOf('#');
-        const lastSeparatorIndex = Math.max(currentText.lastIndexOf(' '), currentText.lastIndexOf('\n'));
+        const lastSeparatorIndex = Math.max(currentText.lastIndexOf(' '), currentText.lastIndexOf(' '));
 
         if (lastHashIndex > lastSeparatorIndex) {
             const currentTagCandidate = currentText.substring(lastHashIndex);
@@ -251,15 +251,13 @@ export default function AddILogScreen() {
             return;
         }
 
-        const finalTagsString = selectedTags.join(' ');
-
         const newLogRequest: ILogCreateRequestFrontend = {
             writerId: userId, // Use userId from session
             logDate: format(selectedLogDate, 'yyyy-MM-dd'), // YYYY-MM-DD 형식의 문자열로 변환
             content: content.trim(),
             visibility: 1, // 백엔드 enum의 ordinal 값 (1 = FRIENDS_ONLY)
-            friendTags: JSON.stringify([]), // 현재는 빈 배열
-            tags: JSON.stringify(selectedTags), // 태그 배열을 JSON 문자열로 변환
+            friendTags: '', // 현재는 빈 값
+            tags: selectedTags.join(' '), // 태그 배열을 공백으로 구분된 문자열로 변환
         };
 
         await createILog({ request: newLogRequest, images: imageAsset ? [imageAsset] : undefined });
