@@ -66,12 +66,6 @@ const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void })
                     )}
 
                     <I.PageContent>{item.content}</I.PageContent>
-
-                    {item.tags && (
-                        <I.PageTagsContainer>
-                            <I.PageTagsText>{item.tags}</I.PageTagsText>
-                        </I.PageTagsContainer>
-                    )}
                 </TouchableOpacity>
             </I.PageScrollView>
         </I.PageWrap>

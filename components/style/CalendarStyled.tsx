@@ -71,9 +71,10 @@ export const DayOfTheWeek = styled.View`
     margin-bottom: 20px; /* 요일과 날짜 사이의 간격 */
 `
 
-export const DayOfTheWeekText = styled.Text`
-    flex-direction: row;
-    margin-bottom: 20px; /* 요일과 날짜 사이의 간격 */
+export const DayOfTheWeekText = styled.Text<StyledProps>`
+    font-size: 12px;
+    font-weight: 500;
+    color: ${props => props.$colors?.text || '#8E8E93'};
 `
 
 interface MonthDayContainerProps extends StyledProps {

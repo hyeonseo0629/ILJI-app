@@ -125,11 +125,6 @@ export default function ILogDetailScreen() {
                             ))}
                         </I.DetailFriendTagsContainer>
                     )}
-                    {log.tags && (
-                        <I.DetailTagsContainer>
-                            <I.DetailTagsText>{log.tags}</I.DetailTagsText>
-                        </I.DetailTagsContainer>
-                    )}
 
                     <I.DetailContent>{log.content}</I.DetailContent>
 

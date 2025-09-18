@@ -10,7 +10,7 @@ import { LocaleConfig, DateData, Calendar } from 'react-native-calendars';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { Modal, TouchableOpacity, View, SafeAreaView  } from 'react-native';
 import { useILog } from '@/src/context/ILogContext';
-import { ILog } from '@/src/types/ilog';
+import { ILog, ILogCreateRequestFrontend, ILogUpdateRequest } from '@/src/types/ilog';
 import { useTheme } from '@react-navigation/native';
 
 
@@ -54,24 +54,27 @@ export default function DiaryScreen() {
     const [isMonthPickerVisible, setMonthPickerVisible] = useState(false); // New state for month picker modal
     const [isYearPickerVisible, setYearPickerVisible] = useState(false); // New state for year picker modal
 
-    // 1. 모든 로그에서 중복 없는 태그 목록 추출
-    const uniqueTags = useMemo(() => {
-        const allTags = ilogs
-            .flatMap(log => log.tags?.split(' ') || []) // 모든 태그를 하나의 배열로 펼치기
-            .filter(tag => tag.startsWith('#')); // #으로 시작하는 태그만 필터링
-        return [...new Set(allTags)]; // Set을 사용하여 중복 제거
-    }, [ilogs]);
-
     useEffect(() => {
         const handleParams = async () => {
             if (params.newLog) {
                 const newLogData: ILog = JSON.parse(params.newLog as string);
-                newLogData.logDate = new Date(newLogData.logDate);
-                newLogData.createdAt = new Date(newLogData.createdAt);
-                // Omit 'id', 'userId', 'createdAt' for createILog request
-                const { id, userId, createdAt, ...restOfNewLogData } = newLogData;
-                const requestData = { ...restOfNewLogData, writerId: userId };
-                await createILog({ request: requestData }); // Use context function
+
+                const visibilityMap: { [key: string]: number } = {
+                    "PUBLIC": 0,
+                    "FRIENDS_ONLY": 1,
+                    "PRIVATE": 2,
+                };
+                const visibilityAsNumber = visibilityMap[newLogData.visibility.toUpperCase()] ?? 1; // Default to FRIENDS_ONLY
+
+                const requestData: ILogCreateRequestFrontend = {
+                    writerId: newLogData.userId,
+                    logDate: format(new Date(newLogData.logDate), 'yyyy-MM-dd'),
+                    content: newLogData.content,
+                    visibility: visibilityAsNumber,
+                    friendTags: newLogData.friendTags,
+                };
+
+                await createILog({ request: requestData }); // Pass only the creation request
                 setSelectedLogIndex(0); // Scroll to the new log
                 router.setParams({ newLog: '' });
             }
@@ -88,7 +91,20 @@ export default function DiaryScreen() {
                 updatedLogData.logDate = new Date(updatedLogData.logDate);
                 updatedLogData.createdAt = new Date(updatedLogData.createdAt);
 
-                await updateILog(updatedLogData.id, updatedLogData); // Use context function
+                const visibilityMap: { [key: string]: number } = {
+                    "PUBLIC": 0,
+                    "FRIENDS_ONLY": 1,
+                    "PRIVATE": 2,
+                };
+                const visibilityAsNumber = visibilityMap[updatedLogData.visibility.toUpperCase()] ?? 1; // Default to FRIENDS_ONLY
+
+                const updateRequest: ILogUpdateRequest = {
+                    content: updatedLogData.content,
+                    visibility: visibilityAsNumber,
+                    existingImageUrls: updatedLogData.images,
+                };
+
+                await updateILog(updatedLogData.id, updateRequest); // Use context function
                 router.setParams({ updatedLog: '' });
             }
         };
@@ -264,7 +280,6 @@ export default function DiaryScreen() {
         router.push({
             pathname: '../i-log/add-ilog/add-ilog',
             params: {
-                uniqueTags: JSON.stringify(uniqueTags),
                 existingLogs: JSON.stringify(simplifiedIlogs),
             },
         });
@@ -304,7 +319,6 @@ export default function DiaryScreen() {
                             setYearPickerVisible={setYearPickerVisible}
                             handleSelectMonth={handleSelectMonth}
                             handleSelectYear={handleSelectYear}
-                            colors={theme.colors}
                         />
                     ) : (
                         <ILogPageView
@@ -312,7 +326,6 @@ export default function DiaryScreen() {
                             onDatePress={openCalendar}
                             scrollToIndex={selectedLogIndex}
                             onPageChange={handlePageChange} // Pass the new prop
-                            colors={theme.colors}
                         />
                     )}
                 </MainContainer>

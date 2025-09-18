@@ -8,12 +8,10 @@ import {
     isToday,
     isSameDay,
     differenceInMinutes,
-    isSameWeek,
 } from 'date-fns';
 import * as CS from '../style/CalendarStyled';
 import { Schedule } from '@/components/calendar/scheduleTypes';
 import { Tag } from '@/components/tag/TagTypes';
-import {DayOfTheWeekText} from "../style/CalendarStyled";
 import { ThemeColors } from "@/types/theme";
 
 const HOUR_HEIGHT = 40; // 1시간에 해당하는 높이 (px)

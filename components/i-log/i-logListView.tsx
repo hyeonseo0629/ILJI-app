@@ -94,12 +94,6 @@ const ListItem = ({item}: { item: ILog }) => {
                             <I.ListStatText>{item.commentCount}</I.ListStatText>
                         </I.ListStatItem>
                     </I.ListStatsContainer>
-
-                    {item.tags && (
-                        <I.ListTagsContainer>
-                            <I.ListTagsText>{item.tags}</I.ListTagsText>
-                        </I.ListTagsContainer>
-                    )}
                 </I.ListMainContent>
             </I.ListWrap>
         </TouchableOpacity>

@@ -186,14 +186,6 @@ export const ListStatText = styled.Text<StyledProps>`
     margin-left: 3px;
 `;
 
-export const ListTagsContainer = styled.View``;
-
-export const ListTagsText = styled.Text<StyledProps>`
-    font-size: 12px;
-    color: ${props => props.$colors?.text || '#888'};
-    font-style: italic;
-`;
-
 
 // ----------------- //
 // I-Log Page View //
@@ -323,13 +315,6 @@ export const PageFriendTag = styled.View<StyledProps>`
 export const PageFriendTagText = styled.Text<StyledProps>`
     color: ${props => props.$colors?.primary || '#4c669f'};
     font-weight: bold;
-`;
-
-export const PageTagsContainer = styled.View``;
-
-export const PageTagsText = styled.Text<StyledProps>`
-    font-size: 15px;
-    color: ${props => props.$colors?.text || '#888'};
 `;
 
 export const PageScrollView = styled.ScrollView``;
@@ -467,16 +452,6 @@ export const DetailContent = styled.Text<StyledProps>`
     border-left-width: 2px;
     border-color: ${props => props.$colors?.primary || 'mediumslateblue'};
     padding: 10px 20px;
-`;
-
-export const DetailTagsContainer = styled.View`
-    width: 95%;
-    margin: 0px auto 10px;
-;`;
-
-export const DetailTagsText = styled.Text<StyledProps>`
-    font-size: 20px;
-    color: ${props => props.$colors?.primary || 'mediumslateblue'};
 `;
 
 export const DetailModalBackdrop = styled.TouchableOpacity`
@@ -679,29 +654,6 @@ export const AddSuggestionButton = styled.TouchableOpacity<StyledProps>`
 export const AddSuggestionButtonText = styled.Text<StyledProps>`
     color: ${props => props.$colors?.primary || 'mediumslateblue'};
     font-weight: bold;
-`;
-
-export const AddTagBadgeContainer = styled.View`
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 10px 0;
-    margin-bottom: 10px;
-    width: 100%;
-`;
-
-export const AddTagBadge = styled.View<StyledProps>`
-    flex-direction: row;
-    align-items: center;
-    background-color: ${props => props.$colors?.primary || '#7B68EE'};
-    border-radius: 15px;
-    padding: 6px 10px;
-    margin: 4px;
-`;
-
-export const AddTagBadgeText = styled.Text<StyledProps>`
-    color: ${props => props.$colors?.text || '#fff'};
-    font-weight: bold;
-    margin-right: 5px;
 `;
 
 export const AddButtonWrap = styled.View<StyledProps>`

@@ -33,8 +33,7 @@ export default function AddILogScreen() {
     // --- 상태 관리 ---
     const [content, setContent] = useState('');
     const [imageAsset, setImageAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
-    const [selectedTags, setSelectedTags] = useState<string[]>([]); // 선택된 태그 목록
-    const [textAreaHeight, setTextAreaHeight] = useState(200); // AddTextArea의 동적 높이 상태
+    const [textAreaHeight, setTextAreaHeight] = useState(200);
 
     // New state for date selection
     const [selectedLogDate, setSelectedLogDate] = useState<Date>(new Date());
@@ -70,18 +69,6 @@ export default function AddILogScreen() {
 
         return markings;
     }, [existingLogs, selectedLogDate, theme.colors.primary]);
-
-
-    // 해시태그 제안 기능 관련 상태
-    const allTags = useMemo(() => {
-        const allExtractedTags = ilogs
-            .flatMap(log => log.tags?.split(' ') || []) // 모든 태그를 하나의 배열로 펼치기
-            .filter(tag => tag.startsWith('#')); // #으로 시작하는 태그만 필터링
-        return [...new Set(allExtractedTags)]; // Set을 사용하여 중복 제거
-    }, [ilogs]);
-
-    const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [cursorPosition, setCursorPosition] = useState(0);
 
     // 키보드 높이 상태
     const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -154,82 +141,6 @@ export default function AddILogScreen() {
             currentText = currentText.substring(0, 2000);
         }
         setContent(currentText);
-
-        // --- 태그 확정 로직 (스페이스 또는 줄바꿈 입력 시) ---
-        if (currentText.endsWith(' ')) {
-            const lastWord = currentText.slice(0, -1).split(/[\s\n]/).pop();
-
-            if (lastWord && lastWord.startsWith('#') && lastWord.length > 1) {
-                const newTag = lastWord;
-
-                // --- 태그 글자 수 제한 ---
-                const currentTagsString = selectedTags.join(' ');
-                const potentialLength = currentTagsString.length + (currentTagsString.length > 0 ? 1 : 0) + newTag.length;
-                if (potentialLength > 1000) {
-                    Alert.alert('오류', '태그의 총 길이는 1000자를 초과할 수 없습니다.');
-                    const newContent = currentText.substring(0, currentText.lastIndexOf(newTag));
-                    setContent(newContent);
-                    setSuggestions([]);
-                    return;
-                }
-
-                if (!selectedTags.includes(newTag)) {
-                    setSelectedTags(prev => [...prev, newTag]);
-                    const newContent = currentText.substring(0, currentText.lastIndexOf(newTag)) + '';
-                    setContent(newContent);
-                    setSuggestions([]);
-                    return;
-                }
-            }
-        }
-
-        // --- 태그 제안 로직 ---
-        const lastHashIndex = currentText.lastIndexOf('#');
-        const lastSeparatorIndex = Math.max(currentText.lastIndexOf(' '), currentText.lastIndexOf(' '));
-
-        if (lastHashIndex > lastSeparatorIndex) {
-            const currentTagCandidate = currentText.substring(lastHashIndex);
-            const filtered = allTags.filter((tag: string) =>
-                tag.toLowerCase().startsWith(currentTagCandidate.toLowerCase()) && !selectedTags.includes(tag)
-            );
-            setSuggestions(filtered);
-        } else {
-            setSuggestions([]);
-        }
-    };
-
-    const handleSuggestionTap = (suggestion: string) => {
-        // --- 태그 글자 수 제한 ---
-        const currentTagsString = selectedTags.join(' ');
-        const potentialLength = currentTagsString.length + (currentTagsString.length > 0 ? 1 : 0) + suggestion.length;
-        if (potentialLength > 1000) {
-            Alert.alert('오류', '태그의 총 길이는 1000자를 초과할 수 없습니다.');
-            setSuggestions([]);
-            Keyboard.dismiss();
-            return;
-        }
-
-        const textBeforeCursor = content.substring(0, cursorPosition);
-        const lastHashIndex = textBeforeCursor.lastIndexOf('#');
-
-        if (lastHashIndex === -1) {
-            setSuggestions([]);
-            Keyboard.dismiss();
-            return;
-        }
-
-        const newContent = content.substring(0, lastHashIndex) + content.substring(cursorPosition);
-        setContent(newContent);
-
-        if (!selectedTags.includes(suggestion)) {
-            setSelectedTags(prev => [...prev, suggestion]);
-        }
-        setSuggestions([]);
-        Keyboard.dismiss();
-    };
-
-    const handleRemoveTag = (tagToRemove: string) => {
-        setSelectedTags(prev => prev.filter(tag => tag !== tagToRemove));
     };
 
     // Calendar date selection handler
@@ -257,7 +168,6 @@ export default function AddILogScreen() {
             content: content.trim(),
             visibility: 1, // 백엔드 enum의 ordinal 값 (1 = FRIENDS_ONLY)
             friendTags: '', // 현재는 빈 값
-            tags: selectedTags.join(' '), // 태그 배열을 공백으로 구분된 문자열로 변환
         };
 
         await createILog({ request: newLogRequest, images: imageAsset ? [imageAsset] : undefined });
@@ -300,27 +210,11 @@ export default function AddILogScreen() {
                                     <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText> {/* $colors prop 전달 */}
                                 </I.AddImagePlaceholder>
                             )}
-                            {selectedTags.length > 0 && (
-                                <I.AddTagBadgeContainer>
-                                    {selectedTags.map((tag) => (
-                                        <I.AddTagBadge key={tag} $colors={theme.colors}> {/* $colors prop 전달 */}
-                                            <I.AddTagBadgeText $colors={theme.colors}>{tag}</I.AddTagBadgeText> {/* $colors prop 전달 */}
-                                            <AntDesign name="closecircle" size={14} color="white"
-                                                       onPress={() => handleRemoveTag(tag)}/>
-                                        </I.AddTagBadge>
-                                    ))}
-                                </I.AddTagBadgeContainer>
-                            )}
                             <I.AddTextArea
                                 placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...\n\n (#을 입력하고 원하는 태그를 입력해보세요.)
                                 `}
                                 value={content}
                                 onChangeText={handleContentChange}
-                                onSelectionChange={e => {
-                                    const {selection} = e.nativeEvent;
-                                    setCursorPosition(selection.start);
-                                    isCursorAtEnd.current = selection.start >= content.length;
-                                }}
                                 multiline
                                 height={textAreaHeight}
                                 onFocus={handleTextAreaFocus}
@@ -342,14 +236,6 @@ export default function AddILogScreen() {
                             <I.AddButtonText $colors={theme.colors}>Save</I.AddButtonText> {/* $colors prop 전달 */}
                         </I.AddSaveButton>
                     </I.AddButtonWrap>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}
-                                style={{borderWidth: 1, borderColor: theme.colors.primary}}>
-                        {suggestions.map((tag) => (
-                            <I.AddSuggestionButton key={tag} onPress={() => handleSuggestionTap(tag)} $colors={theme.colors}> {/* $colors prop 전달 */}
-                                <I.AddSuggestionButtonText $colors={theme.colors}>{tag}</I.AddSuggestionButtonText> {/* $colors prop 전달 */}
-                            </I.AddSuggestionButton>
-                        ))}
-                    </ScrollView>
                 </I.AddSuggestionContainer>
             </View>
 

@@ -23,7 +23,6 @@ export default function UpdateILogScreen() {
     const [content, setContent] = useState('');
     const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
     const [newImageAsset, setNewImageAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [textAreaHeight, setTextAreaHeight] = useState(200);
 
     // --- Load existing data for editing based on ID ---
@@ -34,26 +33,12 @@ export default function UpdateILogScreen() {
                 setOriginalLog(foundLog);
                 setContent(foundLog.content);
                 setExistingImageUrls(foundLog.images || []);
-                if (foundLog.tags) {
-                    setSelectedTags(foundLog.tags.split(' ').filter(tag => tag.startsWith('#')));
-                }
             } else {
                 Alert.alert('오류', '일기를 찾을 수 없습니다.');
                 router.back();
             }
         }
     }, [id, ilogs]); // Depend on id and ilogs
-
-    // --- Hashtag Suggestions ---
-    const allTags = useMemo(() => {
-        const allExtractedTags = ilogs
-            .flatMap(log => log.tags?.split(' ') || [])
-            .filter(tag => tag.startsWith('#'));
-        return [...new Set(allExtractedTags)];
-    }, [ilogs]);
-
-    const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [cursorPosition, setCursorPosition] = useState(0);
 
     // --- Keyboard and Layout ---
     const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -103,68 +88,7 @@ export default function UpdateILogScreen() {
             currentText = currentText.substring(0, 2000);
         }
         setContent(currentText);
-
-        if (currentText.endsWith(' ')) {
-            const lastWord = currentText.slice(0, -1).split(/\s/).pop();
-            if (lastWord && lastWord.startsWith('#') && lastWord.length > 1) {
-                const newTag = lastWord;
-                const currentTagsString = selectedTags.join(' ');
-                const potentialLength = currentTagsString.length + (currentTagsString.length > 0 ? 1 : 0) + newTag.length;
-                if (potentialLength > 1000) {
-                    Alert.alert('오류', '태그의 총 길이는 1000자를 초과할 수 없습니다.');
-                    return;
-                }
-                if (!selectedTags.includes(newTag)) {
-                    setSelectedTags(prev => [...prev, newTag]);
-                    const newContent = currentText.substring(0, currentText.lastIndexOf(newTag)) + '';
-                    setContent(newContent);
-                    setSuggestions([]);
-                    return;
-                }
-            }
-        }
-
-        const lastHashIndex = currentText.lastIndexOf('#');
-        const lastSeparatorIndex = Math.max(currentText.lastIndexOf(' '), currentText.lastIndexOf('\n'));
-        if (lastHashIndex > lastSeparatorIndex) {
-            const currentTagCandidate = currentText.substring(lastHashIndex);
-            const filtered = allTags.filter((tag: string) =>
-                tag.toLowerCase().startsWith(currentTagCandidate.toLowerCase()) && !selectedTags.includes(tag)
-            );
-            setSuggestions(filtered);
-        } else {
-            setSuggestions([]);
-        }
     };
-    const handleSuggestionTap = (suggestion: string) => {
-        const currentTagsString = selectedTags.join(' ');
-        const potentialLength = currentTagsString.length + (currentTagsString.length > 0 ? 1 : 0) + suggestion.length;
-        if (potentialLength > 1000) {
-            Alert.alert('오류', '태그의 총 길이는 1000자를 초과할 수 없습니다.');
-            setSuggestions([]);
-            Keyboard.dismiss();
-            return;
-        }
-        const textBeforeCursor = content.substring(0, cursorPosition);
-        const lastHashIndex = textBeforeCursor.lastIndexOf('#');
-        if (lastHashIndex === -1) {
-            setSuggestions([]);
-            Keyboard.dismiss();
-            return;
-        }
-        const newContent = content.substring(0, lastHashIndex) + content.substring(cursorPosition);
-        setContent(newContent);
-        if (!selectedTags.includes(suggestion)) {
-            setSelectedTags(prev => [...prev, suggestion]);
-        }
-        setSuggestions([]);
-        Keyboard.dismiss();
-    };
-
-    const handleRemoveTag = (tagToRemove: string) => {
-        setSelectedTags(prev => prev.filter(tag => tag !== tagToRemove));
-    };
-
     // --- Save Logic ---
     const handleSave = async () => {
         if (!originalLog) {
@@ -222,24 +146,10 @@ export default function UpdateILogScreen() {
                                     <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText>
                                 </I.AddImagePlaceholder>
                             )}
-                            {selectedTags.length > 0 && (
-                                <I.AddTagBadgeContainer>
-                                    {selectedTags.map((tag) => (
-                                        <I.AddTagBadge key={tag} $colors={theme.colors}>
-                                            <I.AddTagBadgeText $colors={theme.colors}>{tag}</I.AddTagBadgeText>
-                                            <AntDesign name="closecircle" size={14} color="white"/>
-                                        </I.AddTagBadge>
-                                    ))}
-                                </I.AddTagBadgeContainer>
-                            )}
                             <I.AddTextArea
-                                placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...\n\n (#을 입력하고 원하는 태그를 입력해보세요.)`}
+                                placeholder={`오늘의 이야기를 들려주세요...`}
                                 value={content}
                                 onChangeText={handleContentChange}
-                                onSelectionChange={e => {
-                                    const { selection } = e.nativeEvent;
-                                    setCursorPosition(selection.start);
-                                }}
                                 multiline
                                 height={textAreaHeight}
                                 onContentSizeChange={handleContentSizeChange}
@@ -260,13 +170,6 @@ export default function UpdateILogScreen() {
                             <I.AddButtonText $colors={theme.colors}>Update</I.AddButtonText>
                         </I.AddSaveButton>
                     </I.AddButtonWrap>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{borderWidth: 1, borderColor: theme.colors.primary}}>
-                        {suggestions.map((tag) => (
-                            <I.AddSuggestionButton key={tag} onPress={() => handleSuggestionTap(tag)} $colors={theme.colors}>
-                                <I.AddSuggestionButtonText $colors={theme.colors}>{tag}</I.AddSuggestionButtonText>
-                            </I.AddSuggestionButton>
-                        ))}
-                    </ScrollView>
                 </I.AddSuggestionContainer>
             </View>
         </I.ScreenContainer>

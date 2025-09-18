@@ -13,7 +13,6 @@ export interface RawILog {
   images: string[]; // List of image URLs as JSON string
   visibility: string;
   friendTags: string | null;
-  tags: string | null;
   likeCount: number;
   commentCount: number;
   createdAt: string; // ex: "2024-09-15T10:00:00"
@@ -31,7 +30,6 @@ export interface ILog {
   images: string[]; // List of image URLs
   visibility: string;
   friendTags: string | null;
-  tags: string | null;
   likeCount: number;
   commentCount: number;
   createdAt: Date;
@@ -43,7 +41,6 @@ export interface ILogCreateRequestFrontend {
     content: string;
     visibility: number; // 백엔드 enum의 ordinal 값 (0, 1, 2)
     friendTags?: string | null;
-    tags?: string | null; // 태그 배열을 JSON 문자열로 변환
 }
 
 export interface ILogUpdateRequest {

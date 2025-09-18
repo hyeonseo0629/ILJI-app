@@ -16,7 +16,7 @@ interface ILogContextType {
     getILogByDate: (date: Date) => Promise<ILog | null>;
     getPreviousILog: (date: Date) => Promise<ILog | null>;
     getNextILog: (date: Date) => Promise<ILog | null>;
-    updateILog: (logId: number, request: ILogUpdateRequest, newImages?: any[]) => Promise<ILog | null>;
+    updateILog: (logId: number, request: ILogUpdateRequest, newImages?: any[] ) => Promise<ILog | null>;
 }
 
 const ILogContext = createContext<ILogContextType | undefined>(undefined);
@@ -61,7 +61,6 @@ export function ILogProvider({ children }: ILogProviderProps) {
         }),
         visibility: raw.visibility,
         friendTags: raw.friendTags,
-        tags: raw.tags,
         likeCount: raw.likeCount,
         commentCount: raw.commentCount,
         createdAt: new Date(raw.createdAt),
