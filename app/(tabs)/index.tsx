@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo, useRef, useState, useEffect} from 'react';
-import {Pressable, View, Text, StyleSheet, ActivityIndicator} from 'react-native';
+import {Pressable, View, Text, StyleSheet, ActivityIndicator, TouchableOpacity} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import { useSharedValue } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -20,6 +20,7 @@ import { useTheme } from '@react-navigation/native';
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import DetailSchedule from "@/components/schedule/detail-schedule";
 import {useSchedule} from "@/src/context/ScheduleContext";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
     const params = useLocalSearchParams();
@@ -48,6 +49,8 @@ export default function HomeScreen() {
 
     // [수정] 탭의 label을 상태로 관리하여 로직을 통일하고, 기본값을 '일정'으로 설정합니다.
     const [activeTab, setActiveTab] = useState<string>('일정');
+    const [tagPage, setTagPage] = useState(0);
+    const TAGS_PER_PAGE = 4;
 
     // [개선] '일정' 태그가 항상 가장 앞에 오도록 정렬합니다.
     const displayTags = useMemo(() => {
@@ -101,25 +104,51 @@ export default function HomeScreen() {
         setSheetIndex(index);
     }, []);
 
-    const TabHandle = () => (
-        <Pressable onPress={handleSheetToggle}>
-            <MainToDoCategoryWarp>
-                {/* [수정] 통합된 displayTags 배열을 사용해 모든 탭을 일관된 방식으로 렌더링합니다. */}
-                {displayTags.map(tag => (
-                    <MainToDoCategory
-                        key={tag.id}
-                        $isActive={activeTab === tag.label}
-                        activeColor={tag.color}
-                        onPress={() => handleTabPress(tag.label)}
+    const TabHandle = () => {
+        const startIndex = tagPage * TAGS_PER_PAGE;
+        const endIndex = startIndex + TAGS_PER_PAGE;
+        const paginatedTags = displayTags.slice(startIndex, endIndex);
+        const totalPages = Math.ceil(displayTags.length / TAGS_PER_PAGE);
+
+        return (
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                {totalPages > 1 && (
+                    <TouchableOpacity
+                        onPress={() => setTagPage(p => p - 1)}
+                        disabled={tagPage === 0}
+                        style={{ padding: 8 }}
                     >
-                        <MainToDoCategoryText $isActive={activeTab === tag.label}>
-                            {tag.label}
-                        </MainToDoCategoryText>
-                    </MainToDoCategory>
-                ))}
-            </MainToDoCategoryWarp>
-        </Pressable>
-    );
+                        <MaterialCommunityIcons name="chevron-left" size={24} color={tagPage === 0 ? '#ccc' : 'black'} />
+                    </TouchableOpacity>
+                )}
+                <View style={{ flex: 1 }}>
+                    <MainToDoCategoryWarp>
+                        {paginatedTags.map(tag => (
+                            <MainToDoCategory
+                                key={tag.id}
+                                $isActive={activeTab === tag.label}
+                                activeColor={tag.color}
+                                onPress={() => handleTabPress(tag.label)}
+                            >
+                                <MainToDoCategoryText $isActive={activeTab === tag.label}>
+                                    {tag.label}
+                                </MainToDoCategoryText>
+                            </MainToDoCategory>
+                        ))}
+                    </MainToDoCategoryWarp>
+                </View>
+                {totalPages > 1 && (
+                    <TouchableOpacity
+                        onPress={() => setTagPage(p => p + 1)}
+                        disabled={tagPage === totalPages - 1}
+                        style={{ padding: 8 }}
+                    >
+                        <MaterialCommunityIcons name="chevron-right" size={24} color={tagPage === totalPages - 1 ? '#ccc' : 'black'} />
+                    </TouchableOpacity>
+                )}
+            </View>
+        );
+    };
 
     // 3. 로딩 중일 때 보여줄 화면
     if (loading) {
@@ -157,10 +186,7 @@ export default function HomeScreen() {
                         backgroundColor: 'transparent',
                     }}
                 >
-                    {/* 5. BottomSheetContent에는 activeTab 정보만 넘겨줍니다. */}
-                    <MainContentWrap>
-                        <BottomSheetContent activeTab={activeTab} selectedDate={currentDate} />
-                    </MainContentWrap>
+                    <BottomSheetContent activeTab={activeTab} selectedDate={currentDate} />
                 </BottomSheet>
             </MainContainer>
 
