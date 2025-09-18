@@ -13,9 +13,10 @@ import EditTagModal from "@/components/editTagModal/EditTagModal";
 interface BottomSheetContentProps {
     activeTab: string;
     selectedDate: Date;
+    onSchedulePress: (schedule: Schedule) => void;
 }
 
-export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab, selectedDate}) => {
+export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab, selectedDate, onSchedulePress}) => {
     const router = useRouter();
     // [수정] Context에서 selectedDate를 제거하고 props에서 받은 selectedDate를 사용합니다.
     const { events: schedules, tags } = useSchedule();
@@ -95,7 +96,7 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
             <BottomSheetScrollView style={{flex:1}}>
                 <BS.ContentWrap>
                     {sortedSchedules.map(schedule => (
-                        <TaggedSchedule key={schedule.id} item={schedule} />
+                        <TaggedSchedule key={schedule.id} item={schedule} onPress={onSchedulePress} />
                     ))}
                 </BS.ContentWrap>
             </BottomSheetScrollView>

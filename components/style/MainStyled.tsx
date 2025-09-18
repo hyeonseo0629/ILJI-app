@@ -43,5 +43,5 @@ export const MainToDoCategoryText = styled.Text<CategoryTabProps & ThemeProps>`
     font-size: 15px;
     font-weight: ${(props) => (props.$isActive ? 'bold' : 'normal')};
     color: ${(props) => props.theme?.colors?.text || '#333333'};
-    line-height: 15px;
+    line-height: 15;
 `;

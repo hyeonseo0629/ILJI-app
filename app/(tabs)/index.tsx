@@ -186,7 +186,7 @@ export default function HomeScreen() {
                         backgroundColor: 'transparent',
                     }}
                 >
-                    <BottomSheetContent activeTab={activeTab} selectedDate={currentDate} />
+                    <BottomSheetContent activeTab={activeTab} selectedDate={currentDate} onSchedulePress={handleSchedulePress} />
                 </BottomSheet>
             </MainContainer>
 
