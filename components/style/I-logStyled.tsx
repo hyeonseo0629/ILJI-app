@@ -199,6 +199,17 @@ export const ListTagsText = styled.Text<StyledProps>`
 // I-Log Page View //
 // ----------------- //
 
+export const PageNoContentWrap = styled.View<StyledProps>`
+    flex: 1;
+    background-color: ${props => props.$colors?.background || 'transparent'};
+    justify-content: center;
+    align-items: center;
+`
+
+export const PageNoContentText = styled.Text`
+    font-size: 20px;
+`
+
 export const PageWrap = styled.View<StyledProps>`
     flex: 1;
     margin: 20px;

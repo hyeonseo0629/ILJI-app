@@ -262,7 +262,7 @@ export default function DiaryScreen() {
         }));
 
         router.push({
-            pathname: '../add-ilog',
+            pathname: '../i-log/add-ilog/add-ilog',
             params: {
                 uniqueTags: JSON.stringify(uniqueTags),
                 existingLogs: JSON.stringify(simplifiedIlogs),

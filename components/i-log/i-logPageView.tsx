@@ -1,10 +1,10 @@
-import {Dimensions, View, FlatList, ViewToken, TouchableOpacity} from "react-native";
+import {Dimensions, View, FlatList, ViewToken, TouchableOpacity, Text} from "react-native";
 import * as I from "@/components/style/I-logStyled";
 import React, {useRef, useEffect} from "react";
-import { ILog } from '@/src/types/ilog';
+import {ILog} from '@/src/types/ilog';
 import {format} from 'date-fns';
 import {AntDesign, EvilIcons} from '@expo/vector-icons';
-import { useRouter } from "expo-router";
+import {useRouter} from "expo-router";
 
 const {width} = Dimensions.get("window");
 
@@ -20,7 +20,7 @@ const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void })
     }
 
     const handleNavigateToDetail = () => {
-        router.push({ pathname: '/i-log/[id]', params: { id: item.id.toString() } });
+        router.push({pathname: '/i-log/detail-ilog/[id]', params: {id: item.id.toString()}});
     };
 
     return (
@@ -29,7 +29,7 @@ const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void })
                 <I.PageHeader>
                     <I.PageDateInfo>
                         <I.PageDateButton onPress={onDatePress}>
-                            <EvilIcons name="search" size={35} style={{marginBottom:5}}/>
+                            <EvilIcons name="search" size={35} style={{marginBottom: 5}}/>
                             <I.PageDateText>{format(item.logDate, 'yyyy.MM.dd')}</I.PageDateText>
                         </I.PageDateButton>
                         <I.PageTimeText>{format(item.createdAt, 'HH:mm:ss')}</I.PageTimeText>
@@ -41,7 +41,6 @@ const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void })
 
                     {item.images && (
                         <I.PageImageContainer>
-                            {console.log("Page View Image URI:", item.images[0])}
                             <I.PageImage source={{uri: item.images[0]}}/>
                             <I.PageStatsContainer>
                                 <I.PageStatItem>
@@ -128,7 +127,11 @@ const ILogPageView = ({ilogs, onDatePress, scrollToIndex, onPageChange}: {
     }, [scrollToIndex, ilogs]);
 
     if (!ilogs || ilogs.length === 0) {
-        return <View><I.PageContent>작성된 일지가 없습니다.</I.PageContent></View>;
+        return (
+            <I.PageNoContentWrap>
+                <I.PageNoContentText>작성된 일지가 없습니다.</I.PageNoContentText>
+            </I.PageNoContentWrap>
+        );
     }
 
     const renderItem = ({item}: { item: ILog }) => (

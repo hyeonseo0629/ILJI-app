@@ -15,6 +15,7 @@ export default function UpdateILogScreen() {
     const theme = useTheme();
     const router = useRouter();
     const params = useLocalSearchParams();
+    const { id } = params; // Get id from params
     const { ilogs, updateILog } = useILog();
 
     // --- State Management ---
@@ -25,38 +26,23 @@ export default function UpdateILogScreen() {
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [textAreaHeight, setTextAreaHeight] = useState(200);
 
-    // --- Load existing data for editing ---
+    // --- Load existing data for editing based on ID ---
     useEffect(() => {
-        if (params.editLog) {
-            try {
-                const logToEdit: ILog = JSON.parse(params.editLog as string);
-                // Re-encode the image URLs after parsing due to expo-router's automatic decoding
-                if (logToEdit.images && logToEdit.images.length > 0) {
-                    logToEdit.images = logToEdit.images.map(url => {
-                        const regex = /\/o\/(.*?)(?:\?|$)/;
-                        const match = url.match(regex);
-                        if (match && match[1]) {
-                            const objectPath = match[1];
-                            const encodedObjectPath = objectPath.replace(/\//g, '%2F');
-                            return url.replace(objectPath, encodedObjectPath);
-                        }
-                        return url;
-                    });
+        if (id && ilogs.length > 0) { // Ensure id exists and ilogs are loaded
+            const foundLog = ilogs.find(log => log.id.toString() === id);
+            if (foundLog) {
+                setOriginalLog(foundLog);
+                setContent(foundLog.content);
+                setExistingImageUrls(foundLog.images || []);
+                if (foundLog.tags) {
+                    setSelectedTags(foundLog.tags.split(' ').filter(tag => tag.startsWith('#')));
                 }
-                console.log("Log to edit:", JSON.stringify(logToEdit, null, 2)); // DEBUG LOG
-                setOriginalLog(logToEdit);
-                setContent(logToEdit.content);
-                setExistingImageUrls(logToEdit.images || []);
-                if (logToEdit.tags) {
-                    setSelectedTags(logToEdit.tags.split(' ').filter(tag => tag.startsWith('#')));
-                }
-            } catch (e) {
-                console.error("Failed to parse editLog:", e);
-                Alert.alert("오류", "일기 데이터를 불러오는 데 실패했습니다.");
+            } else {
+                Alert.alert('오류', '일기를 찾을 수 없습니다.');
                 router.back();
             }
         }
-    }, [params.editLog]);
+    }, [id, ilogs]); // Depend on id and ilogs
 
     // --- Hashtag Suggestions ---
     const allTags = useMemo(() => {

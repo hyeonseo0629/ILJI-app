@@ -91,15 +91,15 @@ function Layout() {
                                 }}
                             />
                             <Stack.Screen
-                                name="add-ilog"
+                                name="i-log/add-ilog/add-ilog"
                                 options={{headerShown: false}} // add-ilog 헤더 숨김
                             />
                             <Stack.Screen
-                                name="i-log/[id]"
+                                name="i-log/detail-ilog/[id]"
                                 options={{headerShown: false}} // i-log/[id] 헤더 숨김
                             />
                             <Stack.Screen
-                                name="update-ilog"
+                                name="i-log/update-ilog/[id]"
                                 options={{headerShown: false}} // update-ilog 헤더 숨김
                             />
                             <Stack.Screen

@@ -38,9 +38,9 @@ export default function ILogDetailScreen() {
         if (log) {
             console.log("Detail Screen Log Image URI (before stringify):", log.images[0]); // DEBUG LOG
             router.push({
-                pathname: '../update-ilog',
+                pathname: '/i-log/update-ilog/[id]',
                 params: {
-                    editLog: JSON.stringify(log),
+                    id: log.id.toString(),
                 },
             });
         }
