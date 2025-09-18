@@ -9,11 +9,17 @@ import ColorSchemeProvider, {useColorScheme} from '@/hooks/useColorScheme';
 import {StatusBar} from 'expo-status-bar';
 import {AuthProvider, useSession} from '@/hooks/useAuth';
 import {Colors} from '@/constants/Colors';
-import {ScheduleProvider} from '@/src/context/ScheduleContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from "react-native-safe-area-context";
+import {ScheduleProvider} from "@/src/context/ScheduleContext";
+import {ILogProvider} from "@/src/context/ILogContext";
+
 
 // Layout 컴포넌트는 그대로 유지됩니다.
 function Layout() {
+
+    const isnets = useSafeAreaInsets();
+
     const {session, isLoading} = useSession();
     const segments = useSegments();
     const router = useRouter();
@@ -42,34 +48,66 @@ function Layout() {
     }
 
     return (
-        <Stack 
-            key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
-            screenOptions={{
-                headerStyle: {
-                    backgroundColor: theme.colors.card,
-                },
-                headerTintColor: theme.colors.text,
-                headerTitleStyle: {
-                    fontWeight: 'bold',
-                },
-            }}
-        >
-            <Stack.Screen name="login" options={{headerShown: false}}/>
-            <Stack.Screen name="(tabs)" options={{headerShown: false, title: ''}}/>
-            <Stack.Screen 
-                name="add-schedule" 
-                options={{
-                    title: 'New Schedule', 
-                    presentation: 'modal',
-                    headerStyle: {
-                        backgroundColor: theme.colors.card,
-                    },
-                    headerTintColor: theme.colors.text,
-                }}
-            />
-            <Stack.Screen name="(settings)" options={{headerShown: false}}/>
-            <Stack.Screen name="+not-found" options={{ title: 'Oops!' }}/>
-        </Stack>
+        <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
+            <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
+                        <Stack
+                            key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
+                            screenOptions={{
+                                headerStyle: {
+                                    backgroundColor: theme.colors.card,
+                                },
+                                headerTintColor: theme.colors.text,
+                                headerTitleStyle: {
+                                    fontWeight: 'bold',
+                                },
+                            }}
+                        >
+                            <Stack.Screen
+                                name="login"
+                                options={{headerShown: false}}
+                            />
+                            <Stack.Screen
+                                name="(settings)"
+                                options={{headerShown: false}}
+                            />
+
+                            <Stack.Screen
+                                name="(tabs)"
+                                options={{
+                                    headerShown: false,
+                                    title: ''
+                                }}
+                            />
+                            <Stack.Screen
+                                name="add-schedule"
+                                options={{
+                                    title: 'New Schedule',
+                                    presentation: 'modal',
+                                    headerStyle: {
+                                        backgroundColor: theme.colors.card,
+                                    },
+                                    headerTintColor: theme.colors.text,
+                                    headerShown: false
+                                }}
+                            />
+                            <Stack.Screen
+                                name="i-log/add-ilog/add-ilog"
+                                options={{headerShown: false}} // add-ilog 헤더 숨김
+                            />
+                            <Stack.Screen
+                                name="i-log/detail-ilog/[id]"
+                                options={{headerShown: false}} // i-log/[id] 헤더 숨김
+                            />
+                            <Stack.Screen
+                                name="i-log/update-ilog/[id]"
+                                options={{headerShown: false}} // update-ilog 헤더 숨김
+                            />
+                            <Stack.Screen
+                                name="+not-found"
+                            />
+                        </Stack>
+            </View>
+        </View>
     );
 }
 
@@ -130,7 +168,9 @@ function ThemedAppLayout() {
     <ThemeProvider value={currentTheme}>
       <AuthProvider>
         <ScheduleProvider>
-          <Layout />
+          <ILogProvider>
+            <Layout />
+          </ILogProvider>
         </ScheduleProvider>
       </AuthProvider>
       <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />

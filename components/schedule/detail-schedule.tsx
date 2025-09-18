@@ -8,6 +8,7 @@ import { Tag } from '@/components/tag/TagTypes';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSchedule } from '@/src/context/ScheduleContext';
 import ConfirmModal from '@/components/confirmModal/ConfirmModal'; // [추가] 커스텀 확인 모달 import
+import { useTheme } from '@react-navigation/native';
 
 interface DetailScheduleProps {
     schedule: Schedule | null;
@@ -16,6 +17,7 @@ interface DetailScheduleProps {
 }
 
 const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onClose }) => {
+    const { colors } = useTheme();
     const [isEditMode, setIsEditMode] = useState(false);
     const { updateSchedule, deleteSchedule, tags } = useSchedule();
     const [formData, setFormData] = useState<Schedule | null>(schedule);
@@ -268,6 +270,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                 message={`'${schedule.title}' 일정을 정말 삭제하시겠습니까?`}
                 onClose={() => setConfirmModalVisible(false)}
                 onConfirm={handleConfirmDelete}
+                colors={colors}
             />
         </Modal>
     );

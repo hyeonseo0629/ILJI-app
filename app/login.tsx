@@ -14,6 +14,7 @@ import {
     GoogleSignin,
     statusCodes,
 } from '@react-native-google-signin/google-signin';
+import { useSchedule } from '@/src/context/ScheduleContext'; // 스케줄 컨텍스트 import
 import { useRouter } from 'expo-router';
 
 // app.json에서 클라이언트 ID들을 가져옵니다.
@@ -22,18 +23,15 @@ const GOOGLE_WEB_CLIENT_ID = extra.GOOGLE_WEB_CLIENT_ID as string;
 const GOOGLE_IOS_CLIENT_ID = extra.GOOGLE_IOS_CLIENT_ID as string;
 
 export default function LoginScreen(): React.JSX.Element {
-    // useSession 훅을 사용하여 세션 상태와 함수들을 가져옵니다.
     const { signIn, signOut, session, isLoading } = useSession();
-    // 로그인 진행 중 상태를 관리합니다.
+    const { fetchSchedules } = useSchedule(); // fetchSchedules 함수를 가져옵니다.
     const [busy, setBusy] = useState(false);
     const router = useRouter();
 
-    // useMemo를 사용하여 Google Sign-In 설정을 최적화합니다.
     const config = useMemo(
         () => ({
             webClientId: GOOGLE_WEB_CLIENT_ID,
             scopes: ['profile', 'email'],
-            // Platform.OS 값에 따라 iosClientId를 동적으로 추가합니다.
             ...(Platform.OS === 'ios'
                 ? { iosClientId: GOOGLE_IOS_CLIENT_ID }
                 : {}),
@@ -52,104 +50,140 @@ export default function LoginScreen(): React.JSX.Element {
     }, [config]);
 
     const handleGoogleSignIn = async (): Promise<void> => {
+        console.log('[Login] Attempting Google Sign-In...');
         if (!GOOGLE_WEB_CLIENT_ID) {
             const errorMessage = 'Google Web Client ID is missing. Please check your app.json.';
+            console.error(`[Login] 🛑 Configuration Error: ${errorMessage}`);
             Alert.alert('Configuration Error', errorMessage);
             return;
         }
 
         try {
             setBusy(true);
+            console.log('[Login] Checking for Google Play Services...');
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+            console.log('[Login] Google Play Services are available.');
 
+            console.log('[Login] Initiating Google Sign-In prompt...');
             const userInfo = await GoogleSignin.signIn();
-            console.log("userInfo :", userInfo)
-            const data = (userInfo as any).data;
-            console.log("✅ Google Login Success:", data);
+            console.log('[Login] ✅ Google Sign-In successful. User info received:', JSON.stringify(userInfo, null, 2));
 
-            // Google 로그인 성공 후 받은 데이터에서 idToken과 user 정보를 추출합니다.
+            const data = (userInfo as any).data;
+            if (!data) {
+                console.error('[Login] 🛑 No `data` field in userInfo response from Google Sign-In.');
+                Alert.alert('Google Sign-In Error', 'Received incomplete user data from Google.');
+                return;
+            }
+
             const idToken = data.idToken;
             const user = data.user;
+            console.log(`[Login] Extracted idToken (first 10 chars): ${idToken?.substring(0, 10)}...`);
+            console.log('[Login] Extracted user from Google:', JSON.stringify(user, null, 2));
+
 
             if (!idToken) {
+                console.error('[Login] 🛑 idToken is missing from Google Sign-In response.');
                 Alert.alert('Google Sign-In Error', 'Failed to retrieve authentication token (idToken) from Google.');
                 return;
             }
 
-            // 플랫폼에 따라 백엔드 서버 주소를 다르게 설정합니다.
-            // Android 에뮬레이터는 10.0.2.2를 사용하여 호스트 머신에 접근합니다.
-            const backendUrl = Platform.OS === 'android' ? 'http://10.0.2.2:8090' : 'http://localhost:8090';
+            const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL;
+            if (!API_BASE_URL) {
+                Alert.alert('Configuration Error', 'API_BASE_URL is not set in app.json.');
+                return;
+            }
 
-            const response = await fetch(`${backendUrl}/api/auth/google`, {
+            const backendUrl = `${API_BASE_URL}/api/auth/google`;
+            console.log(`[Login] Sending idToken to backend at: ${backendUrl}`);
+
+            const response = await fetch(backendUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token: idToken }),
             });
 
+            console.log(`[Login] Backend response status: ${response.status}`);
+
             if (response.ok) {
                 const authResponse = await response.json();
+                console.log("✅ [Login] Backend Auth Success:", JSON.stringify(authResponse, null, 2));
 
-                // 백엔드 응답에 user 객체와 id가 있는지 확인합니다.
                 if (!authResponse.user || !authResponse.user.id) {
+                    console.error('[Login] 🛑 User data or user ID not found in server response:', authResponse);
                     Alert.alert('Login Failed', 'User data not found in server response.');
                     return;
                 }
 
-                // 백엔드에서 받은 user 객체를 세션 user 타입에 맞게 매핑합니다.
                 const sessionUser: SessionUser = {
                     user: {
                         id: authResponse.user.id,
                         name: authResponse.user.name,
                         email: authResponse.user.email,
-                        photo: authResponse.user.picture, // 'picture'를 'photo'로 매핑
+                        photo: authResponse.user.picture,
                     },
                     token: authResponse.appToken,
                 };
 
+                console.log('[Login] Calling signIn with user ID:', sessionUser.user.id);
                 await signIn(sessionUser);
+                console.log('[Login] ✅ signIn successful, session created.');
+
             } else {
                 const errorText = await response.text();
+                console.error(`[Login] 🛑 Backend Auth Failed. Status: ${response.status}, Body: ${errorText}`);
                 Alert.alert('Backend Auth Failed', `Server response error: ${errorText}`);
             }
 
         } catch (error: any) {
-            // iOS 코드의 상세한 에러 핸들링을 적용합니다.
-            if (error?.code === statusCodes.SIGN_IN_CANCELLED) {
-                console.log('Sign-in was cancelled by the user.');
+            console.error('[Login] 🛑 An unexpected error occurred during the sign-in process:', JSON.stringify(error, null, 2));
+
+            if (error instanceof TypeError && error.message.includes('Network request failed')) {
+                console.error("[Login] LOGIN_NETWORK_ERROR: Could not connect to backend.", error);
+                Alert.alert('로그인 실패', '서버와 통신 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
                 return;
             }
-            if (error?.code === statusCodes.IN_PROGRESS) {
-                Alert.alert('Info', 'Sign-in is already in progress.');
-                return;
+
+            const errorCode = error?.code;
+            switch (errorCode) {
+                case statusCodes.SIGN_IN_CANCELLED:
+                    console.log('[Login] Sign-in was cancelled by the user.');
+                    break;
+                case statusCodes.IN_PROGRESS:
+                    console.log('[Login] Sign-in is already in progress.');
+                    Alert.alert('Info', 'Sign-in is already in progress.');
+                    break;
+                case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+                    console.error('[Login] Google Play Services is not available.');
+                    Alert.alert('Error', 'Google Play Services is required for this action.');
+                    break;
+                case '10': // DEVELOPER_ERROR for Google Sign-In
+                    console.error('[Login] Google Sign-In Developer Error. Check configuration.', error);
+                    Alert.alert(
+                        'Developer Error',
+                        'There is a configuration issue with Google Sign-In. Please check your `app.json` and Google Cloud Console settings.'
+                    );
+                    break;
+                default:
+                    console.error(`[Login] Unhandled error code: ${errorCode}`, error);
+                    Alert.alert('로그인 실패', `예상치 못한 오류가 발생했습니다: ${error?.message ?? 'Unknown'}`);
+                    break;
             }
-            if (error?.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-                Alert.alert('Error', 'Google Play Services is required.');
-                return;
-            }
-            if (error?.code === '10') { // DEVELOPER_ERROR
-                 Alert.alert(
-                    'Developer Error',
-                    'There is a configuration issue with Google Sign-In. Please check your `app.json` and Google Cloud Console settings.'
-                );
-                return;
-            }
-            Alert.alert('Login Failed', `An unexpected error occurred: ${error?.message ?? 'Unknown'}`);
         } finally {
             setBusy(false);
+            console.log('[Login] Sign-in process finished.');
         }
     };
 
     const handleSignOut = async () => {
         try {
             await GoogleSignin.signOut();
-            await signOut(); // useSession의 signOut 함수 호출
+            await signOut();
         } catch (error) {
             console.error("Sign Out Error:", error);
             Alert.alert('Sign Out Failed', 'An error occurred while signing out.');
         }
     };
 
-    // 로딩 중일 때 ActivityIndicator를 보여줍니다.
     if (isLoading) {
         return (
             <View style={styles.container}>

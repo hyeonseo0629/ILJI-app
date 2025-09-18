@@ -186,18 +186,21 @@ export const ListStatText = styled.Text<StyledProps>`
     margin-left: 3px;
 `;
 
-export const ListTagsContainer = styled.View``;
-
-export const ListTagsText = styled.Text<StyledProps>`
-    font-size: 12px;
-    color: ${props => props.$colors?.text || '#888'};
-    font-style: italic;
-`;
-
 
 // ----------------- //
 // I-Log Page View //
 // ----------------- //
+
+export const PageNoContentWrap = styled.View<StyledProps>`
+    flex: 1;
+    background-color: ${props => props.$colors?.background || 'transparent'};
+    justify-content: center;
+    align-items: center;
+`
+
+export const PageNoContentText = styled.Text`
+    font-size: 20px;
+`
 
 export const PageWrap = styled.View<StyledProps>`
     flex: 1;
@@ -236,7 +239,8 @@ export const PageDateText = styled.Text<StyledProps>`
 export const PageTimeText = styled.Text<StyledProps>`
     font-size: 14px;
     color: ${props => props.$colors?.text || '#888'};
-`;
+    padding-top: 40px;
+`
 
 export const PageTitle = styled.Text<StyledProps>`
     font-size: 20px;
@@ -313,13 +317,6 @@ export const PageFriendTagText = styled.Text<StyledProps>`
     font-weight: bold;
 `;
 
-export const PageTagsContainer = styled.View``;
-
-export const PageTagsText = styled.Text<StyledProps>`
-    font-size: 15px;
-    color: ${props => props.$colors?.text || '#888'};
-`;
-
 export const PageScrollView = styled.ScrollView``;
 
 // ------------------ //
@@ -335,7 +332,6 @@ export const DetailHeader = styled.TouchableOpacity<StyledProps>`
     shadow-color: ${props => props.$colors?.text || '#000'};
     shadow-offset: 0px 2px; /* Corrected: Combined width and height into shadow-offset */
     shadow-opacity: 0.25;
-    shadow-radius: 3.84; /* Corrected: Removed 'px' */
 
     /* Android Shadow */
     elevation: 5;
@@ -392,7 +388,6 @@ export const DetailActionButton = styled.TouchableOpacity<StyledProps>`
     shadow-color: ${props => props.$colors?.text || '#000'};
     shadow-offset: 0px 2px;
     shadow-opacity: 0.25;
-    shadow-radius: 3.84;
 `;
 
 export const DetailImageContainer = styled.View`
@@ -457,16 +452,6 @@ export const DetailContent = styled.Text<StyledProps>`
     border-left-width: 2px;
     border-color: ${props => props.$colors?.primary || 'mediumslateblue'};
     padding: 10px 20px;
-`;
-
-export const DetailTagsContainer = styled.View`
-    width: 95%;
-    margin: 0px auto 10px;
-;`;
-
-export const DetailTagsText = styled.Text<StyledProps>`
-    font-size: 20px;
-    color: ${props => props.$colors?.primary || 'mediumslateblue'};
 `;
 
 export const DetailModalBackdrop = styled.TouchableOpacity`
@@ -609,14 +594,13 @@ export const AddImagePickerText = styled.Text<StyledProps>`
     shadow-color: ${props => props.$colors?.text || '#000'};
     shadow-offset: 0px 2px; /* Corrected: Combined width and height into shadow-offset */
     shadow-opacity: 0.25;
-    shadow-radius: 3.84; /* Corrected: Removed 'px' */
 
     /* Android Shadow (기존 코드) */
     elevation: 5;
 
 `;
 
-export const AddImagePreview = styled.Image`
+export const AddImagePreview = styled.Image<StyledProps>`
     width: 100%;
     height: 375px;
     border-radius: 8px;
@@ -648,7 +632,6 @@ export const AddImageRemoveButton = styled.TouchableOpacity`
     shadow-color: #000;
     shadow-offset: 0px 2px;
     shadow-opacity: 0.25;
-    shadow-radius: 3.84;
 `;
 
 export const AddSuggestionContainer = styled.View<StyledProps & { $bottom?: number }>`
@@ -671,29 +654,6 @@ export const AddSuggestionButton = styled.TouchableOpacity<StyledProps>`
 export const AddSuggestionButtonText = styled.Text<StyledProps>`
     color: ${props => props.$colors?.primary || 'mediumslateblue'};
     font-weight: bold;
-`;
-
-export const AddTagBadgeContainer = styled.View`
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 10px 0;
-    margin-bottom: 10px;
-    width: 100%;
-`;
-
-export const AddTagBadge = styled.View<StyledProps>`
-    flex-direction: row;
-    align-items: center;
-    background-color: ${props => props.$colors?.primary || '#7B68EE'};
-    border-radius: 15px;
-    padding: 6px 10px;
-    margin: 4px;
-`;
-
-export const AddTagBadgeText = styled.Text<StyledProps>`
-    color: ${props => props.$colors?.text || '#fff'};
-    font-weight: bold;
-    margin-right: 5px;
 `;
 
 export const AddButtonWrap = styled.View<StyledProps>`

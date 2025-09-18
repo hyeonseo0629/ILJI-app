@@ -13,19 +13,19 @@
       "android": {
         "buildType": "apk"
       }
-    }
-  },
-  "preview": {
-    "distribution": "internal",
-    "ios": {
-      "simulator": true
     },
-    "android": {
-      "buildType": "apk"
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "autoIncrement": true
     }
-  },
-  "production": {
-    "autoIncrement": true
   },
   "submit": {
     "production": {}

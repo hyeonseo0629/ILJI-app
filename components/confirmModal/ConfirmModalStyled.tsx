@@ -1,4 +1,9 @@
 import styled from 'styled-components/native';
+import { ThemeColors } from "@/types/theme";
+
+interface StyledProps {
+    $colors: ThemeColors;
+}
 
 export const ModalBackdrop = styled.View`
   flex: 1;
@@ -7,9 +12,9 @@ export const ModalBackdrop = styled.View`
   align-items: center;
 `;
 
-export const ModalContainer = styled.View`
+export const ModalContainer = styled.View<StyledProps>`
   width: 80%;
-  background-color: white;
+  background-color: ${props => props.$colors.card};
   border-radius: 15px;
   padding: 20px;
   align-items: center;
@@ -23,16 +28,18 @@ export const ModalContainer = styled.View`
   elevation: 5;
 `;
 
-export const ModalTitle = styled.Text`
+export const ModalTitle = styled.Text<StyledProps>`
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 10px;
+  color: ${props => props.$colors.text};
 `;
 
-export const ModalMessage = styled.Text`
+export const ModalMessage = styled.Text<StyledProps>`
   font-size: 16px;
   text-align: center;
   margin-bottom: 20px;
+  color: ${props => props.$colors.text};
 `;
 
 export const ButtonContainer = styled.View`
@@ -41,7 +48,7 @@ export const ButtonContainer = styled.View`
   width: 100%;
 `;
 
-export const ModalButton = styled.TouchableOpacity`
+export const ModalButton = styled.TouchableOpacity<StyledProps>`
   flex: 1;
   padding: 10px;
   border-radius: 8px;
@@ -50,18 +57,18 @@ export const ModalButton = styled.TouchableOpacity`
 `;
 
 export const CancelButton = styled(ModalButton)`
-  background-color: #f0f0f0;
+  background-color: ${props => props.$colors.border};
 `;
 
 export const ConfirmButton = styled(ModalButton)`
-  background-color: mediumslateblue;
+  background-color: ${props => props.$colors.primary};
 `;
 
-export const ButtonText = styled.Text`
+export const ButtonText = styled.Text<StyledProps>`
   font-size: 16px;
   color: white;
 `;
 
 export const CancelButtonText = styled(ButtonText)`
-  color: #333;
+  color: ${props => props.$colors.text};
 `;
