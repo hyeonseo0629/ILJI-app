@@ -102,9 +102,9 @@ export function ILogProvider({ children }: ILogProviderProps) {
                 console.log(`--- Processing image ${idx} ---`);
                 console.log('Image asset details:', JSON.stringify(image, null, 2));
                 formData.append('images', {
-                    uri: image.uri,
-                    name: image.fileName || `image-${Date.now()}-${idx}.jpg`,
-                    type: image.mimeType || 'image/jpeg',
+                    uri: image.path,
+                    name: image.filename || `image-${Date.now()}-${idx}.jpg`,
+                    type: image.mime || 'image/jpeg',
                 } as any);
             });
 
@@ -201,9 +201,9 @@ export function ILogProvider({ children }: ILogProviderProps) {
 
             newImages?.forEach((image, index) => {
                 formData.append('images', {
-                    uri: image.uri,
-                    name: image.fileName || `image-${Date.now()}-${index}.jpg`,
-                    type: image.mimeType || 'image/jpeg',
+                    uri: image.path,
+                    name: image.filename || `image-${Date.now()}-${index}.jpg`,
+                    type: image.mime || 'image/jpeg',
                 } as any);
             });
 

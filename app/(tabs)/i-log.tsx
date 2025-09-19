@@ -30,6 +30,7 @@ export default function DiaryScreen() {
     const params = useLocalSearchParams();
     const [viewMode, setViewMode] = useState('page');
     const { ilogs, fetchILogs, createILog, updateILog, deleteILog } = useILog();
+    const [isSuccessModalVisible, setSuccessModalVisible] = useState(false);
 
     useEffect(() => {
         fetchILogs();
@@ -79,10 +80,9 @@ export default function DiaryScreen() {
                 router.setParams({ newLog: '' });
             }
 
-            if (params.deletedLogId) {
-                const deletedId = parseInt(params.deletedLogId as string, 10);
-                await deleteILog(deletedId); // Use context function
-                router.setParams({ deletedLogId: '' });
+            if (params.lastAction === 'deleted') {
+                setSuccessModalVisible(true);
+                router.setParams({ lastAction: '' }); // Clear the parameter
             }
 
             if (params.updatedLog) {
@@ -109,7 +109,7 @@ export default function DiaryScreen() {
             }
         };
         handleParams();
-    }, [params.newLog, params.deletedLogId, params.updatedLog, createILog, deleteILog, updateILog]);
+    }, [params.newLog, params.lastAction, params.updatedLog, createILog, updateILog]);
 
     // Reset scroll index when switching to page view
     useEffect(() => {
@@ -371,6 +371,29 @@ export default function DiaryScreen() {
                         />
                     </View>
                 </TouchableOpacity>
+            </Modal>
+
+            {/* Deletion Success Modal */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isSuccessModalVisible}
+                onRequestClose={() => setSuccessModalVisible(false)}
+            >
+                <I.DetailModalBackdrop
+                    activeOpacity={1}
+                    onPressOut={() => setSuccessModalVisible(false)}
+                >
+                    <I.DetailModalContainer>
+                        <I.DetailModalTitle>삭제 완료</I.DetailModalTitle>
+                        <I.DetailModalText>일기가 성공적으로 삭제되었습니다.</I.DetailModalText>
+                        <I.DetailModalButtonContainer>
+                            <I.DetailModalDeleteButton onPress={() => setSuccessModalVisible(false)}>
+                                <I.DetailModalButtonText color="white">확인</I.DetailModalButtonText>
+                            </I.DetailModalDeleteButton>
+                        </I.DetailModalButtonContainer>
+                    </I.DetailModalContainer>
+                </I.DetailModalBackdrop>
             </Modal>
         </GestureHandlerRootView>
     );

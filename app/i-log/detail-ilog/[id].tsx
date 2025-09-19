@@ -15,6 +15,7 @@ export default function ILogDetailScreen() {
     const { ilogs, deleteILog } = useILog();
     const [log, setLog] = useState<ILog | null>(null);
     const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false); // Add isDeleting state to prevent race condition
     const insets = useSafeAreaInsets();
 
     useEffect(() => {
@@ -22,21 +23,22 @@ export default function ILogDetailScreen() {
             const foundLog = ilogs.find(item => item.id.toString() === id);
             if (foundLog) {
                 // Ensure log_date and created_at are Date objects
-                                setLog({
+                setLog({
                     ...foundLog,
                     logDate: new Date(foundLog.logDate),
                     createdAt: new Date(foundLog.createdAt)
                 });
             } else {
-                Alert.alert('오류', '일기를 찾을 수 없습니다.');
-                router.back();
+                // Only navigate back if not in the process of deletion
+                if (!isDeleting) {
+                    router.back();
+                }
             }
         }
-    }, [id, ilogs]);
+    }, [id, ilogs, isDeleting]);
 
     const handleEdit = () => {
         if (log) {
-            console.log("Detail Screen Log Image URI (before stringify):", log.images[0]); // DEBUG LOG
             router.push({
                 pathname: '/i-log/update-ilog/[id]',
                 params: {
@@ -52,8 +54,14 @@ export default function ILogDetailScreen() {
 
     const confirmDelete = async () => {
         if (log) {
+            setIsDeleting(true);
             await deleteILog(log.id);
-            router.back();
+            setDeleteModalVisible(false);
+            // Navigate to list page with a parameter to indicate successful deletion
+            router.push({
+                pathname: '/i-log',
+                params: { lastAction: 'deleted' },
+            });
         }
         setDeleteModalVisible(false);
     };

@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useMemo, useRef} from 'react';
-import { Alert, View, ScrollView, Keyboard, TouchableOpacity } from 'react-native';
+import { Alert, View, ScrollView, Keyboard, TouchableOpacity, Image } from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-crop-picker'; // Changed import
 import * as I from "@/components/style/I-logStyled";
 import {AntDesign, SimpleLineIcons } from '@expo/vector-icons';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
@@ -21,8 +21,8 @@ export default function UpdateILogScreen() {
     // --- State Management ---
     const [originalLog, setOriginalLog] = useState<ILog | null>(null);
     const [content, setContent] = useState('');
-    const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
-    const [newImageAsset, setNewImageAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
+    const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]); // URLs of images already on server
+    const [newImageAssets, setNewImageAssets] = useState<any[]>([]); // Newly selected local image assets
     const [textAreaHeight, setTextAreaHeight] = useState(200);
 
     // --- Load existing data for editing based on ID ---
@@ -59,26 +59,34 @@ export default function UpdateILogScreen() {
 
     // --- Image Picker Logic ---
     const pickImage = async () => {
-        const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert('권한 필요', '갤러리 접근 권한이 필요합니다.');
-            return;
-        }
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
-        if (!result.canceled) {
-            setNewImageAsset(result.assets[0]);
+        try {
+            const images = await ImagePicker.openPicker({
+                multiple: true, // Allow multiple image selection
+                cropping: false, // Disable fixed cropping
+                mediaType: 'photo',
+                // You can add other options here like maxFiles, width, height, etc.
+            });
+
+            // Add new images to existing ones
+            setNewImageAssets(prevAssets => [...prevAssets, ...images]);
+
+        } catch (e: any) {
+            if (e.code === 'E_PICKER_CANCELLED') {
+                console.log('Image selection cancelled');
+            } else {
+                console.error('ImagePicker Error: ', e);
+                Alert.alert('오류', '사진을 가져오는 데 실패했습니다.');
+            }
         }
     };
 
-    const removeImage = () => {
-        setNewImageAsset(null);
-        setExistingImageUrls([]);
-    }
+    const removeImage = (indexToRemove: number, type: 'existing' | 'new') => {
+        if (type === 'existing') {
+            setExistingImageUrls(prevUrls => prevUrls.filter((_, index) => index !== indexToRemove));
+        } else {
+            setNewImageAssets(prevAssets => prevAssets.filter((_, index) => index !== indexToRemove));
+        }
+    };
 
     // --- Hashtag Management ---
     const handleContentChange = (text: string) => {
@@ -109,18 +117,17 @@ export default function UpdateILogScreen() {
         const updateRequest: ILogUpdateRequest = {
             content: content.trim(),
             visibility: visibilityStringToNumber[originalLog.visibility] ?? 1, // Convert string to number, default to 1
-            existingImageUrls: newImageAsset ? [] : existingImageUrls, // If new image, clear existing
+            existingImageUrls: existingImageUrls, // Pass the updated list of existing image URLs
         };
 
-        const imagesToUpload = newImageAsset ? [newImageAsset] : undefined;
+        const imagesToUpload = newImageAssets.length > 0 ? newImageAssets : undefined; // Pass newly selected images
 
         await updateILog(originalLog.id, updateRequest, imagesToUpload);
         router.back();
     };
 
-    // Determine which image URI to display
-    const displayImageUri = newImageAsset?.uri || existingImageUrls[0] || null;
-    console.log("Displaying image URI:", displayImageUri); // DEBUG LOG
+    // Combine existing and new images for display
+    const allImagesForDisplay = [...existingImageUrls, ...newImageAssets.map(asset => asset.path)];
 
     return (
         <I.ScreenContainer $colors={theme.colors}>
@@ -131,19 +138,44 @@ export default function UpdateILogScreen() {
                         ref={scrollViewRef}
                     >
                         <I.AddContentContainer>
-                            {displayImageUri ? (
-                                <View>
-                                    <TouchableOpacity onPress={pickImage}>
-                                        <I.AddImagePreview source={{uri: displayImageUri}}/>
+                            {/* Image Preview Section */}
+                            {allImagesForDisplay.length > 0 ? (
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{maxHeight: 200, marginBottom: 10}}>
+                                    {existingImageUrls.map((uri, index) => (
+                                        <View key={`existing-${index}`} style={{marginRight: 10, position: 'relative'}}>
+                                            <Image source={{uri: uri}} style={{width: 150, height: 150, borderRadius: 10}} />
+                                            <I.AddImageRemoveButton
+                                                onPress={() => removeImage(index, 'existing')}
+                                                style={{position: 'absolute', top: 5, right: 5}}
+                                            >
+                                                <AntDesign name="closecircle" size={24} color="red"/>
+                                            </I.AddImageRemoveButton>
+                                        </View>
+                                    ))}
+                                    {newImageAssets.map((asset, index) => (
+                                        <View key={`new-${index}`} style={{marginRight: 10, position: 'relative'}}>
+                                            <Image source={{uri: asset.path}} style={{width: 150, height: 150, borderRadius: 10}} />
+                                            <I.AddImageRemoveButton
+                                                onPress={() => removeImage(index, 'new')}
+                                                style={{position: 'absolute', top: 5, right: 5}}
+                                            >
+                                                <AntDesign name="closecircle" size={24} color="red"/>
+                                            </I.AddImageRemoveButton>
+                                        </View>
+                                    ))}
+                                    {/* Button to add more images */}
+                                    <TouchableOpacity onPress={pickImage} style={{
+                                        width: 150, height: 150, borderRadius: 10, borderWidth: 1, borderColor: theme.colors.border,
+                                        justifyContent: 'center', alignItems: 'center', marginBottom: 10
+                                    }}>
+                                        <AntDesign name="pluscircleo" size={50} color={theme.colors.border} />
+                                        <AddImagePickerText $colors={theme.colors}>Add More</AddImagePickerText>
                                     </TouchableOpacity>
-                                    <I.AddImageRemoveButton onPress={removeImage}>
-                                        <AntDesign name="closecircle" size={30} color="white"/>
-                                    </I.AddImageRemoveButton>
-                                </View>
+                                </ScrollView>
                             ) : (
-                                <I.AddImagePlaceholder onPress={pickImage} $colors={theme.colors}>
-                                    <SimpleLineIcons name="picture" size={150} color={theme.colors.border} />
-                                    <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText>
+                                <I.AddImagePlaceholder onPress={pickImage} $colors={theme.colors}> {/* $colors prop 전달 */}
+                                    <SimpleLineIcons name="picture" size={150} color={theme.colors.border}/> {/* theme.colors.border 사용 */}
+                                    <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText> {/* $colors prop 전달 */}
                                 </I.AddImagePlaceholder>
                             )}
                             <I.AddTextArea

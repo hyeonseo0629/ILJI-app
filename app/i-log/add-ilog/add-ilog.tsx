@@ -1,7 +1,9 @@
 import React, {useState, useEffect, useMemo, useRef} from 'react';
-import {Alert, View, ScrollView, Keyboard, TouchableOpacity, Modal, Text} from 'react-native';
+import {Alert, View, ScrollView, Keyboard, TouchableOpacity, Modal, Text, Image} from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import ImagePicker from 'react-native-image-crop-picker';
 import * as I from "@/components/style/I-logStyled";
 import {AntDesign, SimpleLineIcons} from '@expo/vector-icons';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
@@ -11,273 +13,390 @@ import {format} from 'date-fns';
 import { useILog } from '@/src/context/ILogContext';
 import {ILog, ILogCreateRequestFrontend} from '@/src/types/ilog';
 import { useSession } from '@/hooks/useAuth';
+import ViewShot from 'react-native-view-shot';
+import logo from '@/assets/images/logo.png'; // Example emoji
+import {useTheme} from '@react-navigation/native';
 
+// --- Constants ---
+const EMOJI_ASSETS = [
+    { id: 'logo1', source: logo },
+    { id: 'logo2', source: logo },
+    { id: 'logo3', source: logo },
+    { id: 'logo4', source: logo },
+    { id: 'logo5', source: logo },
+];
 
-const visibilityMap: { [key: number]: string } = {
-    0: "PUBLIC",
-    1: "FRIENDS_ONLY",
-    2: "PRIVATE",
+// --- DraggableSticker Component ---
+interface DraggableStickerProps {
+    sticker: any;
+    onUpdate: (sticker: any) => void;
+    onDelete: () => void;
+    onSelect: () => void;
+    isSelected: boolean;
+}
+
+const DraggableSticker = ({ sticker, onUpdate, onDelete, onSelect, isSelected }: DraggableStickerProps) => {
+    const theme = useTheme();
+
+    // Shared values for live animation
+    const translateX = useSharedValue(sticker.x || 0);
+    const translateY = useSharedValue(sticker.y || 0);
+    const scale = useSharedValue(sticker.scale || 1);
+    const rotate = useSharedValue(sticker.rotate || 0);
+
+    // Shared values to store the state at the end of the last gesture
+    const offsetX = useSharedValue(sticker.x || 0);
+    const offsetY = useSharedValue(sticker.y || 0);
+    const offsetScale = useSharedValue(sticker.scale || 1);
+    const offsetRotate = useSharedValue(sticker.rotate || 0);
+
+    // useEffect to sync state if props change from parent
+    useEffect(() => {
+        translateX.value = sticker.x || 0;
+        translateY.value = sticker.y || 0;
+        scale.value = sticker.scale || 1;
+        rotate.value = sticker.rotate || 0;
+        offsetX.value = sticker.x || 0;
+        offsetY.value = sticker.y || 0;
+        offsetScale.value = sticker.scale || 1;
+        offsetRotate.value = sticker.rotate || 0;
+    }, [sticker]);
+
+    const commitUpdate = () => {
+        onUpdate({
+            ...sticker,
+            x: translateX.value,
+            y: translateY.value,
+            scale: scale.value,
+            rotate: rotate.value,
+        });
+    };
+
+    const panGesture = Gesture.Pan()
+        .onBegin(() => { onSelect(); })
+        .onUpdate((event) => {
+            translateX.value = event.translationX + offsetX.value;
+            translateY.value = event.translationY + offsetY.value;
+        })
+        .onEnd(() => {
+            offsetX.value = translateX.value;
+            offsetY.value = translateY.value;
+            commitUpdate();
+        });
+
+    const pinchGesture = Gesture.Pinch()
+        .onBegin(() => { onSelect(); })
+        .onUpdate((event) => {
+            scale.value = event.scale * offsetScale.value;
+        })
+        .onEnd(() => {
+            offsetScale.value = scale.value;
+            commitUpdate();
+        });
+
+    const rotateGesture = Gesture.Rotation()
+        .onBegin(() => { onSelect(); })
+        .onUpdate((event) => {
+            rotate.value = event.rotation + offsetRotate.value;
+        })
+        .onEnd(() => {
+            offsetRotate.value = rotate.value;
+            commitUpdate();
+        });
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [
+            { translateX: translateX.value },
+            { translateY: translateY.value },
+            { scale: scale.value },
+            { rotate: `${(rotate.value * 180) / Math.PI}deg` },
+        ],
+    }));
+
+    const longPressGesture = Gesture.LongPress().minDuration(250).onBegin(() => { onSelect(); });
+    const composedGestures = Gesture.Simultaneous(panGesture, pinchGesture, rotateGesture);
+    const selectionGesture = Gesture.Exclusive(composedGestures, longPressGesture);
+
+    return (
+        <GestureDetector gesture={selectionGesture}>
+            <Animated.View style={[{ position: 'absolute', top: '50%', left: '40%' }, animatedStyle]}>
+                <Image
+                    source={sticker.source}
+                    style={{
+                        width: 100, height: 100, resizeMode: 'contain',
+                        borderWidth: isSelected ? 2 : 0,
+                        borderColor: theme.colors.primary,
+                        borderRadius: 10,
+                    }}
+                />
+                {isSelected && (
+                    <TouchableOpacity
+                        onPress={onDelete}
+                        style={{
+                            position: 'absolute', top: -10, right: -10,
+                            backgroundColor: 'red', borderRadius: 15, width: 30, height: 30,
+                            justifyContent: 'center', alignItems: 'center',
+                            zIndex: 100
+                        }}
+                    >
+                        <AntDesign name="close" size={20} color="white" />
+                    </TouchableOpacity>
+                )}
+            </Animated.View>
+        </GestureDetector>
+    );
 };
-import {useTheme} from '@react-navigation/native'; // useTheme import 추가
 
+// --- Main Screen Component ---
 export default function AddILogScreen() {
     const insets = useSafeAreaInsets();
-    const theme = useTheme(); // useTheme 훅 사용
-
+    const theme = useTheme();
     const router = useRouter();
-    const params = useLocalSearchParams();
-    const { ilogs, createILog } = useILog();
+    const { createILog } = useILog();
     const { session } = useSession();
     const userId = session?.user?.id;
 
-    // --- 상태 관리 ---
+    // --- State Management ---
     const [content, setContent] = useState('');
-    const [imageAsset, setImageAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
+    const [imageAssets, setImageAssets] = useState<any[]>([]);
     const [textAreaHeight, setTextAreaHeight] = useState(200);
-
-    // New state for date selection
-    const [selectedLogDate, setSelectedLogDate] = useState<Date>(new Date());
+    const [selectedLogDate, setSelectedLogDate] = useState<Date | null>(new Date());
     const [isCalendarVisible, setCalendarVisible] = useState(false);
-
-    // Existing logs to disable dates
-    const existingLogs: { id: number; iLogDate: Date }[] = useMemo(() => {
-        return ilogs.map(log => ({ id: log.id, iLogDate: log.logDate }));
-    }, [ilogs]);
-
-    // Marked dates for the calendar (disabling existing log dates)
-    const markedDates = useMemo(() => {
-        const markings: {
-            [key: string]: {
-                disabled?: boolean,
-                disableTouchEvent?: boolean,
-                selected?: boolean,
-                selectedColor?: string
-            }
-        } = {};
-        const logsByDate: { [key: string]: { id: number; iLogDate: Date } } = existingLogs.reduce((acc, log) => {
-            acc[format(log.iLogDate, 'yyyy-MM-dd')] = log;
-            return acc;
-        }, {} as { [key: string]: { id: number; iLogDate: Date } });
-
-        // Mark existing log dates as disabled
-        for (const dateString in logsByDate) {
-            markings[dateString] = {disabled: true, disableTouchEvent: true};
-        }
-
-        // Mark the currently selected date
-        markings[format(selectedLogDate, 'yyyy-MM-dd')] = {selected: true, selectedColor: theme.colors.primary};
-
-        return markings;
-    }, [existingLogs, selectedLogDate, theme.colors.primary]);
-
-    // 키보드 높이 상태
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-    // 키보드 이벤트 리스너
-    useEffect(() => {
-        const keyboardDidShowListener = Keyboard.addListener(
-            'keyboardDidShow',
-            (e) => {
-                setKeyboardHeight(e.endCoordinates.height);
-            }
-        );
-        const keyboardDidHideListener = Keyboard.addListener(
-            'keyboardDidHide',
-            () => {
-                setKeyboardHeight(0);
-            }
-        );
+    // --- Editor Modal State ---
+    const [isEmojiEditorVisible, setEmojiEditorVisible] = useState(false);
+    const [imageToEdit, setImageToEdit] = useState<any | null>(null);
+    const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
+    const [stickers, setStickers] = useState<any[]>([]);
+    const [selectedStickerId, setSelectedStickerId] = useState<number | null>(null);
+    const viewShotRef = useRef<ViewShot>(null);
 
+    // --- Keyboard Listener ---
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => setKeyboardHeight(e.endCoordinates.height));
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => setKeyboardHeight(0));
         return () => {
             keyboardDidShowListener.remove();
             keyboardDidHideListener.remove();
         };
     }, []);
 
-    // --- Text Area 자동 스크롤 로직 ---
-    const scrollViewRef = useRef<ScrollView>(null);
-    const isCursorAtEnd = useRef(true);
-
-    const handleContentSizeChange = (e: any) => {
-        setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height));
-
-        if (isCursorAtEnd.current) {
-            setTimeout(() => {
-                scrollViewRef.current?.scrollToEnd({animated: true});
-            }, 100);
-        }
-    };
-
-    const handleTextAreaFocus = () => {
-        setTimeout(() => {
-            scrollViewRef.current?.scrollToEnd({animated: true});
-        }, 100);
-    };
-
-    // --- 이미지 선택 로직 ---
+    // --- Image Picker ---
     const pickImage = async () => {
-        const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert('권한 필요', '갤러리 접근 권한이 필요합니다.');
-            return;
-        }
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
-        if (!result.canceled) {
-            setImageAsset(result.assets[0]);
+        try {
+            const image = await ImagePicker.openPicker({
+                multiple: false,
+                cropping: true,
+                mediaType: 'photo',
+            });
+            const newAsset = { ...image, stickers: [] };
+            setImageAssets(prevAssets => [...prevAssets, newAsset]);
+        } catch (e: any) {
+            if (e.code !== 'E_PICKER_CANCELLED') {
+                console.error('ImagePicker Error: ', e);
+                Alert.alert('오류', '사진을 가져오는 데 실패했습니다.');
+            }
         }
     };
 
-    // --- 해시태그 제안 및 관리 로직 ---
-    const handleContentChange = (text: string) => {
-        let currentText = text;
-        // --- 본문 글자 수 제한 ---
-        if (currentText.length > 2000) {
-            Alert.alert('오류', '본문은 2000자를 초과할 수 없습니다.');
-            currentText = currentText.substring(0, 2000);
+    const removeImage = (indexToRemove: number) => {
+        setImageAssets(prevAssets => prevAssets.filter((_, index) => index !== indexToRemove));
+    };
+
+    // --- Sticker/Editor Logic ---
+    const addSticker = (stickerSource: any) => {
+        const newSticker = { id: Date.now(), source: stickerSource };
+        setStickers(currentStickers => [...currentStickers, newSticker]);
+    };
+
+    const deleteSticker = (stickerId: number) => {
+        setStickers(currentStickers => currentStickers.filter(s => s.id !== stickerId));
+    };
+
+    const handleEditImageWithEmojis = (imageAssetToEdit: any, index: number) => {
+        setImageToEdit(imageAssetToEdit);
+        setEditingImageIndex(index);
+        setStickers(imageAssetToEdit.stickers || []);
+        setSelectedStickerId(null);
+        setEmojiEditorVisible(true);
+    };
+
+    const handleSaveEditedImage = () => {
+        if (editingImageIndex !== null) {
+            const updatedAssets = imageAssets.map((asset, index) => {
+                if (index === editingImageIndex) {
+                    return {
+                        ...asset,
+                        stickers: stickers, // Replace stickers with the new state from the modal
+                    };
+                }
+                return asset;
+            });
+            setImageAssets(updatedAssets);
+
+            // Close the modal
+            setEmojiEditorVisible(false);
+            setImageToEdit(null);
+            setEditingImageIndex(null);
         }
-        setContent(currentText);
     };
 
-    // Calendar date selection handler
-    const handleDateSelect = (day: DateData) => {
-        setSelectedLogDate(new Date(day.dateString));
-        setCalendarVisible(false);
-    };
-
-    // --- 저장 로직 ---
+    // --- Main Save Logic ---
     const handleSave = async () => {
-        if (!content.trim()) {
-            Alert.alert('오류', '내용을 입력해주세요.');
+        if (!selectedLogDate) {
+            Alert.alert('오류', '날짜를 선택해주세요.');
+            return;
+        }
+        if (!content.trim() && imageAssets.length === 0) {
+            Alert.alert('오류', '내용이나 사진을 추가해주세요.');
+            return;
+        }
+        if (!userId) {
+            Alert.alert('오류', '로그인 정보가 없습니다.');
             return;
         }
 
-        if (userId === undefined) {
-            Alert.alert('오류', '로그인 정보가 없습니다. 다시 로그인해주세요.');
-            router.replace('/login'); // Redirect to login
-            return;
-        }
+        // Here you would handle the final save.
+        // This might involve uploading original images and sending sticker data,
+        // or pre-rendering images with stickers before upload.
+        // For now, we just pass the data to the context function.
 
         const newLogRequest: ILogCreateRequestFrontend = {
-            writerId: userId, // Use userId from session
-            logDate: format(selectedLogDate, 'yyyy-MM-dd'), // YYYY-MM-DD 형식의 문자열로 변환
+            writerId: userId,
+            logDate: format(selectedLogDate, 'yyyy-MM-dd'),
             content: content.trim(),
-            visibility: 1, // 백엔드 enum의 ordinal 값 (1 = FRIENDS_ONLY)
-            friendTags: '', // 현재는 빈 값
+            visibility: 1, // FRIENDS_ONLY
+            friendTags: '',
         };
 
-        await createILog({ request: newLogRequest, images: imageAsset ? [imageAsset] : undefined });
+        await createILog({ request: newLogRequest, images: imageAssets });
         router.back();
     };
 
+    // --- Render ---
     return (
-        <I.ScreenContainer $colors={theme.colors}> {/* theme.colors를 $colors prop으로 전달 */}
-            <View style={{flex: 1}}>
-                <I.Container>
-                    <I.AddWrap
-                        contentContainerStyle={{paddingBottom: 40 + keyboardHeight}}
-                        stickyHeaderIndices={[0]}
-                        ref={scrollViewRef}
-                    >
-                        <I.AddHeader onPress={() => setCalendarVisible(true)} $colors={theme.colors}> {/* $colors prop 전달 */}
-                            <I.AddIconWrap>
-                                <AntDesign name="calendar" size={30} color={theme.colors.primary}/> {/* theme.colors.primary 사용 */}
-                            </I.AddIconWrap>
-                            <I.AddHeaderText $colors={theme.colors}> {/* $colors prop 전달 */}
-                                {format(selectedLogDate, 'yyyy년 MM월 dd일')}
-                            </I.AddHeaderText>
-                        </I.AddHeader>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <I.ScreenContainer $colors={theme.colors}>
+                <View style={{flex: 1}}>
+                    <I.Container>
+                        <I.AddWrap contentContainerStyle={{paddingBottom: 40 + keyboardHeight}} stickyHeaderIndices={[0]}>
+                            <I.AddHeader onPress={() => setCalendarVisible(true)} $colors={theme.colors}>
+                                <I.AddIconWrap>
+                                    <AntDesign name="calendar" size={30} color={theme.colors.primary}/>
+                                </I.AddIconWrap>
+                                <I.AddHeaderText $colors={theme.colors}>
+                                    {selectedLogDate ? format(selectedLogDate, 'yyyy년 MM월 dd일') : '날짜를 선택해주세요.'}
+                                </I.AddHeaderText>
+                            </I.AddHeader>
 
-                        <I.AddContentContainer>
-                            {imageAsset ? (
-                                <View>
-                                    <TouchableOpacity onPress={pickImage}>
-                                        <I.AddImagePreview source={{uri: imageAsset.uri}}/>
+                            <I.AddContentContainer>
+                                {/* Image Preview Section */}
+                                {imageAssets.length > 0 ? (
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{maxHeight: 200, marginBottom: 10}}>
+                                        {imageAssets.map((asset, index) => (
+                                            <View key={asset.path} style={{marginRight: 10, position: 'relative'}}>
+                                                <Image source={{uri: asset.path}} style={{width: 150, height: 150, borderRadius: 10}} />
+                                                <TouchableOpacity
+                                                    onPress={() => handleEditImageWithEmojis(asset, index)}
+                                                    style={{position: 'absolute', top: 5, left: 5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12, padding: 2}}
+                                                >
+                                                    <AntDesign name="edit" size={20} color="white"/>
+                                                </TouchableOpacity>
+                                                <I.AddImageRemoveButton
+                                                    onPress={() => removeImage(index)}
+                                                    style={{position: 'absolute', top: 5, right: 5}}
+                                                >
+                                                    <AntDesign name="closecircle" size={24} color="red"/>
+                                                </I.AddImageRemoveButton>
+                                            </View>
+                                        ))}
+                                        <TouchableOpacity onPress={pickImage} style={{
+                                            width: 150, height: 150, borderRadius: 10, borderWidth: 1, borderColor: theme.colors.border,
+                                            justifyContent: 'center', alignItems: 'center', marginBottom: 10
+                                        }}>
+                                            <AntDesign name="pluscircleo" size={50} color={theme.colors.border} />
+                                            <AddImagePickerText $colors={theme.colors}>Add More</AddImagePickerText>
+                                        </TouchableOpacity>
+                                    </ScrollView>
+                                ) : (
+                                    <I.AddImagePlaceholder onPress={pickImage} $colors={theme.colors}>
+                                        <SimpleLineIcons name="picture" size={150} color={theme.colors.border}/>
+                                        <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText>
+                                    </I.AddImagePlaceholder>
+                                )}
+                                <I.AddTextArea
+                                    placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...`}
+                                    value={content}
+                                    onChangeText={setContent}
+                                    multiline
+                                    height={textAreaHeight}
+                                    onContentSizeChange={(e) => setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height))}
+                                    autoFocus={true}
+                                    $colors={theme.colors}
+                                    placeholderTextColor={theme.colors.text}
+                                />
+                            </I.AddContentContainer>
+                        </I.AddWrap>
+                    </I.Container>
+
+                    <I.AddSuggestionContainer $bottom={keyboardHeight} $colors={theme.colors}>
+                        <I.AddButtonWrap $colors={theme.colors}>
+                            <I.AddCancelButton onPress={() => router.back()} $colors={theme.colors}>
+                                <I.AddButtonText $colors={theme.colors}>Cancel</I.AddButtonText>
+                            </I.AddCancelButton>
+                            <I.AddSaveButton onPress={handleSave} $colors={theme.colors}>
+                                <I.AddButtonText $colors={theme.colors}>Save</I.AddButtonText>
+                            </I.AddSaveButton>
+                        </I.AddButtonWrap>
+                    </I.AddSuggestionContainer>
+                </View>
+
+                {/* Calendar Modal */}
+                <Modal animationType="fade" transparent={true} visible={isCalendarVisible} onRequestClose={() => setCalendarVisible(false)}>
+                    <TouchableOpacity style={{flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center'}} activeOpacity={1} onPressOut={() => setCalendarVisible(false)}>
+                        <View style={{width: '90%', backgroundColor: theme.colors.card, borderRadius: 10, padding: 10}} onStartShouldSetResponder={() => true}>
+                            <Calendar onDayPress={(day) => { setSelectedLogDate(new Date(day.dateString)); setCalendarVisible(false); }} markedDates={{ [format(selectedLogDate || new Date(), 'yyyy-MM-dd')]: { selected: true, selectedColor: theme.colors.primary } }} maxDate={format(new Date(), 'yyyy-MM-dd')} theme={{ backgroundColor: theme.colors.card, calendarBackground: theme.colors.card, dayTextColor: theme.colors.text, textDisabledColor: theme.colors.border, monthTextColor: theme.colors.text, textSectionTitleColor: theme.colors.text, selectedDayBackgroundColor: theme.colors.primary, selectedDayTextColor: 'white', todayTextColor: theme.colors.primary, arrowColor: theme.colors.primary }} />
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
+
+                {/* Emoji Editor Modal */}
+                <Modal animationType="slide" transparent={false} visible={isEmojiEditorVisible} onRequestClose={() => setEmojiEditorVisible(false)}>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                        <ViewShot ref={viewShotRef} options={{ format: "jpg", quality: 0.9 }} style={{flex: 1, backgroundColor: theme.colors.background}}>
+                            {imageToEdit && <Image source={{ uri: imageToEdit.path }} style={{ flex: 1, width: '100%', height: '100%', resizeMode: 'contain' }} />}
+                            {stickers.map((sticker) => (
+                                <DraggableSticker
+                                    key={sticker.id}
+                                    sticker={sticker}
+                                    onSelect={() => setSelectedStickerId(sticker.id)}
+                                    isSelected={selectedStickerId === sticker.id}
+                                    onUpdate={(updatedSticker) => setStickers(currentStickers => currentStickers.map(s => s.id === updatedSticker.id ? updatedSticker : s))}
+                                    onDelete={() => deleteSticker(sticker.id)}
+                                />
+                            ))}
+                        </ViewShot>
+                        <View style={{ borderTopWidth: 1, borderColor: theme.colors.border }}>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                {EMOJI_ASSETS.map(emoji => (
+                                    <TouchableOpacity key={emoji.id} onPress={() => addSticker(emoji.source)} style={{ padding: 10 }}>
+                                        <Image source={emoji.source} style={{ width: 50, height: 50, resizeMode: 'contain' }} />
                                     </TouchableOpacity>
-                                    <I.AddImageRemoveButton
-                                        onPress={() => setImageAsset(null)}
-                                    >
-                                        <AntDesign name="closecircle" size={30} color="white"/>
-                                    </I.AddImageRemoveButton>
-                                </View>
-                            ) : (
-                                <I.AddImagePlaceholder onPress={pickImage} $colors={theme.colors}> {/* $colors prop 전달 */}
-                                    <SimpleLineIcons name="picture" size={150} color={theme.colors.border}/> {/* theme.colors.border 사용 */}
-                                    <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText> {/* $colors prop 전달 */}
-                                </I.AddImagePlaceholder>
-                            )}
-                            <I.AddTextArea
-                                placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...\n\n (#을 입력하고 원하는 태그를 입력해보세요.)
-                                `}
-                                value={content}
-                                onChangeText={handleContentChange}
-                                multiline
-                                height={textAreaHeight}
-                                onFocus={handleTextAreaFocus}
-                                onContentSizeChange={handleContentSizeChange}
-                                autoFocus={true}
-                                $colors={theme.colors} // $colors prop 전달
-                                placeholderTextColor={theme.colors.text} // placeholderTextColor 설정
-                            />
-                        </I.AddContentContainer>
-                    </I.AddWrap>
-                </I.Container>
-
-                <I.AddSuggestionContainer $bottom={keyboardHeight} $colors={theme.colors}> {/* $colors prop 전달 */}
-                    <I.AddButtonWrap $colors={theme.colors}> {/* $colors prop 전달 */}
-                        <I.AddCancelButton onPress={() => router.back()} $colors={theme.colors}> {/* $colors prop 전달 */}
-                            <I.AddButtonText $colors={theme.colors}>Cancel</I.AddButtonText> {/* $colors prop 전달 */}
-                        </I.AddCancelButton>
-                        <I.AddSaveButton onPress={handleSave} $colors={theme.colors}> {/* $colors prop 전달 */}
-                            <I.AddButtonText $colors={theme.colors}>Save</I.AddButtonText> {/* $colors prop 전달 */}
-                        </I.AddSaveButton>
-                    </I.AddButtonWrap>
-                </I.AddSuggestionContainer>
-            </View>
-
-            {/* Calendar Modal */}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={isCalendarVisible}
-                onRequestClose={() => setCalendarVisible(false)}
-            >
-                <TouchableOpacity
-                    style={{
-                        flex: 1,
-                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}
-                    activeOpacity={1}
-                    onPressOut={() => setCalendarVisible(false)}
-                >
-                    <View style={{width: '90%', backgroundColor: theme.colors.card, borderRadius: 10, padding: 10}}
-                          onStartShouldSetResponder={() => true}>
-                        <Calendar
-                            markedDates={markedDates}
-                            onDayPress={handleDateSelect}
-                            current={selectedLogDate.toISOString().split('T')[0]}
-                            theme={{
-                                backgroundColor: theme.colors.card,
-                                calendarBackground: theme.colors.card,
-                                dayTextColor: theme.colors.text,
-                                textDisabledColor: theme.colors.border,
-                                monthTextColor: theme.colors.text,
-                                textSectionTitleColor: theme.colors.text,
-                                selectedDayBackgroundColor: theme.colors.primary,
-                                selectedDayTextColor: 'white',
-                                todayTextColor: theme.colors.primary,
-                                arrowColor: theme.colors.primary,
-                            }}
-                        />
-                    </View>
-                </TouchableOpacity>
-            </Modal>
-        </I.ScreenContainer>
+                                ))}
+                            </ScrollView>
+                        </View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-around', padding: 10, backgroundColor: theme.colors.card }}>
+                            <TouchableOpacity onPress={() => setEmojiEditorVisible(false)}>
+                                <Text style={{color: theme.colors.text}}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleSaveEditedImage}>
+                                <Text style={{color: theme.colors.primary}}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </GestureHandlerRootView>
+                </Modal>
+            </I.ScreenContainer>
+        </GestureHandlerRootView>
     );
 }
