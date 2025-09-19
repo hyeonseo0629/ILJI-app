@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import getProfileStylesAndTheme from '@/components/style/ProfileStyled';
+import api from '@/src/lib/api';
 
 // API 응답에 대한 타입 정의 (필드 이름 수정)
 interface UserProfile {
@@ -34,28 +35,19 @@ export default function ProfileScreen(): React.JSX.Element {
     const [isLoading, setIsLoading] = useState(true);
 
     const fetchProfile = async () => {
-        if (!session?.token) {
+        if (!session) {
             setIsLoading(false);
             return;
         }
 
         try {
-            const backendUrl = Platform.OS === 'android' ? 'http://10.0.2.2:8090' : 'http://localhost:8090';
-            const response = await fetch(`${backendUrl}/api/user/profile`, {
-                headers: {
-                    'Authorization': `Bearer ${session.token}`,
-                },
-            });
+            const response = await api.get('/user/profile');
 
-            if (response.ok) {
-                const data: UserProfile = await response.json();
-                // 이미지가 상대 경로일 경우, 전체 URL을 구성합니다.
-                if (data.profileImage && !data.profileImage.startsWith('http')) {
-                    data.profileImage = `${backendUrl}${data.profileImage}`;
-                }
-                if (data.bannerImage && !data.bannerImage.startsWith('http')) {
-                    data.bannerImage = `${backendUrl}${data.bannerImage}`;
-                }
+            if (response.status === 200) {
+                const data: UserProfile = response.data;
+                // The backend URL for images is already handled by the base URL in the api instance if relative.
+                // However, if the image URL is absolute, it will be used as is.
+                // Let's assume the api instance is configured correctly and we receive full URLs or the baseURL is prepended.
                 setProfile(data);
             } else {
                 console.log("프로필 정보를 가져오는데 실패했습니다.");
@@ -94,9 +86,9 @@ export default function ProfileScreen(): React.JSX.Element {
 
     // 표시할 이름, 프로필 사진, 자기소개를 결정합니다. (변수명 수정)
     const displayName = profile?.nickname ?? session?.user?.name ?? '(No Name)';
-    const displayPhoto = profile?.profileImage ?? session?.user?.photo; // profileImageUrl -> profileImage
+    const displayPhoto = profile?.profileImage ?? session?.user?.photo;
     const displayBio = profile?.bio || '자기소개를 작성해주세요.';
-    const displayBanner = profile?.bannerImage; // bannerImageUrl -> bannerImage
+    const displayBanner = profile?.bannerImage;
 
     return (
         <SafeAreaView style={styles.container}>
@@ -126,7 +118,7 @@ export default function ProfileScreen(): React.JSX.Element {
                             <Ionicons name="menu" size={32} color={theme.iconColor} />
                         </TouchableOpacity>
                     </View>
-                    <View style={styles.profilePictureContainer}>
+                    <TouchableOpacity onPress={navigateToProfileEdit} style={styles.profilePictureContainer}>
                         {displayPhoto ? (
                             <Image source={{ uri: displayPhoto }} style={styles.profilePicture} />
                         ) : (
@@ -134,7 +126,7 @@ export default function ProfileScreen(): React.JSX.Element {
                                 <Ionicons name="person" size={60} color={theme.iconColor} />
                             </View>
                         )}
-                    </View>
+                    </TouchableOpacity>
                 </View>
 
                 <View style={styles.profileInfo}>
