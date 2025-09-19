@@ -9,6 +9,7 @@ import {BottomSheetScrollView} from "@gorhom/bottom-sheet";
 import {TaggedSchedule} from "@/components/tag/TaggedSchedule";
 import {useSchedule} from "@/src/context/ScheduleContext";
 import EditTagModal from "@/components/editTagModal/EditTagModal";
+import { Schedule } from '@/components/calendar/scheduleTypes';
 
 interface BottomSheetContentProps {
     activeTab: string;

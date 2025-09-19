@@ -1,5 +1,5 @@
 export interface Schedule {
-    id: number;
+    id: number | string;
     userId: number,
     tagId: number,
     title: string;

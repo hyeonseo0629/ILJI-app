@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { DevSettings } from 'react-native';
 
 const TOKEN_KEY = 'ilji_session';
 
@@ -35,6 +36,35 @@ api.interceptors.request.use(
     },
     (error) => {
         // 요청 설정 중 에러가 발생하면 거부합니다.
+        return Promise.reject(error);
+    }
+);
+
+// 응답 인터셉터: JWT 만료와 같은 인증 오류를 처리합니다.
+api.interceptors.response.use(
+    (response) => {
+        // 정상적인 응답은 그대로 반환합니다.
+        return response;
+    },
+    async (error) => {
+        const errorResponse = error.response;
+
+        // JWT 만료 오류인지 확인합니다 (상태 코드 500 및 특정 메시지).
+        if (errorResponse?.status === 500 && errorResponse.data?.message?.includes('JWT expired')) {
+            console.log('JWT token has expired. Clearing session and reloading.');
+
+            // 저장된 세션을 삭제합니다.
+            await SecureStore.deleteItemAsync(TOKEN_KEY);
+
+            // 앱을 다시 로드하여 로그인 화면으로 보냅니다.
+            DevSettings.reload();
+
+            // 처리 후 에러를 다시 던져서 다른 곳에서 잡을 수 있게 합니다.
+            // 리로드 때문에 실제로는 거의 도달하지 않을 수 있습니다.
+            return Promise.reject(new Error("Session expired. Please log in again."));
+        }
+
+        // 다른 모든 오류는 그대로 거부합니다.
         return Promise.reject(error);
     }
 );

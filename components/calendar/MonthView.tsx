@@ -54,6 +54,29 @@ const MonthView: React.FC<MonthViewProps> = ({date, schedules = [], tags = [], o
         return map;
     }, [tags]);
 
+    // [성능 개선] schedules 배열을 날짜별로 그룹화된 Map으로 미리 가공합니다.
+    const schedulesByDate = useMemo(() => {
+        const map = new Map<string, Schedule[]>();
+        schedules.forEach(schedule => {
+            const startDate = new Date(schedule.startTime);
+            const endDate = new Date(schedule.endTime);
+
+            // UTC 기준 날짜로 하루씩 순회하며 맵에 추가합니다.
+            let current = new Date(startDate);
+            current.setUTCHours(0, 0, 0, 0);
+
+            while (current <= endDate) {
+                const dateKey = current.toISOString().substring(0, 10); // 'YYYY-MM-DD'
+                const existingSchedules = map.get(dateKey) || [];
+                map.set(dateKey, [...existingSchedules, schedule]);
+
+                // 다음 날짜로 이동 (UTC 기준)
+                current.setUTCDate(current.getUTCDate() + 1);
+            }
+        });
+        return map;
+    }, [schedules]);
+
     return (
         <>
             {/* 요일 이름 행은 flex 분배에서 제외하고 고정 높이를 유지합니다. */}
@@ -69,22 +92,21 @@ const MonthView: React.FC<MonthViewProps> = ({date, schedules = [], tags = [], o
                         const isCurrentMonth = isSameMonth(day, date);
                         const isCurrentDay = isToday(day);
 
-                        const daySchedules = schedules.filter(schedule =>
-                            isWithinInterval(day, {
-                                start: startOfDay(schedule.startTime),
-                                end: endOfDay(schedule.endTime)
-                            })
-                        );
+                        // [수정] 시간대 문제를 해결하기 위해 UTC 기준으로 날짜 키를 생성합니다.
+                        const tempDate = new Date(day);
+                        tempDate.setMinutes(tempDate.getMinutes() - tempDate.getTimezoneOffset());
+                        const dateKey = tempDate.toISOString().substring(0, 10);
+                        const daySchedules = schedulesByDate.get(dateKey) || [];
 
                         // [추가] 세로 정렬 문제를 해결하기 위한 정렬 로직
                         daySchedules.sort((a, b) => {
-                            const aIsMultiDay = !isSameDay(a.startTime, a.endTime);
-                            const bIsMultiDay = !isSameDay(b.startTime, b.endTime);
+                            const aIsMultiDay = !isSameDay(new Date(a.startTime), new Date(a.endTime));
+                            const bIsMultiDay = !isSameDay(new Date(b.startTime), new Date(b.endTime));
 
                             if (aIsMultiDay !== bIsMultiDay) {
                                 return aIsMultiDay ? -1 : 1; // 장기 일정을 항상 위로
                             }
-                            return a.startTime.getTime() - b.startTime.getTime(); // 그 외에는 시작 시간 순
+                            return new Date(a.startTime).getTime() - new Date(b.startTime).getTime(); // 그 외에는 시작 시간 순
                         });
 
                         return (
@@ -106,9 +128,9 @@ const MonthView: React.FC<MonthViewProps> = ({date, schedules = [], tags = [], o
                                     {daySchedules.slice(0, 2).map((schedule, index) => {
                                         const eventColor = tagColorMap.get(schedule.tagId) || 'gray';
 
-                                        const isMultiDay = !isSameDay(schedule.startTime, schedule.endTime);
-                                        const isStart = isSameDay(day, schedule.startTime);
-                                        const isEnd = isSameDay(day, schedule.endTime);
+                                        const isMultiDay = !isSameDay(new Date(schedule.startTime), new Date(schedule.endTime));
+                                        const isStart = isSameDay(day, new Date(schedule.startTime));
+                                        const isEnd = isSameDay(day, new Date(schedule.endTime));
 
                                         let position: 'start' | 'middle' | 'end' | 'single' = 'middle';
                                         if (!isMultiDay) {

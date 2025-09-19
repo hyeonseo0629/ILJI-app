@@ -51,7 +51,9 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
     // [추가] 커스텀 모달에서 '확인'을 눌렀을 때 실행될 함수입니다.
     const handleConfirmDelete = async () => {
         if (schedule) {
-            await deleteSchedule(schedule.id);
+            // ID가 문자열인 경우(반복 일정), 숫자 부분만 추출합니다.
+            const idToDelete = typeof schedule.id === 'string' ? parseInt(schedule.id.split('-')[0], 10) : schedule.id;
+            await deleteSchedule(idToDelete);
             setConfirmModalVisible(false); // 확인 모달 닫기
             onClose(); // 상세 정보 모달 닫기
         }
@@ -59,7 +61,12 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
 
     const handleUpdatePress = () => {
         if (formData) {
-            updateSchedule(formData);
+            // ID가 문자열인 경우(반복 일정), 숫자 부분만 추출하여 업데이트합니다.
+            const updatedFormData = {
+                ...formData,
+                id: typeof formData.id === 'string' ? parseInt(formData.id.split('-')[0], 10) : formData.id
+            };
+            updateSchedule(updatedFormData);
             setIsEditMode(false);
         }
     };
