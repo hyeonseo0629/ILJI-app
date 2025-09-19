@@ -3,7 +3,7 @@ import {useFonts} from 'expo-font';
 import {Stack, useRouter, useSegments} from 'expo-router';
 import 'react-native-reanimated';
 import React, {useEffect} from 'react';
-import {ActivityIndicator, View, Platform} from 'react-native';
+import {ActivityIndicator, View} from 'react-native';
 import {ThemeProvider, Theme, useTheme} from '@react-navigation/native';
 import ColorSchemeProvider, {useColorScheme} from '@/hooks/useColorScheme';
 import {StatusBar} from 'expo-status-bar';
@@ -11,6 +11,7 @@ import {AuthProvider, useSession} from '@/hooks/useAuth';
 import {Colors} from '@/constants/Colors';
 import {ScheduleProvider} from '@/src/context/ScheduleContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import api from '@/src/lib/api'; // Import the centralized API instance
 
 function Layout() {
     const {session, isLoading} = useSession();
@@ -31,44 +32,36 @@ function Layout() {
         const inAuthGroup = segments[0] === 'login';
         const inSetupScreen = segments[0] === 'initial-profile-setup';
 
-        // 1. 세션이 없는 경우의 로직
+        // 1. No session logic
         if (!session) {
-            // 로그인 화면이 아니라면, 로그인 화면으로 보냅니다.
             if (!inAuthGroup) {
                 router.replace('/login');
             }
             return;
         }
 
-        // 2. 세션이 있는 경우의 로직
+        // 2. Session exists logic
         const checkProfileAndRedirect = async () => {
             let hasNickname = false;
             try {
-                const backendUrl = Platform.OS === 'android' ? 'http://10.0.2.2:8090' : 'http://localhost:8090';
-                const response = await fetch(`${backendUrl}/api/user/profile`, {
-                    headers: {
-                        'Authorization': `Bearer ${session.token}`,
-                    },
-                });
+                // Use the centralized API instance which handles auth headers automatically
+                const response = await api.get('/user/profile');
 
-                if (response.ok) {
-                    const profile = await response.json();
-                    if (profile && profile.nickname) {
-                        hasNickname = true;
-                    }
+                if (response.status === 200 && response.data && response.data.nickname) {
+                    hasNickname = true;
                 }
             } catch (error) {
-                console.error("프로필 확인 중 오류 발생:", error);
+                // Errors (like 401) are expected if the token is invalid or expired.
+                // The user will be redirected to /login by the session check anyway.
+                console.log("Could not fetch profile, will redirect to login if session is invalid.");
             }
 
-            // --- 최종 화면 전환 규칙 ---
+            // --- Final redirection rules ---
             if (hasNickname) {
-                // 닉네임이 있는 사용자: 로그인/설정 화면에 있다면 메인으로 보냅니다.
                 if (inAuthGroup || inSetupScreen) {
                     router.replace('/(tabs)');
                 }
             } else {
-                // 닉네임이 없는 사용자: 설정 화면이 아니라면 설정 화면으로 보냅니다.
                 if (!inSetupScreen) {
                     router.replace('/initial-profile-setup');
                 }
@@ -79,7 +72,6 @@ function Layout() {
 
     }, [session, isLoading, segments, loaded]);
 
-    // 로딩이 완료될 때까지 로딩 화면을 표시합니다.
     if (isLoading || !loaded) {
         return (
             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
