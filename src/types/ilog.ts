@@ -41,10 +41,24 @@ export interface ILogCreateRequestFrontend {
     content: string;
     visibility: number; // 백엔드 enum의 ordinal 값 (0, 1, 2)
     friendTags?: string | null;
+    imageUrls: string[]; // Add imageUrls to this interface
 }
 
-export interface ILogUpdateRequest {
-    content: string;
-    visibility: number; // Backend expects int, so frontend sends number
-    existingImageUrls?: string[]; // Optional list of image URLs
+// Assuming ImageSourcePropType is globally available or imported where used
+export interface Sticker {
+    id: number;
+    source: any; // Will be ImageSourcePropType in add-ilog.tsx
+    normalizedX: number;
+    normalizedY: number;
+    normalizedScale: number;
+    rotate: number;
+}
+
+export interface ImageAsset {
+    path: string;
+    width?: number;
+    height?: number;
+    mime?: string;
+    stickers: Sticker[];
+    // Add other properties from ImagePicker result if needed
 }
