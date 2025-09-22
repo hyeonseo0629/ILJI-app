@@ -2,7 +2,6 @@ import React, {useCallback, useMemo, useRef, useState, useEffect} from 'react';
 import {Pressable, View, Text, StyleSheet, ActivityIndicator, TouchableOpacity} from 'react-native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import { useSharedValue } from 'react-native-reanimated';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import Header from "@/components/header/Header";
 import {Schedule} from "@/components/calendar/scheduleTypes";
 import {CalendarContainer} from "@/components/style/CalendarStyled";
@@ -23,8 +22,6 @@ import {useSchedule} from "@/src/context/ScheduleContext";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
-    const params = useLocalSearchParams();
-    const router = useRouter();
     const [currentDate, setCurrentDate] = useState(new Date());
     const bottomSheetRef = useRef<BottomSheet>(null);
     const tabPressedRef = useRef(false);
@@ -39,10 +36,17 @@ export default function HomeScreen() {
 
     // --- 데이터 연결 ---
     // 1. ScheduleContext에서 필요한 모든 것을 가져옵니다.
-    const { events: schedules, tags, loading, error, setSelectedDate } = useSchedule();
+    const { events: schedules, tags, loading, error, setSelectedDate, fetchSchedules } = useSchedule();
 
     // [추가] 날짜가 변경될 때 로컬 상태와 전역(Context) 상태를 모두 업데이트하는 함수
     const handleDateChange = (newDate: Date) => {
+        // 월이나 년도가 바뀔 때만 스케줄을 다시 불러옵니다.
+        if (currentDate.getMonth() !== newDate.getMonth() || currentDate.getFullYear() !== newDate.getFullYear()) {
+            const startDate = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
+            const endDate = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0);
+            fetchSchedules(startDate, endDate);
+        }
+
         setCurrentDate(newDate); // 캘린더 뷰의 날짜를 업데이트
         setSelectedDate(newDate); // 앱의 전역 선택 날짜를 업데이트
     };

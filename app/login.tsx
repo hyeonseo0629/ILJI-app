@@ -14,7 +14,7 @@ import {
     GoogleSignin,
     statusCodes,
 } from '@react-native-google-signin/google-signin';
-import { useRouter } from 'expo-router';
+
 
 // app.json에서 클라이언트 ID들을 가져옵니다.
 const extra = Constants.expoConfig?.extra ?? {};
@@ -26,7 +26,6 @@ export default function LoginScreen(): React.JSX.Element {
     const { signIn, signOut, session, isLoading } = useSession();
     // 로그인 진행 중 상태를 관리합니다.
     const [busy, setBusy] = useState(false);
-    const router = useRouter();
 
     // useMemo를 사용하여 Google Sign-In 설정을 최적화합니다.
     const config = useMemo(

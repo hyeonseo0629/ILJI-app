@@ -13,7 +13,7 @@ import { useSession } from '@/hooks/useAuth';
 
 // 서버에서 받아오는 이벤트 데이터의 원본 형태
 interface RawScheduleEvent {
-    id: number;
+    id: number | string;
     title: string;
     startTime: string; // "2024-05-21T09:00:00"
     endTime: string;   // "2024-05-21T10:00:00"
@@ -21,8 +21,11 @@ interface RawScheduleEvent {
     description: string | null;
     location: string | null;
     tagId: number | null;
+    rrule: string;
     createdAt: string;
     updatedAt: string;
+    calendarId: number;
+    userId: number;
 }
 
 // Context가 제공할 값들의 타입
@@ -31,7 +34,7 @@ interface ScheduleContextType {
     tags: Tag[];
     loading: boolean;
     error: Error | null;
-    fetchSchedules: () => void;
+    fetchSchedules: (startDate: Date, endDate: Date) => void; // Updated signature
     updateSchedule: (schedule: Schedule) => Promise<void>;
     createSchedule: (newScheduleData: Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
     deleteSchedule: (scheduleId: number) => Promise<void>;
@@ -71,9 +74,6 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const [selectedDate, setSelectedDate] = useState(new Date());
 
     const formatRawSchedule = useCallback((rawEvent: RawScheduleEvent): Schedule => {
-        if (!userId) {
-            throw new Error("User not logged in, cannot format schedule");
-        }
         return {
             id: rawEvent.id,
             title: rawEvent.title,
@@ -83,78 +83,50 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             description: rawEvent.description ?? '',
             location: rawEvent.location ?? '',
             tagId: rawEvent.tagId ?? 0,
-            userId: userId, // 실제 로그인된 사용자의 ID를 사용합니다.
-            rrule: '',
+            userId: rawEvent.userId,
+            rrule: rawEvent.rrule,
             createdAt: new Date(rawEvent.createdAt),
             updatedAt: new Date(rawEvent.updatedAt),
-            calendarId: 1,
+            calendarId: rawEvent.calendarId,
         };
-    }, [userId]);
+    }, []);
 
-    const fetchSchedules = useCallback(async () => {
-        console.log("Fetching schedules for userId:", userId);
+    const fetchSchedules = useCallback(async (startDate: Date, endDate: Date) => {
+        console.log(`Fetching schedules from /period for userId: ${userId}`);
         if (!userId) {
-            console.warn("User ID is not available. Cannot fetch schedules.");
+            console.warn("User ID is not available.");
             setLoading(false);
             return;
         }
-
         setLoading(true);
+        setError(null); // Reset error state
+
         try {
-            const schedulesUrl = '/schedules';
-            const tagsUrl = '/tags';
-            console.log("Requesting schedules from URL:", schedulesUrl);
-            console.log("Requesting tags from URL:", tagsUrl);
+            const schedulesUrl = '/schedules/period';
+            const tagsUrl = '/tags'; // Still need tags for filtering/display
+            const params = new URLSearchParams();
+            params.append('start', format(startDate, 'yyyy-MM-dd'));
+            params.append('end', format(endDate, 'yyyy-MM-dd'));
 
             const [schedulesResponse, tagsResponse] = await Promise.all([
-                api.get<RawScheduleEvent[]>(schedulesUrl),
+                api.get<RawScheduleEvent[]>(schedulesUrl, { params }),
                 api.get<Tag[]>(tagsUrl)
             ]);
 
-            console.log("Schedules API response data:", schedulesResponse.data);
-            console.log("Tags API response data:", tagsResponse.data);
-
-            const userTagIds = new Set(tagsResponse.data.map(tag => tag.id));
-
-            const mySchedules = schedulesResponse.data.filter(event =>
-                event.tagId === null || userTagIds.has(event.tagId!)
-            );
-
-            const formattedEvents = mySchedules.map(formatRawSchedule);
+            const formattedEvents = schedulesResponse.data.map(formatRawSchedule);
             setEvents(formattedEvents);
+
             const processedTags = tagsResponse.data.map(tag => ({
                 ...tag,
                 color: (tag.color && tag.color.trim() !== '') ? tag.color : '#FF6B6B'
             }));
             setTags(processedTags);
-            setError(null);
-        } catch (err) {
-            if (axios.isAxiosError(err)) {
-                console.error("Axios error during fetchSchedules:", err.message);
-                if (err.response) {
-                    console.error("Axios error response status:", err.response.status);
-                    console.error("Axios error response data:", err.response.data);
-                    console.error("Axios error response config URL:", err.response.config.url);
-                } else if (err.request) {
-                    console.error("Axios error request:", err.request);
-                } else {
-                    console.error("Axios error config:", err.config);
-                }
 
-                if (err.response?.status === 404) {
-                    console.warn(`404 Not Found for user ${userId}: 서버에 데이터가 없는 것으로 간주합니다.`, err.response?.config?.url);
-                    setEvents([]);
-                    setTags([]);
-                    setError(null);
-                } else {
-                    setError(err as Error);
-                    Alert.alert("오류", "데이터를 불러오는 데 실패했습니다.");
-                }
-            } else {
-                console.error("초기 데이터 로딩 실패 (non-Axios error):", err);
-                setError(err as Error);
-                Alert.alert("오류", "데이터를 불러오는 데 실패했습니다.");
-            }
+        } catch (err) {
+            // Generic error handling, but no fallback.
+            console.error("Failed to fetch schedules:", err);
+            setError(err as Error);
+            Alert.alert("오류", "일정을 불러오는 데 실패했습니다.");
         } finally {
             setLoading(false);
         }
@@ -162,9 +134,11 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
 
     useEffect(() => {
         if (userId) {
-            fetchSchedules();
+            const today = new Date();
+            const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            fetchSchedules(startDate, endDate);
         } else {
-            // 로그아웃 상태일 때 데이터 초기화
             setEvents([]);
             setTags([]);
             setLoading(false);
@@ -176,111 +150,58 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         try {
             const payload = {
                 ...scheduleToUpdate,
-                userId: userId, // 동적 userId 사용
-                startTime: scheduleToUpdate.isAllDay
-                    ? format(scheduleToUpdate.startTime, "yyyy-MM-dd'T'00:00:00")
-                    : format(scheduleToUpdate.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
-                endTime: scheduleToUpdate.isAllDay
-                    ? format(scheduleToUpdate.endTime, "yyyy-MM-dd'T'23:59:59")
-                    : format(scheduleToUpdate.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
+                rrule: scheduleToUpdate.rrule ? scheduleToUpdate.rrule.replace(/(\r\n|\n|\r)/gm, "") : '',
+                startTime: format(scheduleToUpdate.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
+                endTime: format(scheduleToUpdate.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
                 tagId: scheduleToUpdate.tagId === 0 ? null : scheduleToUpdate.tagId,
             };
-
             const response = await api.put<RawScheduleEvent>(`/schedules/${scheduleToUpdate.id}`, payload);
-            const updatedEvent = formatRawSchedule(response.data);
-
-            setEvents(prevEvents =>
-                prevEvents.map(event =>
-                    event.id === updatedEvent.id ? updatedEvent : event
-                )
-            );
+            await fetchSchedules(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1), new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0));
         } catch (err) {
-            if (axios.isAxiosError(err)) {
-                console.error("Axios 업데이트 에러:", err.message);
-                if (err.config) {
-                    const { method, baseURL, url } = err.config;
-                    console.error("요청 정보:", method?.toUpperCase(), (baseURL ?? '') + (url ?? ''));
-                }
-            } else {
-                console.error("일정 업데이트 실패:", err);
-            }
-            Alert.alert("업데이트 실패", "서버와 통신 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.");
+            console.error("일정 업데이트 실패:", err);
+            Alert.alert("업데이트 실패", "서버와 통신 중 오류가 발생했습니다.");
         }
-    }, [userId, formatRawSchedule]);
+    }, [userId, fetchSchedules, selectedDate]);
 
     const createSchedule = useCallback(async (newScheduleData: Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
         if (!userId) return;
         try {
             const payload = {
                 ...newScheduleData,
-                userId: userId, // 동적 userId 사용
-                startTime: newScheduleData.isAllDay
-                    ? format(newScheduleData.startTime, "yyyy-MM-dd'T'00:00:00")
-                    : format(newScheduleData.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
-                endTime: newScheduleData.isAllDay
-                    ? format(newScheduleData.endTime, "yyyy-MM-dd'T'23:59:59")
-                    : format(newScheduleData.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
+                rrule: newScheduleData.rrule ? newScheduleData.rrule.replace(/(\r\n|\n|\r)/gm, "") : '',
+                startTime: format(newScheduleData.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
+                endTime: format(newScheduleData.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
                 tagId: newScheduleData.tagId === 0 ? null : newScheduleData.tagId,
             };
-
-            // 2. 변환된 payload를 백엔드 서버에 전송합니다.
-            const response = await api.post<RawScheduleEvent>('/schedules', payload);
-
-            // 3. 서버로부터 받은, id가 포함된 완전한 데이터를 캘린더 형식으로 변환합니다.
-            const newEvent = formatRawSchedule(response.data);
-
-            // 4. 화면의 상태(State)에 새 일정을 추가하여 즉시 반영합니다.
-            setEvents(prevEvents => [...prevEvents, newEvent]);
-
+            await api.post<RawScheduleEvent>('/schedules', payload);
+            await fetchSchedules(new Date(newScheduleData.startTime.getFullYear(), newScheduleData.startTime.getMonth(), 1), new Date(newScheduleData.startTime.getFullYear(), newScheduleData.startTime.getMonth() + 1, 0));
         } catch (err) {
-            if (axios.isAxiosError(err)) {
-                console.error("Axios 생성 에러:", err.message);
-                if (err.config) {
-                    const { method, baseURL, url } = err.config;
-                    console.error("요청 정보:", method?.toUpperCase(), (baseURL ?? '') + (url ?? ''));
-                }
-            } else {
-                console.error("일정 생성 실패:", err);
-            }
-            Alert.alert("생성 실패", "서버와 통신 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.");
+            console.error("일정 생성 실패:", err);
+            Alert.alert("생성 실패", "서버와 통신 중 오류가 발생했습니다.");
         }
-    }, [userId, formatRawSchedule]);
+    }, [userId, fetchSchedules]);
 
     const deleteSchedule = useCallback(async (scheduleId: number) => {
         if (!userId) return;
         try {
-            // 1. 서버에 삭제 요청을 보냅니다. (DELETE /schedules/{id})
             await api.delete(`/schedules/${scheduleId}`);
-
-            // 2. 서버에서 성공적으로 삭제되면, 화면(events 상태)에서도 해당 일정을 제거합니다.
-            setEvents(prevEvents => prevEvents.filter(event => event.id !== scheduleId));
-
+            await fetchSchedules(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1), new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0));
         } catch (err) {
-            if (axios.isAxiosError(err)) {
-                console.error("Axios 삭제 에러:", err.message);
-            } else {
-                console.error("일정 삭제 실패:", err);
-            }
+            console.error("일정 삭제 실패:", err);
             Alert.alert("삭제 실패", "일정을 삭제하는 중 오류가 발생했습니다.");
         }
-    }, [userId]);
+    }, [userId, fetchSchedules, selectedDate]);
 
     const createTag = useCallback(async (tagData: { label: string, color: string }): Promise<Tag> => {
         if (!userId) throw new Error("User not logged in");
         try {
-            const payload = { ...tagData, userId: userId }; // 동적 userId 사용
-            const response = await api.post<Tag>('/tags', payload);
+            const response = await api.post<Tag>('/tags', tagData);
             const newTag = response.data;
-
-            // 2. Context의 tags 상태를 업데이트하여 앱 전체에 변경사항을 반영합니다.
             setTags(prevTags => [...prevTags, newTag]);
-
-            // 3. 새로 생성된 태그 객체를 반환하여, 호출한 쪽에서 바로 사용할 수 있게 합니다.
             return newTag;
         } catch (err) {
             console.error("태그 생성 실패:", err);
             Alert.alert("생성 실패", "새로운 태그를 만드는 중 오류가 발생했습니다.");
-            // 에러를 다시 던져서 호출한 쪽(handleSaveTag)에서 catch 할 수 있도록 합니다.
             throw err;
         }
     }, [userId]);
@@ -288,11 +209,10 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const updateTag = useCallback(async (tagToUpdate: Tag) => {
         if (!userId) return;
         try {
-            const payload = { ...tagToUpdate, userId: userId }; // 동적 userId 사용
-            const response = await api.put<Tag>(`/tags/${tagToUpdate.id}`, payload);
+            const response = await api.put<Tag>(`/tags/${tagToUpdate.id}`, tagToUpdate);
             const updatedTag = response.data;
-            setTags(prevEvents =>
-                prevEvents.map(tag => (tag.id === updatedTag.id ? updatedTag : tag))
+            setTags(prevTags =>
+                prevTags.map(tag => (tag.id === updatedTag.id ? updatedTag : tag))
             );
         } catch (err) {
             console.error("태그 업데이트 실패:", err);
@@ -304,14 +224,14 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const deleteTag = useCallback(async (tagId: number) => {
         if (!userId) return;
         try {
-            await api.delete(`/tags/${tagId}`, { data: { userId: userId } }); // 동적 userId 사용
-            await fetchSchedules();
+            await api.delete(`/tags/${tagId}`);
+            await fetchSchedules(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1), new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0));
         } catch (err) {
             console.error("태그 삭제 실패:", err);
             Alert.alert("삭제 실패", "태그를 삭제하는 중 오류가 발생했습니다.");
             throw err;
         }
-    }, [userId, fetchSchedules]);
+    }, [userId, fetchSchedules, selectedDate]);
 
     const value = {
         events,

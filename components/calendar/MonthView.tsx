@@ -10,8 +10,6 @@ import {
     isToday,
     isSameDay,
     isWithinInterval,
-    startOfDay,
-    endOfDay,
 } from 'date-fns';
 import * as CS from '../style/CalendarStyled';
 import {Schedule} from '@/components/calendar/scheduleTypes';

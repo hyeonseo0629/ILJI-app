@@ -132,7 +132,7 @@ const RRuleGenerator: React.FC<RRuleGeneratorProps> = ({ initialRRule, onChange 
     useEffect(() => {
         const newRrule = generateRRule(state);
         onChange(newRrule);
-    }, [state, onChange]);
+    }, [state]);
 
     const handleStateChange = (newState: Partial<RuleState>) => {
         setState(prev => ({ ...prev, ...newState }));

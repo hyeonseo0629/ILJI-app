@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Modal, Pressable, View, Switch, Platform } from 'react-native';
 import { format, set } from 'date-fns';
 import { Feather } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { Schedule } from '@/components/calendar/scheduleTypes';
 import { Tag } from '@/components/tag/TagTypes';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSchedule } from '@/src/context/ScheduleContext';
+import RRuleGenerator from '@/components/addSchedule/RruleGenerator';
 import ConfirmModal from '@/components/confirmModal/ConfirmModal'; // [추가] 커스텀 확인 모달 import
 
 interface DetailScheduleProps {
@@ -39,6 +40,10 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
         }
     }, [schedule, visible]);
 
+    const handleInputChange = useCallback((field: keyof Schedule, value: any) => {
+        setFormData(prev => prev ? { ...prev, [field]: value } : null);
+    }, []);
+
     if (!schedule || !formData) {
         return null;
     }
@@ -69,10 +74,6 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
             updateSchedule(updatedFormData);
             setIsEditMode(false);
         }
-    };
-
-    const handleInputChange = (field: keyof Schedule, value: any) => {
-        setFormData(prev => prev ? { ...prev, [field]: value } : null);
     };
 
     const onDateChange = (event: any, selectedDate?: Date) => {
@@ -193,6 +194,10 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
 
                             {isEditMode ? (
                                 <>
+                                    <RRuleGenerator
+                                        initialRRule={formData.rrule}
+                                        onChange={(newRrule) => handleInputChange('rrule', newRrule)}
+                                    />
                                     <DS.Label>Tag</DS.Label>
                                     <DS.TagSelectorContainer>
                                         {tags.map(tag => (
