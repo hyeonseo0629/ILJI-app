@@ -135,7 +135,7 @@ export const ListThumbnail = styled.Image<StyledProps>`
     height: 80px;
     border-radius: 10px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
-    margin-right: 15px;
+    margin-right: 35px;
 `;
 
 export const ListMainContent = styled.View`
@@ -265,6 +265,7 @@ export const PageImage = styled.Image<StyledProps>`
     height: 100%;
     border-radius: 15px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
+    resize-mode: contain;
 `;
 
 export const PageStatsContainer = styled.View`
@@ -318,6 +319,12 @@ export const PageFriendTagText = styled.Text<StyledProps>`
 `;
 
 export const PageScrollView = styled.ScrollView``;
+
+export const CarouselItemWrapper = styled.View<{ $screenWidth: number }>`
+    width: 375px; /* Image width */
+    height: 375px; /* Image height */
+    margin-right: 15px; /* Gap between images */
+`;
 
 // ------------------ //
 // I-Log Detail View  //
@@ -402,6 +409,7 @@ export const DetailImage = styled.Image<StyledProps>`
     height: 100%;
     border-radius: 15px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
+    resize-mode: contain;
 `;
 
 export const DetailStatsContainer = styled.View`

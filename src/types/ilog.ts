@@ -44,6 +44,12 @@ export interface ILogCreateRequestFrontend {
     imageUrls: string[]; // Add imageUrls to this interface
 }
 
+export interface ILogUpdateRequest {
+    content: string;
+    visibility: number;
+    removedImageUrls?: string[];
+}
+
 // Assuming ImageSourcePropType is globally available or imported where used
 export interface Sticker {
     id: number;

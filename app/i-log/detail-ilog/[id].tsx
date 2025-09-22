@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {ScrollView, Alert, Modal} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
+import {ScrollView, Alert, Modal, View, ActivityIndicator, Text, Dimensions, NativeSyntheticEvent, NativeScrollEvent, TouchableOpacity} from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import * as I from "@/components/style/I-logStyled";
 import { ILog } from '@/src/types/ilog';
@@ -16,6 +16,8 @@ export default function ILogDetailScreen() {
     const [log, setLog] = useState<ILog | null>(null);
     const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false); // Add isDeleting state to prevent race condition
+    const [activeSlide, setActiveSlide] = useState(0);
+    const scrollViewRef = useRef<ScrollView>(null);
     const insets = useSafeAreaInsets();
 
     useEffect(() => {
@@ -53,6 +55,7 @@ export default function ILogDetailScreen() {
     };
 
     const confirmDelete = async () => {
+        if (isDeleting) return; // Prevent multiple clicks
         if (log) {
             setIsDeleting(true);
             await deleteILog(log.id);
@@ -99,8 +102,29 @@ export default function ILogDetailScreen() {
                     </I.DetailDateWrap>
 
                     {log.images && log.images.length > 0 && (
-                        <I.DetailImageContainer>
-                            <I.DetailImage source={{uri: log.images[0]}}/>
+                        <View>
+                            <ScrollView
+                                ref={scrollViewRef}
+                                horizontal
+                                pagingEnabled
+                                showsHorizontalScrollIndicator={false}
+                                onMomentumScrollEnd={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
+                                    const slide = Math.round(event.nativeEvent.contentOffset.x / (Dimensions.get('window').width - 45));
+                                    if (slide !== activeSlide) {
+                                        setActiveSlide(slide);
+                                    }
+                                }}
+                                style={{width: Dimensions.get('window').width, height: Dimensions.get('window').width - 60}}
+                                contentContainerStyle={{paddingLeft: 22.5, paddingRight: 22.5}}
+                                snapToInterval={Dimensions.get('window').width - 45}
+                                snapToAlignment={'start'}
+                            >
+                                {log.images.map((imageUri, index) => (
+                                    <I.CarouselItemWrapper key={index} $screenWidth={Dimensions.get('window').width}>
+                                        <I.DetailImage source={{uri: imageUri}}/>
+                                    </I.CarouselItemWrapper>
+                                ))}
+                            </ScrollView>
                             <I.DetailStatsContainer>
                                 <I.DetailStatItem>
                                     <AntDesign name="heart" size={14} color="white"/>
@@ -111,7 +135,22 @@ export default function ILogDetailScreen() {
                                     <I.DetailStatText>{log.commentCount}</I.DetailStatText>
                                 </I.DetailStatItem>
                             </I.DetailStatsContainer>
-                        </I.DetailImageContainer>
+                            {log.images.length > 1 && (
+                                <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 10}}>
+                                    {log.images.map((_, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            onPress={() => {
+                                                scrollViewRef.current?.scrollTo({x: index * Dimensions.get('window').width, animated: true});
+                                                setActiveSlide(index);
+                                            }}
+                                        >
+                                            <Text style={{fontSize: 24, color: activeSlide === index ? 'black' : 'gray', marginHorizontal: 4}}>•</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
                     )}
 
                     <I.DetailActionsWrap>
@@ -151,25 +190,37 @@ export default function ILogDetailScreen() {
                     onPressOut={() => setDeleteModalVisible(false)}
                 >
                     <I.DetailModalContainer>
-                        <I.DetailModalTitle>일기 삭제</I.DetailModalTitle>
-                        <I.DetailModalText>정말로 이 일기를 삭제하시겠습니까?</I.DetailModalText>
-                        <I.DetailModalButtonContainer>
-                            <I.DetailModalCancelButton
-                                onPress={() => setDeleteModalVisible(false)}
-                            >
-                                <I.DetailModalButtonText color="black">취소</I.DetailModalButtonText>
-                            </I.DetailModalCancelButton>
-                            <I.DetailModalDeleteButton
-                                onPress={confirmDelete}
-                            >
-                                <I.DetailModalButtonText color="white">삭제</I.DetailModalButtonText>
-                            </I.DetailModalDeleteButton>
-                        </I.DetailModalButtonContainer>
+                        {isDeleting ? (
+                            <>
+                                <ActivityIndicator size="large" color="black"/>
+                                <I.DetailModalText style={{marginTop: 10}}>삭제 중...</I.DetailModalText>
+                            </>
+                        ) : (
+                            <>
+                                <I.DetailModalTitle>일기 삭제</I.DetailModalTitle>
+                                <I.DetailModalText>정말로 이 일기를 삭제하시겠습니까?</I.DetailModalText>
+                                <I.DetailModalButtonContainer>
+                                    <I.DetailModalCancelButton
+                                        onPress={() => setDeleteModalVisible(false)}
+                                    >
+                                        <I.DetailModalButtonText color="black">취소</I.DetailModalButtonText>
+                                    </I.DetailModalCancelButton>
+                                    <I.DetailModalDeleteButton
+                                        onPress={confirmDelete}
+                                    >
+                                        <I.DetailModalButtonText color="white">삭제</I.DetailModalButtonText>
+                                    </I.DetailModalDeleteButton>
+                                </I.DetailModalButtonContainer>
+                            </>
+                        )}
                     </I.DetailModalContainer>
                 </I.DetailModalBackdrop>
             </Modal>
         </I.ScreenContainer>
     );
 }
+
+
+
 
 

@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import {useRouter} from 'expo-router';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
-import Animated, {useAnimatedStyle, useSharedValue, runOnJS} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useSharedValue, runOnJS, withRepeat, withSequence, withTiming, withDelay} from 'react-native-reanimated';
 import ImagePicker from 'react-native-image-crop-picker';
 import * as I from "@/components/style/I-logStyled";
 import {AntDesign, SimpleLineIcons} from '@expo/vector-icons';
@@ -208,6 +208,30 @@ export default function AddILogScreen() {
     const [selectedLogDate, setSelectedLogDate] = useState<Date | null>(new Date());
     const [isCalendarVisible, setCalendarVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+    // --- Animation for swipe hint ---
+    const swipeHintTranslateX = useSharedValue(0);
+
+    useEffect(() => {
+        swipeHintTranslateX.value = withRepeat(
+            withSequence(
+                // A quick double-tap motion from the right edge
+                withTiming(-15, { duration: 150 }),
+                withTiming(0, { duration: 150 }),
+                withTiming(-15, { duration: 150 }),
+                withTiming(0, { duration: 150 }),
+                // Pause for a bit before repeating
+                withDelay(2500, withTiming(0, { duration: 100 }))
+            ),
+            -1 // Infinite repeat
+        );
+    }, []);
+
+    const swipeHintAnimatedStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateX: swipeHintTranslateX.value }],
+        };
+    });
 
     // --- Editor Modal State ---
     const [isEmojiEditorVisible, setEmojiEditorVisible] = useState(false);
@@ -523,9 +547,17 @@ export default function AddILogScreen() {
                             <I.AddContentContainer>
                                 {/* Image Preview Section */}
                                 {imageAssets.length > 0 ? (
-                                    <ScrollView horizontal showsHorizontalScrollIndicator={false}
-                                                style={{height: 375, marginBottom: 10}}>
-                                        {imageAssets.map((asset, index) => {
+                                    <View style={{width: PREVIEW_SIZE, alignSelf: 'center', marginTop: 15}}>
+                                        <View style={{alignItems: 'flex-end', marginBottom: 8}}>
+                                            <Animated.View style={[swipeHintAnimatedStyle]}>
+                                                <View style={{backgroundColor: theme.colors.border, borderRadius: 15, paddingVertical: 4, paddingHorizontal: 8}}>
+                                                    <Text style={{color: theme.colors.text, fontSize: 12}}>Add More Picture... →</Text>
+                                                </View>
+                                            </Animated.View>
+                                        </View>
+                                        <ScrollView horizontal showsHorizontalScrollIndicator={false}
+                                                    style={{height: 375, marginBottom: 10}}>
+                                            {imageAssets.map((asset, index) => {
                                             const imageRatio = (asset.height || 1) / (asset.width || 1);
                                             const previewRatio = 1;
                                             let contentWidth, contentHeight, contentX, contentY;
@@ -618,11 +650,13 @@ export default function AddILogScreen() {
                                             borderColor: theme.colors.border,
                                             justifyContent: 'center',
                                             alignItems: 'center',
-                                            marginBottom: 10
-                                        }}> <AntDesign name="pluscircleo" size={50} color={theme.colors.border}/>
+                                            marginBottom: 10,
+                                            marginLeft: 10
+                                        }}><AntDesign name="pluscircleo" size={50} color={theme.colors.border}/>
                                             <AddImagePickerText $colors={theme.colors}>Add More</AddImagePickerText>
                                         </TouchableOpacity>
                                     </ScrollView>
+                                    </View>
                                 ) : (
                                     <I.AddImagePlaceholder onPress={pickImage} $colors={theme.colors}>
                                         <SimpleLineIcons name="picture" size={150} color={theme.colors.border}/>
@@ -749,7 +783,7 @@ export default function AddILogScreen() {
                         </TouchableOpacity>
                     </View>
                 </Modal>
-            </I.ScreenContainer> {/* Added missing closing tag */}
+            </I.ScreenContainer>
         </View>
     );
 }

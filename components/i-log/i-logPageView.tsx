@@ -1,4 +1,14 @@
-import {Dimensions, View, FlatList, ViewToken, TouchableOpacity, Text} from "react-native";
+import {
+    Dimensions,
+    View,
+    FlatList,
+    ViewToken,
+    TouchableOpacity,
+    Text,
+    ScrollView,
+    NativeSyntheticEvent,
+    NativeScrollEvent
+} from "react-native";
 import * as I from "@/components/style/I-logStyled";
 import React, {useRef, useEffect} from "react";
 import {ILog} from '@/src/types/ilog';
@@ -10,6 +20,8 @@ const {width} = Dimensions.get("window");
 
 const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void }) => {
     const router = useRouter();
+    const [activeSlide, setActiveSlide] = React.useState(0);
+    const scrollViewRef = React.useRef<ScrollView>(null);
     let parsedFriendTags: { id: number, name: string }[] = [];
     try {
         if (item.friendTags) {
@@ -39,9 +51,30 @@ const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void })
                 {/* Wrap content below header in a TouchableOpacity for navigation */}
                 <TouchableOpacity activeOpacity={0.8} onPress={handleNavigateToDetail}>
 
-                    {item.images && (
-                        <I.PageImageContainer>
-                            <I.PageImage source={{uri: item.images[0]}}/>
+                    {item.images && item.images.length > 0 && (
+                        <View>
+                            <ScrollView
+                                ref={scrollViewRef}
+                                horizontal
+                                pagingEnabled
+                                showsHorizontalScrollIndicator={false}
+                                onMomentumScrollEnd={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
+                                    const slide = Math.round(event.nativeEvent.contentOffset.x / (Dimensions.get('window').width - 45));
+                                    if (slide !== activeSlide) {
+                                        setActiveSlide(slide);
+                                    }
+                                }}
+                                style={{width: Dimensions.get('window').width, height: Dimensions.get('window').width - 60}}
+                                contentContainerStyle={{paddingLeft: 22.5, paddingRight: 22.5}}
+                                snapToInterval={Dimensions.get('window').width - 45}
+                                snapToAlignment={'start'}
+                            >
+                                {item.images.map((imageUri, index) => (
+                                    <I.CarouselItemWrapper key={index} $screenWidth={Dimensions.get('window').width}>
+                                        <I.PageImage source={{uri: imageUri}}/>
+                                    </I.CarouselItemWrapper>
+                                ))}
+                            </ScrollView>
                             <I.PageStatsContainer>
                                 <I.PageStatItem>
                                     <AntDesign name="heart" size={14} color="white"/>
@@ -52,7 +85,34 @@ const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void })
                                     <I.PageStatText>{item.commentCount}</I.PageStatText>
                                 </I.PageStatItem>
                             </I.PageStatsContainer>
-                        </I.PageImageContainer>
+                            {item.images.length > 1 && (
+                                <View style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    padding: 10
+                                }}>
+                                    {item.images.map((_, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            onPress={() => {
+                                                scrollViewRef.current?.scrollTo({
+                                                    x: index * Dimensions.get('window').width,
+                                                    animated: true
+                                                });
+                                                setActiveSlide(index);
+                                            }}
+                                        >
+                                            <Text style={{
+                                                fontSize: 24,
+                                                color: activeSlide === index ? 'black' : 'gray',
+                                                marginHorizontal: 4
+                                            }}>•</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
                     )}
 
                     {parsedFriendTags.length > 0 && (
