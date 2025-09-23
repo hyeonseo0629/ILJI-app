@@ -16,6 +16,8 @@ import debounce from 'lodash/debounce';
 import * as ImagePicker from 'expo-image-picker';
 import api from '../../src/lib/api';
 
+console.log("--- AI DEBUG: File updated at " + new Date().toISOString() + " ---");
+
 export default function ProfileEditScreen() {
     const theme = useTheme();
     const [nickname, setNickname] = useState('');
@@ -48,7 +50,7 @@ export default function ProfileEditScreen() {
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ImagePicker.MediaTypeOptions.Images, // Reverted to the compatible version
             allowsEditing: true,
             aspect: [1, 1],
             quality: 1,
@@ -108,16 +110,13 @@ export default function ProfileEditScreen() {
         try {
             const formData = new FormData();
 
-            // 1. 닉네임 등 텍스트 데이터를 JSON 객체로 준비
             const requestData: { nickname?: string } = {};
             if (newNickname !== nickname && newNickname.length > 0) {
                 requestData.nickname = newNickname;
             }
 
-            // FormData에 JSON 문자열로 추가
             formData.append('request', JSON.stringify(requestData));
 
-            // 2. 이미지 파일이 새로 선택된 경우 FormData에 추가
             if (newProfileImage) {
                 const uri = newProfileImage.uri;
                 const uriParts = uri.split('.');
@@ -130,7 +129,6 @@ export default function ProfileEditScreen() {
                 } as any);
             }
 
-            // 3. 서버에 PUT 요청 전송
             await api.put('/user/profile', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -138,11 +136,20 @@ export default function ProfileEditScreen() {
             });
 
             Alert.alert('성공', '프로필이 성공적으로 변경되었습니다.');
-            fetchUserProfile(); // 최신 정보 다시 불러오기
-            setNewProfileImage(null); // 선택한 이미지 상태 초기화
+            fetchUserProfile();
+            setNewProfileImage(null);
 
-        } catch (e) {
-            console.error(e);
+        } catch (e: any) {
+            console.error('Error saving profile:', JSON.stringify(e, null, 2));
+            if (e.response) {
+                console.error('Axios response data:', e.response.data);
+                console.error('Axios response status:', e.response.status);
+                console.error('Axios response headers:', e.response.headers);
+            } else if (e.request) {
+                console.error('Axios request:', e.request);
+            } else {
+                console.error('Error message:', e.message);
+            }
             Alert.alert('오류', '프로필 변경에 실패했습니다.');
         } finally {
             setIsSaving(false);
@@ -161,7 +168,6 @@ export default function ProfileEditScreen() {
 
     return (
         <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            {/* Profile Image Edit */}
             <View style={styles.imageSection}>
                 <Image
                     source={displayImageUri ? { uri: displayImageUri } : require('../../assets/images/logo.png')}
@@ -172,7 +178,6 @@ export default function ProfileEditScreen() {
                 </TouchableOpacity>
             </View>
 
-            {/* Nickname Edit */}
             <View style={styles.nicknameSection}>
                 <Text style={[styles.label, { color: theme.colors.text }]}>닉네임</Text>
                 <TextInput
@@ -195,7 +200,6 @@ export default function ProfileEditScreen() {
                 </View>
             </View>
 
-            {/* Save Button */}
             <TouchableOpacity
                 style={[styles.saveButton, { backgroundColor: theme.colors.primary }]}
                 onPress={handleSave}

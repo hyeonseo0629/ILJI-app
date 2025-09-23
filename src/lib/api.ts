@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 
 // 안드로이드 에뮬레이터에서는 10.0.2.2가 localhost에 해당합니다.
 const API_BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8090/api' : 'http://192.168.2.12:8090/api';
+//const API_BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8090/api' : 'http://172.20.10.4:8090/api';
 const TOKEN_KEY = 'ilji_session'; // useAuth.tsx와 동일한 키
 
 // 백엔드와 통신할 전용 전화기(axios 인스턴스) 만들기
