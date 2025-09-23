@@ -11,29 +11,68 @@ import {AuthProvider, useSession} from '@/hooks/useAuth';
 import {Colors} from '@/constants/Colors';
 import {ScheduleProvider} from '@/src/context/ScheduleContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import api from '@/src/lib/api'; // Import the centralized API instance
 
-// Layout 컴포넌트는 그대로 유지됩니다.
 function Layout() {
     const {session, isLoading} = useSession();
     const segments = useSegments();
     const router = useRouter();
     const {isDarkColorScheme} = useColorScheme();
-    const theme = useTheme(); // theme 가져오기
+    const theme = useTheme();
     const [loaded] = useFonts({
         SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     });
 
     useEffect(() => {
-        if (isLoading) return;
-        const inAuthGroup = segments[0] === 'login';
-        if (!session && !inAuthGroup) {
-            router.replace('/login');
-        } else if (session && inAuthGroup) {
-            router.replace('/(tabs)');
+        const isAppLoading = isLoading || !loaded;
+        if (isAppLoading) {
+            return;
         }
-    }, [session, isLoading, segments]);
 
-    if (isLoading) {
+        const inAuthGroup = segments[0] === 'login';
+        const inSetupScreen = segments[0] === 'initial-profile-setup';
+
+        // 1. No session logic
+        if (!session) {
+            if (!inAuthGroup) {
+                router.replace('/login');
+            }
+            return;
+        }
+
+        // 2. Session exists logic
+        const checkProfileAndRedirect = async () => {
+            let hasNickname = false;
+            try {
+                // Use the centralized API instance which handles auth headers automatically
+                const response = await api.get('/user/profile');
+
+                if (response.status === 200 && response.data && response.data.nickname) {
+                    hasNickname = true;
+                }
+            } catch (error) {
+                // Errors (like 401) are expected if the token is invalid or expired.
+                // The user will be redirected to /login by the session check anyway.
+                console.log("Could not fetch profile, will redirect to login if session is invalid.");
+            }
+
+            // --- Final redirection rules ---
+            if (hasNickname) {
+                if (inAuthGroup || inSetupScreen) {
+                    router.replace('/(tabs)');
+                }
+            } else {
+                if (!inSetupScreen) {
+                    router.replace('/initial-profile-setup');
+                }
+            }
+        };
+
+        checkProfileAndRedirect();
+
+    }, [session, isLoading, segments, loaded]);
+
+    if (isLoading || !loaded) {
         return (
             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                 <ActivityIndicator/>
@@ -42,7 +81,7 @@ function Layout() {
     }
 
     return (
-        <Stack 
+        <Stack
             key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
             screenOptions={{
                 headerStyle: {
@@ -56,10 +95,11 @@ function Layout() {
         >
             <Stack.Screen name="login" options={{headerShown: false}}/>
             <Stack.Screen name="(tabs)" options={{headerShown: false, title: ''}}/>
-            <Stack.Screen 
-                name="add-schedule" 
+            <Stack.Screen name="initial-profile-setup" options={{headerShown: false}} />
+            <Stack.Screen
+                name="add-schedule"
                 options={{
-                    title: 'New Schedule', 
+                    title: 'New Schedule',
                     presentation: 'modal',
                     headerStyle: {
                         backgroundColor: theme.colors.card,
@@ -73,7 +113,6 @@ function Layout() {
     );
 }
 
-// ColorSchemeProvider 내부에서 테마를 사용하는 새로운 핵심 컴포넌트입니다.
 function ThemedAppLayout() {
     const {isDarkColorScheme, isColorSchemeLoading} = useColorScheme();
     const [loaded] = useFonts({
@@ -138,7 +177,6 @@ function ThemedAppLayout() {
   );
 }
 
-// 최상위 RootLayout은 Provider를 제공하는 역할만 합니다.
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
