@@ -114,27 +114,29 @@ export default function ILogDetailScreen() {
                                         setActiveSlide(slide);
                                     }
                                 }}
-                                style={{width: Dimensions.get('window').width, height: Dimensions.get('window').width - 60}}
-                                contentContainerStyle={{paddingLeft: 22.5, paddingRight: 22.5}}
-                                snapToInterval={Dimensions.get('window').width - 45}
+                                snapToInterval={Dimensions.get('window').width}
                                 snapToAlignment={'start'}
                             >
                                 {log.images.map((imageUri, index) => (
-                                    <I.CarouselItemWrapper key={index} $screenWidth={Dimensions.get('window').width}>
+                                    <I.CarouselItemWrapper 
+                                      key={index}
+                                      isLast={index === log.images.length - 1}
+                                    >
                                         <I.DetailImage source={{uri: imageUri}}/>
+                                        <I.DetailStatsContainer>
+                                            <I.DetailStatItem>
+                                                <AntDesign name="heart" size={14} color="white"/>
+                                                <I.DetailStatText>{log.likeCount}</I.DetailStatText>
+                                            </I.DetailStatItem>
+                                            <I.DetailStatItem>
+                                                <AntDesign name="message1" size={14} color="white"/>
+                                                <I.DetailStatText>{log.commentCount}</I.DetailStatText>
+                                            </I.DetailStatItem>
+                                        </I.DetailStatsContainer>
                                     </I.CarouselItemWrapper>
                                 ))}
                             </ScrollView>
-                            <I.DetailStatsContainer>
-                                <I.DetailStatItem>
-                                    <AntDesign name="heart" size={14} color="white"/>
-                                    <I.DetailStatText>{log.likeCount}</I.DetailStatText>
-                                </I.DetailStatItem>
-                                <I.DetailStatItem>
-                                    <AntDesign name="message1" size={14} color="white"/>
-                                    <I.DetailStatText>{log.commentCount}</I.DetailStatText>
-                                </I.DetailStatItem>
-                            </I.DetailStatsContainer>
+
                             {log.images.length > 1 && (
                                 <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 10}}>
                                     {log.images.map((_, index) => (

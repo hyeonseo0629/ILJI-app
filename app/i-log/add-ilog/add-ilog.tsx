@@ -24,18 +24,15 @@ import {format, isSameDay} from 'date-fns';
 import {useILog} from '@/src/context/ILogContext';
 import {ILogCreateRequestFrontend, Sticker, ImageAsset} from '@/src/types/ilog';
 import {useSession} from '@/hooks/useAuth';
-import logo from '@/assets/images/logo.png'; // Example emoji
+import {emogeStickers} from '@/assets/images/emoge';
 import {useTheme} from '@react-navigation/native';
 import ViewShot from "react-native-view-shot";
 
 // --- Constants ---
-const EMOJI_ASSETS = [
-    {id: 'logo1', source: logo},
-    {id: 'logo2', source: logo},
-    {id: 'logo3', source: logo},
-    {id: 'logo4', source: logo},
-    {id: 'logo5', source: logo},
-];
+const EMOJI_ASSETS = Object.keys(emogeStickers).map(key => ({
+    id: key,
+    source: emogeStickers[key],
+}));
 const PREVIEW_SIZE = 375;
 const STICKER_BASE_SIZE = 100;
 

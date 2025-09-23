@@ -64,27 +64,28 @@ const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void })
                                         setActiveSlide(slide);
                                     }
                                 }}
-                                style={{width: Dimensions.get('window').width, height: Dimensions.get('window').width - 60}}
-                                contentContainerStyle={{paddingLeft: 22.5, paddingRight: 22.5}}
-                                snapToInterval={Dimensions.get('window').width - 45}
                                 snapToAlignment={'start'}
                             >
                                 {item.images.map((imageUri, index) => (
-                                    <I.CarouselItemWrapper key={index} $screenWidth={Dimensions.get('window').width}>
+                                    <I.CarouselItemWrapper 
+                                        key={index}
+                                        isLast={index === item.images.length - 1}
+                                    >
                                         <I.PageImage source={{uri: imageUri}}/>
+                                        <I.PageStatsContainer>
+                                            <I.PageStatItem>
+                                                <AntDesign name="heart" size={14} color="white"/>
+                                                <I.PageStatText>{item.likeCount}</I.PageStatText>
+                                            </I.PageStatItem>
+                                            <I.PageStatItem>
+                                                <AntDesign name="message1" size={14} color="white"/>
+                                                <I.PageStatText>{item.commentCount}</I.PageStatText>
+                                            </I.PageStatItem>
+                                        </I.PageStatsContainer>
                                     </I.CarouselItemWrapper>
                                 ))}
                             </ScrollView>
-                            <I.PageStatsContainer>
-                                <I.PageStatItem>
-                                    <AntDesign name="heart" size={14} color="white"/>
-                                    <I.PageStatText>{item.likeCount}</I.PageStatText>
-                                </I.PageStatItem>
-                                <I.PageStatItem>
-                                    <AntDesign name="message1" size={14} color="white"/>
-                                    <I.PageStatText>{item.commentCount}</I.PageStatText>
-                                </I.PageStatItem>
-                            </I.PageStatsContainer>
+
                             {item.images.length > 1 && (
                                 <View style={{
                                     flexDirection: 'row',

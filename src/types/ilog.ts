@@ -10,8 +10,7 @@ export interface RawILog {
   writerProfileImage: string;
   logDate: string; // ex: "2024-09-15"
   content: string;
-  images: string[]; // List of image URLs as JSON string
-  visibility: string;
+  visibility: number;
   friendTags: string | null;
   likeCount: number;
   commentCount: number;
@@ -44,10 +43,21 @@ export interface ILogCreateRequestFrontend {
     imageUrls: string[]; // Add imageUrls to this interface
 }
 
+export interface ImagePickerAssetType {
+    uri: string;
+    width?: number;
+    height?: number;
+    fileName?: string;
+    fileSize?: number;
+    mimeType?: string;
+}
+
 export interface ILogUpdateRequest {
     content: string;
     visibility: number;
     removedImageUrls?: string[];
+    existingImageUrls?: string[];
+    newImageAssets?: ImagePickerAssetType[];
 }
 
 // Assuming ImageSourcePropType is globally available or imported where used
@@ -65,6 +75,7 @@ export interface ImageAsset {
     width?: number;
     height?: number;
     mime?: string;
+    filename?: string;
     stickers: Sticker[];
     // Add other properties from ImagePicker result if needed
 }

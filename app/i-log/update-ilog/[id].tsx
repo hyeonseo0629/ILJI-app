@@ -22,20 +22,17 @@ import {AddImagePickerText} from "@/components/style/I-logStyled";
 import {Calendar, DateData} from 'react-native-calendars';
 import {format, isSameDay} from 'date-fns';
 import {useILog} from '@/src/context/ILogContext';
-import {ILogCreateRequestFrontend, ILogUpdateRequest, Sticker, ImageAsset} from '@/src/types/ilog';
+import {ILogCreateRequestFrontend, ILogUpdateRequest, Sticker, ImageAsset, ImagePickerAssetType} from '@/src/types/ilog';
 import {useSession} from '@/hooks/useAuth';
-import logo from '@/assets/images/logo.png'; // Example emoji
+import {emogeStickers} from '@/assets/images/emoge';
 import {useTheme} from '@react-navigation/native';
 import ViewShot from "react-native-view-shot";
 
 // --- Constants ---
-const EMOJI_ASSETS = [
-    {id: 'logo1', source: logo},
-    {id: 'logo2', source: logo},
-    {id: 'logo3', source: logo},
-    {id: 'logo4', source: logo},
-    {id: 'logo5', source: logo},
-];
+const EMOJI_ASSETS = Object.keys(emogeStickers).map(key => ({
+    id: key,
+    source: emogeStickers[key],
+}));
 const PREVIEW_SIZE = 375;
 const STICKER_BASE_SIZE = 100;
 
@@ -209,6 +206,7 @@ export default function UpdateILogScreen() {
     const [selectedLogDate, setSelectedLogDate] = useState<Date | null>(new Date());
     const [isCalendarVisible, setCalendarVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [visibility, setVisibility] = useState<number>(0);
 
     // --- Data loading for update ---
     useEffect(() => {
@@ -218,6 +216,7 @@ export default function UpdateILogScreen() {
             if (foundLog) {
                 setContent(foundLog.content);
                 setSelectedLogDate(new Date(foundLog.logDate));
+                setVisibility(Number(foundLog.visibility));
 
                 // Asynchronously fetch image sizes and create assets
                 const fetchImageAssets = async () => {
@@ -293,6 +292,7 @@ export default function UpdateILogScreen() {
     const [isSaving, setIsSaving] = useState(false);
     const [captureQueue, setCaptureQueue] = useState<ImageAsset[]>([]);
     const [processedImages, setProcessedImages] = useState<ImageAsset[]>([]);
+    const [isImageLoadedForCapture, setIsImageLoadedForCapture] = useState(false);
     const offscreenViewShotRef = useRef<ViewShot>(null);
 
     const renderedModalImageLayout = useMemo(() => {
@@ -434,29 +434,35 @@ export default function UpdateILogScreen() {
 
     // --- Offscreen Image Processing ---
     useEffect(() => {
-        const processImage = async () => {
-            if (captureQueue.length > 0 && offscreenViewShotRef.current) {
+        if (captureQueue.length > 0) {
+            setIsImageLoadedForCapture(false); // Reset for the new image in queue
+        }
+    }, [captureQueue]);
+
+    // New useEffect to trigger capture when image is loaded
+    useEffect(() => {
+        const captureAndProcess = async () => {
+            if (isImageLoadedForCapture && captureQueue.length > 0 && offscreenViewShotRef.current) {
                 const assetToCapture = captureQueue[0];
-                const currentViewShot = offscreenViewShotRef.current; // Capture current value here
-                if (!currentViewShot) { // This check is now more meaningful
-                    throw new Error("ViewShot ref is unexpectedly null after initial check.");
-                }
+                const currentViewShot = offscreenViewShotRef.current;
+
                 try {
-                    // Ensure the image is loaded before capturing
-                    const uri = await currentViewShot.capture!(); // Use the captured local constant
+                    const uri = await currentViewShot.capture!();
                     const filename = `ilog-capture-${Date.now()}.png`;
                     setProcessedImages(prev => [...prev, {...assetToCapture, path: uri, stickers: [], filename: filename}]);
                     setCaptureQueue(prev => prev.slice(1));
+                    setIsImageLoadedForCapture(false); // Reset for next image
                 } catch (e) {
                     console.error("Image capture failed:", e);
                     Alert.alert("오류", "이미지 처리에 실패했습니다.");
                     setIsSaving(false);
                     setCaptureQueue([]);
+                    setIsImageLoadedForCapture(false); // Reset on error
                 }
             }
         };
-        processImage();
-    }, [captureQueue, offscreenViewShotRef]);
+        captureAndProcess();
+    }, [isImageLoadedForCapture, captureQueue, offscreenViewShotRef, setIsSaving, setProcessedImages, setCaptureQueue]);
 
     useEffect(() => {
         const finalizeSave = async () => {
@@ -469,19 +475,34 @@ export default function UpdateILogScreen() {
                     return;
                 }
 
-                const finalImagePaths = processedImages.map(asset => asset.path);
-                const removedImageUrls = originalLog.images.filter(url => !finalImagePaths.includes(url));
-                const newImageAssets = processedImages.filter(asset => !originalLog.images.includes(asset.path));
+                // Separate existing and new images
+                const existingImageUrls = processedImages
+                    .filter(asset => originalLog.images.includes(asset.path))
+                    .map(asset => asset.path);
+
+                const newImageAssetsForUpload = processedImages
+                    .filter(asset => !originalLog.images.includes(asset.path))
+                    .map(asset => ({
+                        uri: asset.path,
+                        fileName: asset.filename || asset.path.split('/').pop(),
+                        mimeType: asset.mime || 'image/jpeg',
+                        width: asset.width,
+                        height: asset.height,
+                    } as ImagePickerAssetType));
+
+                const removedImageUrls = originalLog.images.filter(url => !existingImageUrls.includes(url));
 
                 const updateRequest: ILogUpdateRequest = {
                     content: content,
-                    visibility: 0, // TEMP: Fix visibility to be a number, not string
+                    visibility: visibility,
                     removedImageUrls: removedImageUrls,
+                    existingImageUrls: existingImageUrls,
+                    newImageAssets: newImageAssetsForUpload,
                 };
 
                 try {
                     console.log("--- Sending Update Request ---", JSON.stringify(updateRequest, null, 2));
-                    await updateILog(logId, updateRequest, newImageAssets);
+                    await updateILog(logId, updateRequest);
                     Alert.alert('성공', '일기가 성공적으로 수정되었습니다.');
                     router.replace(`/i-log/detail-ilog/${logId}`);
                 } catch (e) {
@@ -493,7 +514,7 @@ export default function UpdateILogScreen() {
             }
         };
         finalizeSave();
-    }, [isSaving, captureQueue, processedImages, content, id, ilogs, updateILog, router]);
+    }, [isSaving, captureQueue, processedImages, content, id, ilogs, updateILog, router, visibility]);
 
     // --- Main Save Logic ---
     const handleSave = async () => {
@@ -535,7 +556,7 @@ export default function UpdateILogScreen() {
                 <View style={{position: 'absolute', opacity: 0, zIndex: -1}}>
                     <ViewShot ref={offscreenViewShotRef} options={{format: "png", quality: 0.9}}>
                         <View style={{width: PREVIEW_SIZE, height: PREVIEW_SIZE, backgroundColor: 'white'}}>
-                            <Image source={{uri: captureQueue[0].path}} style={{width: '100%', height: '100%'}}/>
+                            <Image source={{uri: captureQueue[0].path}} style={{width: '100%', height: '100%'}} onLoadEnd={() => setIsImageLoadedForCapture(true)}/>
                             {captureQueue[0].stickers.map(sticker => {
                                 const scale = (sticker.normalizedScale || 0) * PREVIEW_SIZE;
                                 const stickerHalfSize = (STICKER_BASE_SIZE * scale) / 2;

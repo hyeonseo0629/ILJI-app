@@ -59,7 +59,7 @@ export function ILogProvider({ children }: ILogProviderProps) {
             }
             return url; // Return original URL if regex doesn't match
         }),
-        visibility: raw.visibility,
+        visibility: Number(raw.visibility),
         friendTags: raw.friendTags,
         likeCount: raw.likeCount,
         commentCount: raw.commentCount,
@@ -191,19 +191,25 @@ export function ILogProvider({ children }: ILogProviderProps) {
         }
     }, [userId, formatRawILog]);
 
-    const updateILog = useCallback(async (logId: number, request: ILogUpdateRequest, newImages?: any[]): Promise<ILog | null> => {
+    const updateILog = useCallback(async (logId: number, request: ILogUpdateRequest): Promise<ILog | null> => {
         if (!userId) return null;
         setLoading(true);
 
         try {
             const formData = new FormData();
-            formData.append('request', JSON.stringify(request));
+            const { existingImageUrls, newImageAssets, ...restOfRequest } = request;
 
-            newImages?.forEach((image, index) => {
+            formData.append('request', JSON.stringify(restOfRequest));
+
+            if (existingImageUrls && existingImageUrls.length > 0) {
+                formData.append('existingImageUrls', JSON.stringify(existingImageUrls));
+            }
+
+            newImageAssets?.forEach((image, index) => {
                 formData.append('images', {
-                    uri: image.path,
-                    name: image.filename || `image-${Date.now()}-${index}.jpg`,
-                    type: image.mime || 'image/jpeg',
+                    uri: image.uri,
+                    name: image.fileName || `image-${Date.now()}-${index}.jpg`,
+                    type: image.mimeType || 'image/jpeg',
                 } as any);
             });
 

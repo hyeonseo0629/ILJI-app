@@ -242,24 +242,6 @@ export const PageTimeText = styled.Text<StyledProps>`
     padding-top: 40px;
 `
 
-export const PageTitle = styled.Text<StyledProps>`
-    font-size: 20px;
-    font-weight: bold;
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-color: ${props => props.$colors?.primary || 'mediumslateblue'};
-    padding: 0 10px;
-    margin: 5px 0 15px;
-    color: ${props => props.$colors?.text || 'black'};
-`;
-
-export const PageImageContainer = styled.View`
-    width: 100%;
-    height: 400px; 
-    margin-bottom: 20px;
-    position: relative;
-`;
-
 export const PageImage = styled.Image<StyledProps>`
     width: 100%;
     height: 100%;
@@ -320,10 +302,16 @@ export const PageFriendTagText = styled.Text<StyledProps>`
 
 export const PageScrollView = styled.ScrollView``;
 
-export const CarouselItemWrapper = styled.View<{ $screenWidth: number }>`
-    width: 375px; /* Image width */
-    height: 375px; /* Image height */
-    margin-right: 15px; /* Gap between images */
+interface CarouselItemWrapperProps extends StyledProps {
+  isLast?: boolean;
+}
+
+export const CarouselItemWrapper = styled.View<CarouselItemWrapperProps>`
+    position: relative;
+    width: 370px; /* Image width */
+    height: 370px; /* Image height */
+    margin-right: ${({ isLast }) => (isLast ? '0px' : '42.5px')}; /* Gap between images */
+    margin-bottom: 20px;
 `;
 
 // ------------------ //
