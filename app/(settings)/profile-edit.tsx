@@ -14,6 +14,7 @@ import {
 import { useTheme } from '@react-navigation/native';
 import debounce from 'lodash/debounce';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import api from '../../src/lib/api';
 
 console.log("--- AI DEBUG: File updated at " + new Date().toISOString() + " ---");
@@ -23,7 +24,7 @@ export default function ProfileEditScreen() {
     const [nickname, setNickname] = useState('');
     const [newNickname, setNewNickname] = useState('');
     const [profileImage, setProfileImage] = useState<string | null>(null);
-    const [newProfileImage, setNewProfileImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+    const [newProfileImage, setNewProfileImage] = useState<ImageManipulator.ManipulationResult | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isChecking, setIsChecking] = useState(false);
@@ -50,14 +51,24 @@ export default function ProfileEditScreen() {
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images, // Reverted to the compatible version
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 1,
+            quality: 1, // 원본 품질로 선택
         });
 
-        if (!result.canceled) {
-            setNewProfileImage(result.assets[0]);
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            try {
+                const manipulatedImage = await ImageManipulator.manipulateAsync(
+                    result.assets[0].uri,
+                    [{ resize: { width: 800 } }], // 가로 800px로 리사이즈
+                    { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } // 70% 품질의 JPEG로 압축
+                );
+                setNewProfileImage(manipulatedImage);
+            } catch (error) {
+                Alert.alert("오류", "이미지를 처리하는 중 오류가 발생했습니다.");
+                console.error("Image manipulation error:", error);
+            }
         }
     };
 
@@ -119,13 +130,10 @@ export default function ProfileEditScreen() {
 
             if (newProfileImage) {
                 const uri = newProfileImage.uri;
-                const uriParts = uri.split('.');
-                const fileType = uriParts[uriParts.length - 1];
-
                 formData.append('profileImage', {
                     uri: Platform.OS === 'android' ? uri : uri.replace('file://', ''),
-                    name: `photo.${fileType}`,
-                    type: `image/${fileType}`,
+                    name: `photo.jpg`,
+                    type: `image/jpeg`,
                 } as any);
             }
 

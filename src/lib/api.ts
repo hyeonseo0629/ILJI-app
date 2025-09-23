@@ -3,13 +3,14 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 // 안드로이드 에뮬레이터에서는 10.0.2.2가 localhost에 해당합니다.
-const API_BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8090/api' : 'http://192.168.2.12:8090/api';
+const API_BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8090/api' : 'http://192.168.2.11:8090/api';
 //const API_BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8090/api' : 'http://172.20.10.4:8090/api';
 const TOKEN_KEY = 'ilji_session'; // useAuth.tsx와 동일한 키
 
 // 백엔드와 통신할 전용 전화기(axios 인스턴스) 만들기
 const api = axios.create({
     baseURL: API_BASE_URL,
+    timeout: 5000, // 5초 타임아웃 설정
     headers: {
         'Content-Type': 'application/json',
     },
@@ -43,18 +44,23 @@ api.interceptors.response.use(
     (response) => response,
     // 2. 에러 응답을 처리합니다.
     async (error) => {
-        // 서버 응답에 'JWT expired' 메시지가 포함된 경우, 자동 로그아웃 처리
-        if (
+        const isJwtExpired =
             error.response &&
             error.response.data &&
             typeof error.response.data.message === 'string' &&
-            error.response.data.message.includes('JWT expired')
-        ) {
+            error.response.data.message.includes('JWT expired');
+
+        // Axios 타임아웃 에러는 `code` 속성이 'ECONNABORTED'로 설정됩니다.
+        const isTimeout = error.code === 'ECONNABORTED';
+
+        if (isJwtExpired) {
             console.log('JWT token has expired. Clearing session and logging out.');
-            // 기기에 저장된 만료된 토큰을 삭제합니다.
             await SecureStore.deleteItemAsync(TOKEN_KEY);
             // 토큰이 삭제되면 useAuth 훅이 이를 감지하고,
             // _layout.tsx의 로직에 따라 자동으로 로그인 화면으로 이동하게 됩니다.
+        } else if (isTimeout) {
+            console.log('Request timed out, logging out.');
+            await SecureStore.deleteItemAsync(TOKEN_KEY);
         }
 
         // 처리 후, 에러를 다시 throw하여 API를 호출한 곳의 catch 블록에서 추가 처리를 할 수 있도록 합니다.
