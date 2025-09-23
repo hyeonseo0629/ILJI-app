@@ -40,7 +40,7 @@ export interface ILogCreateRequestFrontend {
     content: string;
     visibility: number; // 백엔드 enum의 ordinal 값 (0, 1, 2)
     friendTags?: string | null;
-    imageUrls: string[]; // Add imageUrls to this interface
+    imageUrls?: string[]; // Add imageUrls to this interface
 }
 
 export interface ImagePickerAssetType {

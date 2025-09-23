@@ -33,6 +33,7 @@ const EMOJI_ASSETS = Object.keys(emogeStickers).map(key => ({
     id: key,
     source: emogeStickers[key],
 }));
+
 const PREVIEW_SIZE = 375;
 const STICKER_BASE_SIZE = 100;
 
@@ -220,7 +221,7 @@ export default function UpdateILogScreen() {
 
                 // Asynchronously fetch image sizes and create assets
                 const fetchImageAssets = async () => {
-                    const promises = foundLog.images.map(url =>
+                    const promises = foundLog.images.map((url: string) =>
                         new Promise<ImageAsset>((resolve) => {
                             Image.getSize(url, (width, height) => {
                                 resolve({
@@ -449,7 +450,7 @@ export default function UpdateILogScreen() {
                 try {
                     const uri = await currentViewShot.capture!();
                     const filename = `ilog-capture-${Date.now()}.png`;
-                    setProcessedImages(prev => [...prev, {...assetToCapture, path: uri, stickers: [], filename: filename}]);
+                    setProcessedImages(prev => [...prev, {...assetToCapture, path: uri, stickers: [], filename: filename, mime: 'image/png'}]);
                     setCaptureQueue(prev => prev.slice(1));
                     setIsImageLoadedForCapture(false); // Reset for next image
                 } catch (e) {
@@ -466,14 +467,23 @@ export default function UpdateILogScreen() {
 
     useEffect(() => {
         const finalizeSave = async () => {
+            const logId = Number(id);
+            const originalLog = ilogs.find(l => l.id === logId);
+
+            console.log("finalizeSave: isSaving", isSaving);
+            console.log("finalizeSave: captureQueue.length", captureQueue.length);
+            console.log("finalizeSave: processedImages.length", processedImages.length);
+            console.log("finalizeSave: imageAssets.length", imageAssets.length);
+
             if (isSaving && captureQueue.length === 0 && processedImages.length === imageAssets.length) {
-                const logId = Number(id);
-                const originalLog = ilogs.find(l => l.id === logId);
                 if (!originalLog) {
                     Alert.alert("오류", "원본 일기를 찾지 못해 업데이트 할 수 없습니다.");
                     setIsSaving(false);
                     return;
                 }
+                console.log("finalizeSave: All conditions met for final save.");
+                console.log("finalizeSave: processedImages (final)", processedImages);
+                console.log("finalizeSave: originalLog.images", originalLog.images);
 
                 // Separate existing and new images
                 const existingImageUrls = processedImages
@@ -529,8 +539,16 @@ export default function UpdateILogScreen() {
         const imagesToProcess = imageAssets.filter(asset => asset.stickers && asset.stickers.length > 0);
         const unprocessedImages = imageAssets.filter(asset => !asset.stickers || asset.stickers.length === 0);
 
+        console.log("handleSave: imageAssets", imageAssets);
+        console.log("handleSave: imagesToProcess", imagesToProcess);
+        console.log("handleSave: unprocessedImages", unprocessedImages);
+
         setProcessedImages(unprocessedImages);
         setCaptureQueue(imagesToProcess);
+
+        console.log("handleSave: after setProcessedImages and setCaptureQueue");
+        console.log("handleSave: processedImages (initial)", unprocessedImages);
+        console.log("handleSave: captureQueue (initial)", imagesToProcess);
     };
 
     return (
@@ -555,8 +573,8 @@ export default function UpdateILogScreen() {
             {isSaving && captureQueue.length > 0 && (
                 <View style={{position: 'absolute', opacity: 0, zIndex: -1}}>
                     <ViewShot ref={offscreenViewShotRef} options={{format: "png", quality: 0.9}}>
-                        <View style={{width: PREVIEW_SIZE, height: PREVIEW_SIZE, backgroundColor: 'white'}}>
-                            <Image source={{uri: captureQueue[0].path}} style={{width: '100%', height: '100%'}} onLoadEnd={() => setIsImageLoadedForCapture(true)}/>
+                        <View style={{width: PREVIEW_SIZE, height: PREVIEW_SIZE, backgroundColor: 'transparent'}}>
+                            <Image source={{uri: captureQueue[0].path}} style={{width: '100%', height: '100%', resizeMode: 'contain'}} onLoadEnd={() => setIsImageLoadedForCapture(true)}/>
                             {captureQueue[0].stickers.map(sticker => {
                                 const scale = (sticker.normalizedScale || 0) * PREVIEW_SIZE;
                                 const stickerHalfSize = (STICKER_BASE_SIZE * scale) / 2;
