@@ -52,15 +52,64 @@ export default function HomeScreen() {
     const [tagPage, setTagPage] = useState(0);
     const TAGS_PER_PAGE = 4;
 
-    // [개선] '일정' 태그가 항상 가장 앞에 오도록 정렬합니다.
+    // Helper function to get character type priority for sorting
+    const getCharTypePriority = (char: string): number => {
+        if (!char) return 99; // Handle empty string or undefined char, push to end
+        const code = char.charCodeAt(0);
+        // Special characters (non-alphanumeric, non-Korean)
+        if (!((code >= 48 && code <= 57) || // 0-9
+              (code >= 65 && code <= 90) || // A-Z
+              (code >= 97 && code <= 122) || // a-z
+              (code >= 0xAC00 && code <= 0xD7A3))) { // 가-힣
+            return 0; // Special characters (highest priority)
+        }
+        // English letters
+        if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) {
+            return 1;
+        }
+        // Korean characters
+        if (code >= 0xAC00 && code <= 0xD7A3) {
+            return 2;
+        }
+        // Numbers or other characters, put them last
+        return 3;
+    };
+
+    // Custom sort function for tags
+    const customTagSort = (tagA: Tag, tagB: Tag): number => {
+        const labelA = tagA.label;
+        const labelB = tagB.label;
+
+        if (!labelA && !labelB) return 0;
+        if (!labelA) return 1; // Push null/empty labels to end
+        if (!labelB) return -1;
+
+        const charA = labelA.charAt(0);
+        const charB = labelB.charAt(0);
+
+        const priorityA = getCharTypePriority(charA);
+        const priorityB = getCharTypePriority(charB);
+
+        if (priorityA !== priorityB) {
+            return priorityA - priorityB; // Sort by priority
+        } else {
+            // If same priority, sort lexicographically
+            // Use localeCompare for proper string comparison, especially for Korean
+            return labelA.localeCompare(labelB, ['ko', 'en'], { sensitivity: 'base' });
+        }
+    };
+
     const displayTags = useMemo(() => {
         const scheduleTag = tags.find(tag => tag.label === '일정');
         const otherTags = tags.filter(tag => tag.label !== '일정');
 
+        // Custom sorting for otherTags
+        otherTags.sort(customTagSort);
+
         if (scheduleTag) {
             return [scheduleTag, ...otherTags];
         }
-        return tags; // '일정' 태그가 없는 경우, 원래 순서대로 반환
+        return otherTags; // '일정' 태그가 없는 경우에도 정렬된 태그 반환
     }, [tags]);
 
     const handleSheetChanges = useCallback((index: number) => {
