@@ -197,13 +197,9 @@ export function ILogProvider({ children }: ILogProviderProps) {
 
         try {
             const formData = new FormData();
-            const { existingImageUrls, newImageAssets, ...restOfRequest } = request;
+            const { newImageAssets, ...requestData } = request;
 
-            formData.append('request', JSON.stringify(restOfRequest));
-
-            if (existingImageUrls && existingImageUrls.length > 0) {
-                formData.append('existingImageUrls', JSON.stringify(existingImageUrls));
-            }
+            formData.append('request', JSON.stringify(requestData));
 
             newImageAssets?.forEach((image, index) => {
                 formData.append('images', {

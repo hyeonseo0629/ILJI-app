@@ -77,5 +77,6 @@ export interface ImageAsset {
     mime?: string;
     filename?: string;
     stickers: Sticker[];
+    originalUrl?: string;
     // Add other properties from ImagePicker result if needed
 }
