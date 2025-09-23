@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert, Platform, ActivityIndicator } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { useRouter } from 'expo-router';
 import { useSession } from '@/hooks/useAuth';
+import api from '../src/lib/api';
 
 type NicknameStatus = 'idle' | 'checking' | 'valid' | 'invalid';
 
@@ -12,10 +14,11 @@ export default function InitialProfileSetupScreen() {
   const router = useRouter();
   const { session } = useSession();
   const [nickname, setNickname] = useState('');
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<ImageManipulator.ManipulationResult | null>(null);
 
   const [nicknameStatus, setNicknameStatus] = useState<NicknameStatus>('idle');
   const [nicknameMessage, setNicknameMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (nickname.trim() === '') {
@@ -39,30 +42,16 @@ export default function InitialProfileSetupScreen() {
     }
     setNicknameStatus('checking');
     try {
-      const backendUrl = Platform.OS === 'android' ? 'http://10.0.2.2:8090' : 'http://localhost:8090';
-      const response = await fetch(`${backendUrl}/api/user/profile/check-nickname?nickname=${encodeURIComponent(name)}`, {
-        headers: {
-          // 백엔드 보안 설정에 따라 반드시 필요한 인증 헤더
-          'Authorization': `Bearer ${session.token}`,
-        },
-      });
-
-      if (response.ok) {
-        setNicknameStatus('valid');
-        setNicknameMessage('사용 가능한 닉네임입니다.');
-      } else if (response.status === 409) {
-        setNicknameStatus('invalid');
+      await api.get(`/user/profile/check-nickname?nickname=${encodeURIComponent(name)}`);
+      setNicknameStatus('valid');
+      setNicknameMessage('사용 가능한 닉네임입니다.');
+    } catch (error: any) {
+      setNicknameStatus('invalid');
+      if (error.response && error.response.status === 409) {
         setNicknameMessage('중복된 닉네임입니다.');
       } else {
-        // 서버로부터 받은 실제 오류 메시지를 표시하도록 개선
-        const errorText = await response.text();
-        setNicknameStatus('invalid');
-        setNicknameMessage(`오류(${response.status}): ${errorText || '알 수 없는 오류'}`);
+        setNicknameMessage('닉네임 확인 중 오류가 발생했습니다.');
       }
-    } catch (error) {
-      setNicknameStatus('invalid');
-      setNicknameMessage('네트워크 오류가 발생했습니다.');
-      console.error("닉네임 확인 오류:", error);
     }
   };
 
@@ -74,8 +63,18 @@ export default function InitialProfileSetupScreen() {
       quality: 1,
     });
 
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+        try {
+            const manipulatedImage = await ImageManipulator.manipulateAsync(
+                result.assets[0].uri,
+                [{ resize: { width: 800 } }],
+                { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+            );
+            setProfileImage(manipulatedImage);
+        } catch (error) {
+            Alert.alert("오류", "이미지를 처리하는 중 오류가 발생했습니다.");
+            console.error("Image manipulation error:", error);
+        }
     }
   };
 
@@ -84,44 +83,35 @@ export default function InitialProfileSetupScreen() {
       Alert.alert('닉네임 오류', '사용할 수 없는 닉네임입니다. 다른 닉네임을 선택해주세요.');
       return;
     }
-
-    if (!session?.token) {
-      Alert.alert('인증 오류', '로그인 정보가 없습니다.');
-      return;
-    }
-
-    const formData = new FormData();
-    const request = { nickname: nickname };
-    formData.append('request', JSON.stringify(request));
-
-    if (profileImage) {
-      const localUri = profileImage;
-      const filename = localUri.split('/').pop() || 'profile.jpg';
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : `image`;
-      formData.append('profileImage', { uri: localUri, name: filename, type } as any);
-    }
+    setIsSaving(true);
 
     try {
-      const backendUrl = Platform.OS === 'android' ? 'http://10.0.2.2:8090' : 'http://localhost:8090';
-      const response = await fetch(`${backendUrl}/api/user/profile`, {
-        method: 'PUT',
-        body: formData,
+      const formData = new FormData();
+      const request = { nickname: nickname };
+      formData.append('request', JSON.stringify(request));
+
+      if (profileImage) {
+        formData.append('profileImage', {
+            uri: Platform.OS === 'android' ? profileImage.uri : profileImage.uri.replace('file://', ''),
+            name: 'profile.jpg',
+            type: 'image/jpeg',
+        } as any);
+      }
+
+      await api.put('/user/profile', formData, {
         headers: {
-          'Authorization': `Bearer ${session.token}`,
+          'Content-Type': 'multipart/form-data',
         },
       });
 
-      if (response.ok) {
-        Alert.alert('성공', '프로필이 성공적으로 저장되었습니다.');
-        router.replace('/(tabs)');
-      } else {
-        const errorText = await response.text();
-        Alert.alert('저장 실패', errorText || '프로필 저장에 실패했습니다.');
-      }
-    } catch (error) {
+      Alert.alert('성공', '프로필이 성공적으로 저장되었습니다.');
+      router.replace('/(tabs)');
+
+    } catch (error: any) {
       console.error('프로필 저장 오류:', error);
-      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
+      Alert.alert('오류', '프로필 저장 중 오류가 발생했습니다.');
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -136,7 +126,7 @@ export default function InitialProfileSetupScreen() {
     }
   };
 
-  const isSaveDisabled = nicknameStatus !== 'valid';
+  const isSaveDisabled = nicknameStatus !== 'valid' || isSaving;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -145,7 +135,7 @@ export default function InitialProfileSetupScreen() {
 
       <TouchableOpacity onPress={pickImage}>
         <Image
-          source={profileImage ? { uri: profileImage } : require('../assets/images/icon.png')}
+          source={profileImage ? { uri: profileImage.uri } : require('../assets/images/icon.png')}
           style={styles.profileImage}
         />
         <Text style={styles.imagePickerText}>이미지 선택</Text>
@@ -187,7 +177,7 @@ export default function InitialProfileSetupScreen() {
         onPress={handleSave}
         disabled={isSaveDisabled}
       >
-        <Text style={styles.buttonText}>저장</Text>
+        {isSaving ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>저장</Text>}
       </TouchableOpacity>
     </View>
   );
