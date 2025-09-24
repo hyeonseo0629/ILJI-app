@@ -12,7 +12,6 @@ import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {StatusBar} from "expo-status-bar";
 import {AntDesign} from "@expo/vector-icons";
 import CreateTagModal from "@/components/addTagModal/Add-tagmodal";
-import RRuleGenerator from "@/components/addSchedule/RruleGenerator";
 
 // 실제 앱에서는 이 화면으로 이동할 때 tags 목록을 prop으로 전달받거나
 // 전역 상태(global state)에서 가져와야 합니다. 여기서는 예시로 사용합니다.
@@ -34,7 +33,6 @@ const AddScheduleScreen = () => {
     const [location, setLocation] = useState('');
     const [description, setDescription] = useState('');
     const [isAllDay, setIsAllDay] = useState(false);
-    const [rrule, setRrule] = useState(''); // rrule 상태 추가
 
     useEffect(() => {
         // 태그가 로드되었고, 아직 기본 태그가 설정되지 않았을 때 '일정' 태그를 기본값으로 설정합니다.
@@ -102,7 +100,6 @@ const AddScheduleScreen = () => {
             startTime: startTime,
             endTime: endTime,
             isAllDay: isAllDay,
-            rrule: rrule, // rrule 상태 값을 포함시킵니다.
             calendarId: 1,
         };
 
@@ -209,8 +206,6 @@ const AddScheduleScreen = () => {
                             </S.ASDateTimeButton>
                         )}
                     </S.ASDateTimeRow>
-
-                    <RRuleGenerator onChange={setRrule} />
 
                     <S.ASLabel>Location</S.ASLabel>
                     <S.ASInput value={location} onChangeText={setLocation} placeholder="장소"/>
