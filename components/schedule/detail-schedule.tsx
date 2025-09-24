@@ -76,15 +76,25 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
     };
 
     const onDateChange = (event: any, selectedDate?: Date) => {
-        setShowDatePicker(Platform.OS === 'ios');
-        if (selectedDate) {
+        setShowDatePicker(false); // 항상 피커를 닫도록 수정
+
+        if (event.type === 'set' && selectedDate && formData) { // 날짜가 선택된 경우에만 상태 업데이트
             if (pickerTarget === 'start') {
                 const newStartTime = set(formData.startTime, { year: selectedDate.getFullYear(), month: selectedDate.getMonth(), date: selectedDate.getDate() });
-                // If the new start time is after the end time, adjust the end time as well.
-                if (newStartTime > formData.endTime) {
-                    setFormData(prev => prev ? { ...prev, startTime: newStartTime, endTime: newStartTime } : null);
+
+                // 시작 날짜가 변경되면, 종료 날짜도 동일하게 맞춰주되 시간은 유지합니다.
+                const newEndTime = set(formData.endTime, {
+                    year: selectedDate.getFullYear(),
+                    month: selectedDate.getMonth(),
+                    date: selectedDate.getDate(),
+                });
+
+                // 만약 새로 계산된 종료 시간이 시작 시간보다 빠르다면,
+                // 종료 시간을 시작 시간 1시간 뒤로 설정합니다.
+                if (newEndTime < newStartTime) {
+                    setFormData(prev => prev ? { ...prev, startTime: newStartTime, endTime: new Date(newStartTime.getTime() + 60 * 60 * 1000) } : null);
                 } else {
-                    setFormData(prev => prev ? { ...prev, startTime: newStartTime } : null);
+                    setFormData(prev => prev ? { ...prev, startTime: newStartTime, endTime: newEndTime } : null);
                 }
             } else { // pickerTarget === 'end'
                 const newEndTime = set(formData.endTime, { year: selectedDate.getFullYear(), month: selectedDate.getMonth(), date: selectedDate.getDate() });
