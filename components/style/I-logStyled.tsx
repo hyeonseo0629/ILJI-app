@@ -55,7 +55,7 @@ export const TabsContainer = styled.View<StyledProps>`
 
 export const TabsButton = styled.TouchableOpacity<TabButtonProps>`
     width: 50%;
-    padding: 20px;
+    padding: 15px;
     align-items: center;
     border-bottom-width: 3px;
     border-bottom-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#7B68EE') : (props.$colors?.border || '#f0f0f0'))};

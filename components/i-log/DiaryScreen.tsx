@@ -4,14 +4,15 @@ import ILogPageView from "@/components/i-log/i-logPageView";
 import ILogListView from "@/components/i-log/i-logListView";
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { TabsContainer, TabsButton, TabsButtonText } from "@/components/style/I-logStyled";
+import { TabsContainer, TabsButton } from "@/components/style/I-logStyled";
 import * as I from "@/components/style/I-logStyled";
 import { LocaleConfig, DateData, Calendar } from 'react-native-calendars';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { Modal, TouchableOpacity, View, SafeAreaView  } from 'react-native';
+import { Modal, TouchableOpacity, View, SafeAreaView, Dimensions } from 'react-native';
 import { useILog } from '@/src/context/ILogContext';
 import { ILog, ILogCreateRequestFrontend, ILogUpdateRequest } from '@/src/types/ilog';
 import { useTheme } from '@react-navigation/native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 
 // Set calendar locale to Korean
@@ -23,6 +24,8 @@ LocaleConfig.locales['ko'] = {
     today: '오늘'
 };
 LocaleConfig.defaultLocale = 'ko';
+
+const { height: screenHeight } = Dimensions.get('window');
 
 export default function DiaryScreen() {
     const theme = useTheme(); // 테마 객체 가져오기
@@ -60,12 +63,7 @@ export default function DiaryScreen() {
             if (params.newLog) {
                 const newLogData: ILog = JSON.parse(params.newLog as string);
 
-                const visibilityMap: { [key: string]: number } = {
-                    "PUBLIC": 0,
-                    "FRIENDS_ONLY": 1,
-                    "PRIVATE": 2,
-                };
-                const visibilityAsNumber = visibilityMap[newLogData.visibility.toUpperCase()] ?? 1; // Default to FRIENDS_ONLY
+                const visibilityAsNumber = newLogData.visibility;
 
                 const requestData: ILogCreateRequestFrontend = {
                     writerId: newLogData.userId,
@@ -91,12 +89,7 @@ export default function DiaryScreen() {
                 updatedLogData.logDate = new Date(updatedLogData.logDate);
                 updatedLogData.createdAt = new Date(updatedLogData.createdAt);
 
-                const visibilityMap: { [key: string]: number } = {
-                    "PUBLIC": 0,
-                    "FRIENDS_ONLY": 1,
-                    "PRIVATE": 2,
-                };
-                const visibilityAsNumber = visibilityMap[updatedLogData.visibility.toUpperCase()] ?? 1; // Default to FRIENDS_ONLY
+                const visibilityAsNumber = updatedLogData.visibility;
 
                 const updateRequest: ILogUpdateRequest = {
                     content: updatedLogData.content,
@@ -270,31 +263,16 @@ export default function DiaryScreen() {
         });
     }, [ilogs, listFilterType, listFilterValue]);
 
-    // 2. add-ilog 화면으로 이동할 때, 추출된 태그 목록을 파라미터로 전달
-    const handleAddPress = () => {
-        const simplifiedIlogs = ilogs.map(log => ({
-            id: log.id,
-            logDate: log.logDate.toISOString(), // Convert Date to ISO string for passing
-        }));
-
-        router.push({
-            pathname: '../i-log/add-ilog/add-ilog',
-            params: {
-                existingLogs: JSON.stringify(simplifiedIlogs),
-            },
-        });
-    };
-
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
+        <GestureHandlerRootView style={{ height: screenHeight }}>
             <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
                 <MainContainer $colors={theme.colors} >
                     <TabsContainer $colors={theme.colors}>
                         <TabsButton onPress={() => setViewMode('list')} $isActive={viewMode === 'list'} $colors={theme.colors}>
-                            <TabsButtonText $colors={theme.colors}>List View</TabsButtonText>
+                            <MaterialCommunityIcons name="format-list-bulleted" size={28} color={viewMode === 'list' ? theme.colors.primary : theme.colors.text} />
                         </TabsButton>
                         <TabsButton onPress={() => setViewMode('page')} $isActive={viewMode === 'page'} $colors={theme.colors}>
-                            <TabsButtonText $colors={theme.colors}>Page View</TabsButtonText>
+                            <MaterialCommunityIcons name="book-open-page-variant-outline" size={28} color={viewMode === 'page' ? theme.colors.primary : theme.colors.text} />
                         </TabsButton>
                     </TabsContainer>
 
@@ -330,10 +308,6 @@ export default function DiaryScreen() {
                     )}
                 </MainContainer>
             </SafeAreaView>
-
-            <I.ButtonIconWrap onPress={handleAddPress}>
-                <I.ButtonIcon name="square-edit-outline" $colors={theme.colors} />
-            </I.ButtonIconWrap>
 
             {/* Page View Calendar Modal (Restored) */}
             <Modal
