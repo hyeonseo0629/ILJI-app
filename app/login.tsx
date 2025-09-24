@@ -93,7 +93,7 @@ export default function LoginScreen(): React.JSX.Element {
                 return;
             }
 
-            const backendUrl = `${API_BASE_URL}/api/auth/google`;
+            const backendUrl = `${API_BASE_URL}/auth/google`;
             console.log(`[Login] Sending idToken to backend at: ${backendUrl}`);
 
             const response = await fetch(backendUrl, {

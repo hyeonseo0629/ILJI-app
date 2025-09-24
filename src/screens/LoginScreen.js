@@ -51,7 +51,7 @@ const LoginScreen = ({onLoginSuccess}) => {
 
     const authenticateWithBackend = async (token) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
+            const response = await fetch(`${API_BASE_URL}/auth/google`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
