@@ -251,7 +251,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                         </DS.ContentWrap>
                         {isEditMode ? (
                             <DS.ButtonArea>
-                                <DS.ActionButton onPress={() => setIsEditMode(false)}>
+                                <DS.ActionButton onPress={() => { setIsEditMode(false); setFormData(schedule); }}>
                                     <DS.ActionButtonText>Cancel</DS.ActionButtonText>
                                 </DS.ActionButton>
                                 <DS.ButtonSeparator />
