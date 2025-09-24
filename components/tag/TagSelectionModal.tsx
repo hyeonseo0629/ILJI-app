@@ -29,7 +29,7 @@ const TagSelectionModal: React.FC<TagSelectionModalProps> = ({ visible, tags, on
       <S.ModalBackdrop onPress={onClose} activeOpacity={1}>
         <Pressable onPress={(e) => e.stopPropagation()}>
           <S.ModalContainer>
-            <S.ModalTitle>태그 선택</S.ModalTitle>
+            <S.ModalTitle>Tag</S.ModalTitle>
             <FlatList
               data={tags}
               renderItem={renderItem}

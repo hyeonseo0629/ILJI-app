@@ -8,7 +8,7 @@ export const ModalBackdrop = styled.TouchableOpacity`
 `;
 
 export const ModalContainer = styled.View`
-  width: 80%;
+  width: 320px;
   background-color: white;
   border-radius: 15px;
   padding: 20px;

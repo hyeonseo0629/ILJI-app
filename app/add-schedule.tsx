@@ -64,9 +64,23 @@ const AddScheduleScreen = () => {
 
         if (pickerTarget === 'start') {
             setStartTime(currentDate);
-            // 시작 시간이 종료 시간보다 늦어지면, 종료 시간을 시작 시간 1시간 뒤로 자동 설정
-            if (currentDate >= endTime) {
+
+            // 시작 날짜가 변경되면, 종료 날짜도 동일하게 맞춰주되 시간은 유지합니다.
+            const newEndTime = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                currentDate.getDate(),
+                endTime.getHours(),
+                endTime.getMinutes(),
+                endTime.getSeconds()
+            );
+
+            // 만약 새로 계산된 종료 시간이 시작 시간보다 빠르다면,
+            // 종료 시간을 시작 시간 1시간 뒤로 설정합니다.
+            if (newEndTime < currentDate) {
                 setEndTime(new Date(currentDate.getTime() + 60 * 60 * 1000));
+            } else {
+                setEndTime(newEndTime);
             }
         } else {
             setEndTime(currentDate);
@@ -158,7 +172,7 @@ const AddScheduleScreen = () => {
         <GestureHandlerRootView>
             <StatusBar style="dark"/>
             <S.ASContainer contentContainerStyle={{paddingBottom: 120}}>
-                <ASHeader>New Reminder</ASHeader>
+                <ASHeader>New Schedule</ASHeader>
                 <S.ASContentWrap>
 
                     <S.ASLabel>Title</S.ASLabel>
