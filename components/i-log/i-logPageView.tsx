@@ -1,26 +1,38 @@
-import {Dimensions, View, FlatList, ViewToken, TouchableOpacity} from "react-native";
+import {
+    Dimensions,
+    View,
+    FlatList,
+    ViewToken,
+    TouchableOpacity,
+    Text,
+    ScrollView,
+    NativeSyntheticEvent,
+    NativeScrollEvent
+} from "react-native";
 import * as I from "@/components/style/I-logStyled";
 import React, {useRef, useEffect} from "react";
-import {ILogData} from "@/app/(tabs)/i-log";
+import {ILog} from '@/src/types/ilog';
 import {format} from 'date-fns';
 import {AntDesign, EvilIcons} from '@expo/vector-icons';
-import { useRouter } from "expo-router";
+import {useRouter} from "expo-router";
 
 const {width} = Dimensions.get("window");
 
-const DiaryPage = ({item, onDatePress}: { item: ILogData, onDatePress: () => void }) => {
+const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void }) => {
     const router = useRouter();
+    const [activeSlide, setActiveSlide] = React.useState(0);
+    const scrollViewRef = React.useRef<ScrollView>(null);
     let parsedFriendTags: { id: number, name: string }[] = [];
     try {
-        if (item.friend_tags) {
-            parsedFriendTags = JSON.parse(item.friend_tags);
+        if (item.friendTags) {
+            parsedFriendTags = JSON.parse(item.friendTags);
         }
     } catch (e) {
         console.error("Failed to parse friend_tags:", e);
     }
 
     const handleNavigateToDetail = () => {
-        router.push({ pathname: './[id]', params: { id: item.id.toString() } });
+        router.push({pathname: '/i-log/detail-ilog/[id]', params: {id: item.id.toString()}});
     };
 
     return (
@@ -29,30 +41,79 @@ const DiaryPage = ({item, onDatePress}: { item: ILogData, onDatePress: () => voi
                 <I.PageHeader>
                     <I.PageDateInfo>
                         <I.PageDateButton onPress={onDatePress}>
-                            <EvilIcons name="search" size={35} style={{marginBottom:5}}/>
-                            <I.PageDateText>{format(item.log_date, 'yyyy.MM.dd')}</I.PageDateText>
+                            <EvilIcons name="search" size={35} style={{marginBottom: 5}}/>
+                            <I.PageDateText>{format(item.logDate, 'yyyy.MM.dd')}</I.PageDateText>
                         </I.PageDateButton>
-                        <I.PageTimeText>{format(item.created_at, 'HH:mm:ss')}</I.PageTimeText>
+                        <I.PageTimeText>{format(item.createdAt, 'HH:mm:ss')}</I.PageTimeText>
                     </I.PageDateInfo>
                 </I.PageHeader>
 
                 {/* Wrap content below header in a TouchableOpacity for navigation */}
                 <TouchableOpacity activeOpacity={0.8} onPress={handleNavigateToDetail}>
 
-                    {item.img_url && (
-                        <I.PageImageContainer>
-                            <I.PageImage source={{uri: item.img_url}}/>
-                            <I.PageStatsContainer>
-                                <I.PageStatItem>
-                                    <AntDesign name="heart" size={14} color="white"/>
-                                    <I.PageStatText>{item.like_count}</I.PageStatText>
-                                </I.PageStatItem>
-                                <I.PageStatItem>
-                                    <AntDesign name="message1" size={14} color="white"/>
-                                    <I.PageStatText>{item.comment_count}</I.PageStatText>
-                                </I.PageStatItem>
-                            </I.PageStatsContainer>
-                        </I.PageImageContainer>
+                    {item.images && item.images.length > 0 && (
+                        <View>
+                            <ScrollView
+                                ref={scrollViewRef}
+                                horizontal
+                                pagingEnabled
+                                showsHorizontalScrollIndicator={false}
+                                onMomentumScrollEnd={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
+                                    const slide = Math.round(event.nativeEvent.contentOffset.x / (Dimensions.get('window').width - 45));
+                                    if (slide !== activeSlide) {
+                                        setActiveSlide(slide);
+                                    }
+                                }}
+                                snapToAlignment={'start'}
+                            >
+                                {item.images.map((imageUri, index) => (
+                                    <I.CarouselItemWrapper 
+                                        key={index}
+                                        isLast={index === item.images.length - 1}
+                                    >
+                                        <I.PageImage source={{uri: imageUri}}/>
+                                        <I.PageStatsContainer>
+                                            <I.PageStatItem>
+                                                <AntDesign name="heart" size={14} color="white"/>
+                                                <I.PageStatText>{item.likeCount}</I.PageStatText>
+                                            </I.PageStatItem>
+                                            <I.PageStatItem>
+                                                <AntDesign name="message1" size={14} color="white"/>
+                                                <I.PageStatText>{item.commentCount}</I.PageStatText>
+                                            </I.PageStatItem>
+                                        </I.PageStatsContainer>
+                                    </I.CarouselItemWrapper>
+                                ))}
+                            </ScrollView>
+
+                            {item.images.length > 1 && (
+                                <View style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    padding: 10
+                                }}>
+                                    {item.images.map((_, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            onPress={() => {
+                                                scrollViewRef.current?.scrollTo({
+                                                    x: index * Dimensions.get('window').width,
+                                                    animated: true
+                                                });
+                                                setActiveSlide(index);
+                                            }}
+                                        >
+                                            <Text style={{
+                                                fontSize: 24,
+                                                color: activeSlide === index ? 'black' : 'gray',
+                                                marginHorizontal: 4
+                                            }}>•</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
                     )}
 
                     {parsedFriendTags.length > 0 && (
@@ -66,12 +127,6 @@ const DiaryPage = ({item, onDatePress}: { item: ILogData, onDatePress: () => voi
                     )}
 
                     <I.PageContent>{item.content}</I.PageContent>
-
-                    {item.tags && (
-                        <I.PageTagsContainer>
-                            <I.PageTagsText>{item.tags}</I.PageTagsText>
-                        </I.PageTagsContainer>
-                    )}
                 </TouchableOpacity>
             </I.PageScrollView>
         </I.PageWrap>
@@ -79,12 +134,12 @@ const DiaryPage = ({item, onDatePress}: { item: ILogData, onDatePress: () => voi
 };
 
 const ILogPageView = ({ilogs, onDatePress, scrollToIndex, onPageChange}: {
-    ilogs: ILogData[],
+    ilogs: ILog[],
     onDatePress: () => void,
     scrollToIndex: number | null,
     onPageChange: (index: number) => void
 }) => {
-    const flatListRef = useRef<FlatList<ILogData>>(null);
+    const flatListRef = useRef<FlatList<ILog>>(null);
 
     const onViewableItemsChanged = useRef(({viewableItems}: { viewableItems: ViewToken[] }) => {
         if (viewableItems.length > 0) {
@@ -127,10 +182,14 @@ const ILogPageView = ({ilogs, onDatePress, scrollToIndex, onPageChange}: {
     }, [scrollToIndex, ilogs]);
 
     if (!ilogs || ilogs.length === 0) {
-        return <View><I.PageContent>작성된 일지가 없습니다.</I.PageContent></View>;
+        return (
+            <I.PageNoContentWrap>
+                <I.PageNoContentText>작성된 일지가 없습니다.</I.PageNoContentText>
+            </I.PageNoContentWrap>
+        );
     }
 
-    const renderItem = ({item}: { item: ILogData }) => (
+    const renderItem = ({item}: { item: ILog }) => (
         <View style={{width}}>
             <DiaryPage item={item} onDatePress={onDatePress}/>
         </View>

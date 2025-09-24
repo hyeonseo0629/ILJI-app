@@ -18,8 +18,8 @@ module.exports = function(api) {
           ]
         }
       ],
-      'react-native-reanimated/plugin',
-      ['styled-components', { ssr: true, displayName: true, preprocess: false }]
+      ['styled-components', { ssr: true, displayName: true, preprocess: false }],
+      'react-native-reanimated/plugin'
     ]
   };
 };

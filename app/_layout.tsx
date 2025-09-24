@@ -10,10 +10,16 @@ import {StatusBar} from 'expo-status-bar';
 import {AuthProvider, useSession} from '@/hooks/useAuth';
 import {Colors} from '@/constants/Colors';
 import {ScheduleProvider} from '@/src/context/ScheduleContext';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import api from '@/src/lib/api'; // Import the centralized API instance
+import {useSafeAreaInsets} from "react-native-safe-area-context";
+import {ILogProvider} from "@/src/context/ILogContext";
+
 
 function Layout() {
+
+    const isnets = useSafeAreaInsets();
+
     const {session, isLoading} = useSession();
     const segments = useSegments();
     const router = useRouter();
@@ -81,35 +87,66 @@ function Layout() {
     }
 
     return (
-        <Stack
-            key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
-            screenOptions={{
-                headerStyle: {
-                    backgroundColor: theme.colors.card,
-                },
-                headerTintColor: theme.colors.text,
-                headerTitleStyle: {
-                    fontWeight: 'bold',
-                },
-            }}
-        >
-            <Stack.Screen name="login" options={{headerShown: false}}/>
-            <Stack.Screen name="(tabs)" options={{headerShown: false, title: ''}}/>
-            <Stack.Screen name="initial-profile-setup" options={{headerShown: false}} />
-            <Stack.Screen
-                name="add-schedule"
-                options={{
-                    title: 'New Schedule',
-                    presentation: 'modal',
-                    headerStyle: {
-                        backgroundColor: theme.colors.card,
-                    },
-                    headerTintColor: theme.colors.text,
-                }}
-            />
-            <Stack.Screen name="(settings)" options={{headerShown: false}}/>
-            <Stack.Screen name="+not-found" options={{ title: 'Oops!' }}/>
-        </Stack>
+        <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
+            <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
+                <Stack
+                    key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
+                    screenOptions={{
+                        headerStyle: {
+                            backgroundColor: theme.colors.card,
+                        },
+                        headerTintColor: theme.colors.text,
+                        headerTitleStyle: {
+                            fontWeight: 'bold',
+                        },
+                    }}
+                >
+                    <Stack.Screen
+                        name="login"
+                        options={{headerShown: false}}
+                    />
+                    <Stack.Screen
+                        name="(tabs)"
+                        options={{headerShown: false, title: ''}}
+                    />
+                    <Stack.Screen
+                        name="initial-profile-setup"
+                        options={{headerShown: false}}
+                    />
+                    <Stack.Screen
+                        name="add-schedule"
+                        options={{
+                            title: 'New Schedule',
+                            presentation: 'modal',
+                            headerStyle: {
+                                backgroundColor: theme.colors.card,
+                            },
+                            headerTintColor: theme.colors.text,
+                        }}
+                    />
+                    <Stack.Screen
+                        name="i-log/add-ilog/add-ilog"
+                        options={{headerShown: false}} // add-ilog 헤더 숨김
+                    />
+                    <Stack.Screen
+                        name="i-log/detail-ilog/[id]"
+                        options={{headerShown: false}} // i-log/[id] 헤더 숨김
+                    />
+                    <Stack.Screen
+                        name="i-log/update-ilog/[id]"
+                        options={{headerShown: false}} // update-ilog 헤더 숨김
+                    />
+                    <Stack.Screen
+                        name="(settings)"
+                        options={{headerShown: false}}
+                    />
+                    <Stack.Screen
+                        name="+not-found"
+                        options={{title: 'Oops!'}}
+                    />
+                </Stack>
+            </View>
+        </View>
     );
 }
 
@@ -165,26 +202,28 @@ function ThemedAppLayout() {
 
     const currentTheme: Theme = isDarkColorScheme ? customDarkTheme : customDefaultTheme;
 
-  return (
-    <ThemeProvider value={currentTheme}>
-      <AuthProvider>
-        <ScheduleProvider>
-          <Layout />
-        </ScheduleProvider>
-      </AuthProvider>
-      <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider value={currentTheme}>
+            <AuthProvider>
+                <ScheduleProvider>
+                    <ILogProvider>
+                        <Layout/>
+                    </ILogProvider>
+                </ScheduleProvider>
+            </AuthProvider>
+            <StatusBar style={isDarkColorScheme ? 'light' : 'dark'}/>
+        </ThemeProvider>
+    );
 }
 
 export default function RootLayout() {
-  return (
-    <SafeAreaProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <ColorSchemeProvider>
-          <ThemedAppLayout />
-        </ColorSchemeProvider>
-      </GestureHandlerRootView>
-    </SafeAreaProvider>
-  );
+    return (
+        <SafeAreaProvider>
+            <GestureHandlerRootView style={{flex: 1}}>
+                <ColorSchemeProvider>
+                    <ThemedAppLayout/>
+                </ColorSchemeProvider>
+            </GestureHandlerRootView>
+        </SafeAreaProvider>
+    );
 }

@@ -232,8 +232,6 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
 
             // 2. 변환된 payload를 백엔드 서버에 전송합니다.
             const response = await api.post<RawScheduleEvent>('/schedules', payload);
-
-            // 3. 서버로부터 받은, id가 포함된 완전한 데이터를 캘린더 형식으로 변환합니다.
             const newEvent = formatRawSchedule(response.data);
 
             // 4. 화면의 상태(State)에 새 일정을 추가하여 즉시 반영합니다.

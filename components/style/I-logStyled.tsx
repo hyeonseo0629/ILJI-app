@@ -135,7 +135,7 @@ export const ListThumbnail = styled.Image<StyledProps>`
     height: 80px;
     border-radius: 10px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
-    margin-right: 15px;
+    margin-right: 35px;
 `;
 
 export const ListMainContent = styled.View`
@@ -186,18 +186,21 @@ export const ListStatText = styled.Text<StyledProps>`
     margin-left: 3px;
 `;
 
-export const ListTagsContainer = styled.View``;
-
-export const ListTagsText = styled.Text<StyledProps>`
-    font-size: 12px;
-    color: ${props => props.$colors?.text || '#888'};
-    font-style: italic;
-`;
-
 
 // ----------------- //
 // I-Log Page View //
 // ----------------- //
+
+export const PageNoContentWrap = styled.View<StyledProps>`
+    flex: 1;
+    background-color: ${props => props.$colors?.background || 'transparent'};
+    justify-content: center;
+    align-items: center;
+`
+
+export const PageNoContentText = styled.Text`
+    font-size: 20px;
+`
 
 export const PageWrap = styled.View<StyledProps>`
     flex: 1;
@@ -236,31 +239,15 @@ export const PageDateText = styled.Text<StyledProps>`
 export const PageTimeText = styled.Text<StyledProps>`
     font-size: 14px;
     color: ${props => props.$colors?.text || '#888'};
-`;
-
-export const PageTitle = styled.Text<StyledProps>`
-    font-size: 20px;
-    font-weight: bold;
-    border-left-width: 2px;
-    border-right-width: 2px;
-    border-color: ${props => props.$colors?.primary || 'mediumslateblue'};
-    padding: 0 10px;
-    margin: 5px 0 15px;
-    color: ${props => props.$colors?.text || 'black'};
-`;
-
-export const PageImageContainer = styled.View`
-    width: 100%;
-    height: 400px; 
-    margin-bottom: 20px;
-    position: relative;
-`;
+    padding-top: 40px;
+`
 
 export const PageImage = styled.Image<StyledProps>`
     width: 100%;
     height: 100%;
     border-radius: 15px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
+    resize-mode: contain;
 `;
 
 export const PageStatsContainer = styled.View`
@@ -313,14 +300,19 @@ export const PageFriendTagText = styled.Text<StyledProps>`
     font-weight: bold;
 `;
 
-export const PageTagsContainer = styled.View``;
-
-export const PageTagsText = styled.Text<StyledProps>`
-    font-size: 15px;
-    color: ${props => props.$colors?.text || '#888'};
-`;
-
 export const PageScrollView = styled.ScrollView``;
+
+interface CarouselItemWrapperProps extends StyledProps {
+  isLast?: boolean;
+}
+
+export const CarouselItemWrapper = styled.View<CarouselItemWrapperProps>`
+    position: relative;
+    width: 370px; /* Image width */
+    height: 370px; /* Image height */
+    margin-right: ${({ isLast }) => (isLast ? '0px' : '42.5px')}; /* Gap between images */
+    margin-bottom: 20px;
+`;
 
 // ------------------ //
 // I-Log Detail View  //
@@ -335,7 +327,6 @@ export const DetailHeader = styled.TouchableOpacity<StyledProps>`
     shadow-color: ${props => props.$colors?.text || '#000'};
     shadow-offset: 0px 2px; /* Corrected: Combined width and height into shadow-offset */
     shadow-opacity: 0.25;
-    shadow-radius: 3.84; /* Corrected: Removed 'px' */
 
     /* Android Shadow */
     elevation: 5;
@@ -392,7 +383,6 @@ export const DetailActionButton = styled.TouchableOpacity<StyledProps>`
     shadow-color: ${props => props.$colors?.text || '#000'};
     shadow-offset: 0px 2px;
     shadow-opacity: 0.25;
-    shadow-radius: 3.84;
 `;
 
 export const DetailImageContainer = styled.View`
@@ -407,6 +397,7 @@ export const DetailImage = styled.Image<StyledProps>`
     height: 100%;
     border-radius: 15px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
+    resize-mode: contain;
 `;
 
 export const DetailStatsContainer = styled.View`
@@ -457,16 +448,6 @@ export const DetailContent = styled.Text<StyledProps>`
     border-left-width: 2px;
     border-color: ${props => props.$colors?.primary || 'mediumslateblue'};
     padding: 10px 20px;
-`;
-
-export const DetailTagsContainer = styled.View`
-    width: 95%;
-    margin: 0px auto 10px;
-;`;
-
-export const DetailTagsText = styled.Text<StyledProps>`
-    font-size: 20px;
-    color: ${props => props.$colors?.primary || 'mediumslateblue'};
 `;
 
 export const DetailModalBackdrop = styled.TouchableOpacity`
@@ -609,14 +590,13 @@ export const AddImagePickerText = styled.Text<StyledProps>`
     shadow-color: ${props => props.$colors?.text || '#000'};
     shadow-offset: 0px 2px; /* Corrected: Combined width and height into shadow-offset */
     shadow-opacity: 0.25;
-    shadow-radius: 3.84; /* Corrected: Removed 'px' */
 
     /* Android Shadow (기존 코드) */
     elevation: 5;
 
 `;
 
-export const AddImagePreview = styled.Image`
+export const AddImagePreview = styled.Image<StyledProps>`
     width: 100%;
     height: 375px;
     border-radius: 8px;
@@ -648,7 +628,6 @@ export const AddImageRemoveButton = styled.TouchableOpacity`
     shadow-color: #000;
     shadow-offset: 0px 2px;
     shadow-opacity: 0.25;
-    shadow-radius: 3.84;
 `;
 
 export const AddSuggestionContainer = styled.View<StyledProps & { $bottom?: number }>`
@@ -671,29 +650,6 @@ export const AddSuggestionButton = styled.TouchableOpacity<StyledProps>`
 export const AddSuggestionButtonText = styled.Text<StyledProps>`
     color: ${props => props.$colors?.primary || 'mediumslateblue'};
     font-weight: bold;
-`;
-
-export const AddTagBadgeContainer = styled.View`
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 10px 0;
-    margin-bottom: 10px;
-    width: 100%;
-`;
-
-export const AddTagBadge = styled.View<StyledProps>`
-    flex-direction: row;
-    align-items: center;
-    background-color: ${props => props.$colors?.primary || '#7B68EE'};
-    border-radius: 15px;
-    padding: 6px 10px;
-    margin: 4px;
-`;
-
-export const AddTagBadgeText = styled.Text<StyledProps>`
-    color: ${props => props.$colors?.text || '#fff'};
-    font-weight: bold;
-    margin-right: 5px;
 `;
 
 export const AddButtonWrap = styled.View<StyledProps>`
