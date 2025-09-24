@@ -23,6 +23,7 @@ interface RawScheduleEvent {
     tagId: number | null;
     createdAt: string;
     updatedAt: string;
+    notificationTime: string | null;
 }
 
 // Context가 제공할 값들의 타입
@@ -90,6 +91,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
             createdAt: new Date(rawEvent.createdAt),
             updatedAt: new Date(rawEvent.updatedAt),
             calendarId: 1,
+            notificationTime: rawEvent.notificationTime ?? null,
         };
     }, [userId]);
 
@@ -191,6 +193,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
                     ? format(scheduleToUpdate.endTime, "yyyy-MM-dd'T'23:59:59")
                     : format(scheduleToUpdate.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
                 tagId: scheduleToUpdate.tagId === 0 ? null : scheduleToUpdate.tagId,
+                notificationTime: scheduleToUpdate.notificationTime,
             };
 
             const response = await api.put<RawScheduleEvent>(`/schedules/${scheduleToUpdate.id}`, payload);
@@ -228,6 +231,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
                     ? format(newScheduleData.endTime, "yyyy-MM-dd'T'23:59:59")
                     : format(newScheduleData.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
                 tagId: newScheduleData.tagId === 0 ? null : newScheduleData.tagId,
+                notificationTime: newScheduleData.notificationTime,
             };
 
             // 2. 변환된 payload를 백엔드 서버에 전송합니다.

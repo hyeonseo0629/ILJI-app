@@ -38,6 +38,7 @@ const AddScheduleScreen = () => {
     // [수정] 상태 초기값으로 initialDateFromParams를 사용합니다.
     const [startTime, setStartTime] = useState(initialDateFromParams);
     const [endTime, setEndTime] = useState(new Date(initialDateFromParams.getTime() + 60 * 60 * 1000)); // 기본 1시간 뒤
+    const [notificationTime, setNotificationTime] = useState('none'); // 'none', '10m', '30m', '1h'
 
     // DateTimePicker 상태 관리
     const [showPicker, setShowPicker] = useState(false);
@@ -89,9 +90,10 @@ const AddScheduleScreen = () => {
             isAllDay: isAllDay,
             rrule: '', // rrule은 null 대신 빈 문자열을 사용합니다.
             calendarId: 1,
+            notificationTime: notificationTime,
         };
 
-        await createSchedule(newScheduleData); // Context의 함수를 호출해 서버에 저장
+        await createSchedule(newScheduleData as any); // Context의 함수를 호출해 서버에 저장
         router.back(); // 저장이 완료되면 이전 화면으로 돌아갑니다.
     };
 
@@ -194,6 +196,21 @@ const AddScheduleScreen = () => {
                                $colors={theme.colors}
                                placeholderTextColor={theme.colors.text}
                     />
+
+                    <S.ASLabel $colors={theme.colors}>Notification</S.ASLabel>
+                    <S.ASPickerWrap $colors={theme.colors}>
+                        <Picker
+                            selectedValue={notificationTime}
+                            onValueChange={(itemValue) => setNotificationTime(itemValue)}
+                            style={{ color: theme.colors.text }}
+                            dropdownIconColor={theme.colors.text}
+                        >
+                            <Picker.Item label="None" value="none" />
+                            <Picker.Item label="10 minutes before" value="10m" />
+                            <Picker.Item label="30 minutes before" value="30m" />
+                            <Picker.Item label="1 hour before" value="1h" />
+                        </Picker>
+                    </S.ASPickerWrap>
 
                     <S.ASTagHeaderRow>
                         <S.ASLabel $colors={theme.colors}>Tag</S.ASLabel>

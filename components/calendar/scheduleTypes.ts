@@ -12,4 +12,5 @@ export interface Schedule {
     createdAt: Date,
     updatedAt: Date,
     calendarId: number,
+    notificationTime: string | null;
 }
