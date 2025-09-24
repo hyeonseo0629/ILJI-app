@@ -321,6 +321,12 @@ export default function AddILogScreen() {
                 cropping: true,
                 mediaType: 'photo',
             });
+
+            if (image.size > 30 * 1024 * 1024) { // 30MB limit
+                Alert.alert('용량 초과', '30MB 이하의 사진만 업로드할 수 있습니다.');
+                return;
+            }
+
             const newAsset = {...image, stickers: []};
             setImageAssets(prevAssets => [...prevAssets, newAsset]);
         } catch (e: any) {

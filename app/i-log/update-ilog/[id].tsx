@@ -244,6 +244,12 @@ export default function UpdateILogScreen() {
     const pickImage = async () => {
         try {
             const image = await ImagePicker.openPicker({ multiple: false, cropping: true, mediaType: 'photo' });
+
+            if (image.size > 30 * 1024 * 1024) { // 30MB limit
+                Alert.alert('용량 초과', '30MB 이하의 사진만 업로드할 수 있습니다.');
+                return;
+            }
+
             setImageAssets(prevAssets => [...prevAssets, {...image, stickers: []}]);
         } catch (e: any) {
             if (e.code !== 'E_PICKER_CANCELLED') { console.error('ImagePicker Error: ', e); Alert.alert('오류', '사진을 가져오는 데 실패했습니다.'); }
