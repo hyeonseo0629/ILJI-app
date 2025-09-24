@@ -8,173 +8,33 @@ import { TabsContainer, TabsButton, TabsButtonText } from "@/components/style/I-
 import * as I from "@/components/style/I-logStyled";
 import { LocaleConfig, DateData, Calendar } from 'react-native-calendars';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { Modal, TouchableOpacity, View, SafeAreaView } from 'react-native';
+import { Modal, TouchableOpacity, View, SafeAreaView  } from 'react-native';
+import { useILog } from '@/src/context/ILogContext';
+import { ILog, ILogCreateRequestFrontend, ILogUpdateRequest } from '@/src/types/ilog';
 import { useTheme } from '@react-navigation/native';
+
 
 // Set calendar locale to Korean
 LocaleConfig.locales['ko'] = {
-  monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
-  monthNamesShort: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
-  dayNames: ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'],
-  dayNamesShort: ['일','월','화','수','목','금','토'],
-  today: '오늘'
+    monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+    monthNamesShort: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+    dayNames: ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'],
+    dayNamesShort: ['일','월','화','수','목','금','토'],
+    today: '오늘'
 };
 LocaleConfig.defaultLocale = 'ko';
-
-// 새로운 통합 데이터 타입
-export type ILogData = {
-    id: number;
-    user_profile_id: number;
-    log_date: Date;
-    content: string;
-    img_url?: string;
-    created_at: Date;
-    like_count: number;
-    comment_count: number;
-    visibility: number;
-    friend_tags?: string;
-    tags?: string;
-}
-
-const initialILogs: ILogData[] = [
-    {
-        id: 109,
-        user_profile_id: 101,
-        log_date: new Date('2025-05-10'),
-        content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
-        img_url: 'https://picsum.photos/seed/500/400/400',
-        created_at: new Date('2025-05-10T14:48:06.000Z'),
-        like_count: 27,
-        comment_count: 5,
-        visibility: 1,
-        friend_tags: JSON.stringify([]),
-        tags: '#개발 #음악'
-    },
-    {
-        id: 108,
-        user_profile_id: 103,
-        log_date: new Date('2025-04-29'),
-        content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘ender 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
-        img_url: 'https://picsum.photos/seed/972/400/400',
-        created_at: new Date('2025-04-29T19:54:06.000Z'),
-        like_count: 32,
-        comment_count: 1,
-        visibility: 1,
-        friend_tags: JSON.stringify([{"id": 200, "name": "Alice"}, {"id": 201, "name": "Bob"}]),
-        tags: '#개발 #공부'
-    },
-    {
-        id: 107,
-        user_profile_id: 101,
-        log_date: new Date('2025-04-21'),
-        content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
-        img_url: 'https://picsum.photos/seed/769/400/400',
-        created_at: new Date('2025-04-21T17:15:06.000Z'),
-        like_count: 45,
-        comment_count: 10,
-        visibility: 1,
-        friend_tags: JSON.stringify([{"id": 200, "name": "Alice"}, {"id": 201, "name": "Bob"}, {"id": 202, "name": "Charlie"}]),
-        tags: '#일상 #기록'
-    },
-    {
-        id: 106,
-        user_profile_id: 102,
-        log_date: new Date('2025-03-24'),
-        content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
-        img_url: 'https://picsum.photos/seed/563/400/400',
-        created_at: new Date('2025-03-24T18:03:06.000Z'),
-        like_count: 13,
-        comment_count: 6,
-        visibility: 1,
-        friend_tags: JSON.stringify([{"id": 200, "name": "Alice"}]),
-        tags: '#추억 #감성'
-    },
-    {
-        id: 105,
-        user_profile_id: 101,
-        log_date: new Date('2025-02-28'),
-        content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
-        img_url: 'https://picsum.photos/seed/697/400/400',
-        created_at: new Date('2025-02-28T11:29:06.000Z'),
-        like_count: 36,
-        comment_count: 8,
-        visibility: 1,
-        friend_tags: JSON.stringify([{"id": 200, "name": "Alice"}, {"id": 201, "name": "Bob"}]),
-        tags: '#생각 #독서'
-    },
-    {
-        id: 104,
-        user_profile_id: 103,
-        log_date: new Date('2025-02-09'),
-        content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
-        img_url: 'https://picsum.photos/seed/490/400/400',
-        created_at: new Date('2025-02-09T16:09:06.000Z'),
-        like_count: 21,
-        comment_count: 3,
-        visibility: 1,
-        friend_tags: JSON.stringify([{"id": 200, "name": "Alice"}, {"id": 201, "name": "Bob"}, {"id": 202, "name": "Charlie"}]),
-        tags: '#일상 #기록'
-    },
-    {
-        id: 103,
-        user_profile_id: 102,
-        log_date: new Date('2025-01-19'),
-        content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
-        img_url: 'https://picsum.photos/seed/41/400/400',
-        created_at: new Date('2025-01-19T10:40:06.000Z'),
-        like_count: 48,
-        comment_count: 9,
-        visibility: 1,
-        friend_tags: JSON.stringify([{"id": 200, "name": "Alice"}]),
-        tags: '#생각 #개발'
-    },
-    {
-        id: 102,
-        user_profile_id: 101,
-        log_date: new Date('2024-12-29'),
-        content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
-        img_url: 'https://picsum.photos/seed/688/400/400',
-        created_at: new Date('2024-12-29T15:21:06.000Z'),
-        like_count: 19,
-        comment_count: 2,
-        visibility: 1,
-        friend_tags: JSON.stringify([{"id": 200, "name": "Alice"}, {"id": 201, "name": "Bob"}]),
-        tags: '#일상 #생각'
-    },
-    {
-        id: 101,
-        user_profile_id: 103,
-        log_date: new Date('2024-11-20'),
-        content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
-        img_url: 'https://picsum.photos/seed/150/400/400',
-        created_at: new Date('2024-11-20T17:07:06.000Z'),
-        like_count: 38,
-        comment_count: 7,
-        visibility: 1,
-        friend_tags: JSON.stringify([{"id": 200, "name": "Alice"}, {"id": 201, "name": "Bob"}, {"id": 202, "name": "Charlie"}]),
-        tags: '#여행 #추억'
-    },
-    {
-        id: 100,
-        user_profile_id: 102,
-        log_date: new Date('2024-10-25'),
-        content: '이것은 테스트를 위한 일기 내용입니다. 약 200자 정도의 길이를 가집니다. 이 내용은 시스템의 글자 수 제한 기능을 시험하고, 캘린더 연동 및 페이지 이동 기능을 확인하는 데 사용됩니다. 다양한 상황을 시뮬레이션하기 위해 여러 일기 항목을 생성합니다. 사용자 경험을 개선하기 위한 중요한 단계입니다. 계속해서 기능을 개선하고 안정성을 확보하는 데 집중하고 있습니다. 이 텍스트는 임의로 생성되었으며, 실제 의미는 없습니다. 시스템의 견고함을 확인하는 데 도움이 되기를 바랍니다.',
-        img_url: 'https://picsum.photos/seed/891/400/400',
-        created_at: new Date('2024-10-25T12:34:06.000Z'),
-        like_count: 25,
-        comment_count: 4,
-        visibility: 1,
-        friend_tags: JSON.stringify([{"id": 200, "name": "Alice"}]),
-        tags: '#일상 #하루'
-    }
-].sort((a, b) => b.log_date.getTime() - a.log_date.getTime());
 
 export default function DiaryScreen() {
     const theme = useTheme(); // 테마 객체 가져오기
     const router = useRouter();
     const params = useLocalSearchParams();
     const [viewMode, setViewMode] = useState('page');
-    const [ilogs, setIlogs] = useState<ILogData[]>(initialILogs);
+    const { ilogs, fetchILogs, createILog, updateILog, deleteILog } = useILog();
+    const [isSuccessModalVisible, setSuccessModalVisible] = useState(false);
+
+    useEffect(() => {
+        fetchILogs();
+    }, []);
 
     // --- Calendar State (for Page View) ---
     const [isCalendarVisible, setCalendarVisible] = useState(false);
@@ -182,7 +42,7 @@ export default function DiaryScreen() {
     const [currentLogIndex, setCurrentLogIndex] = useState(0); // New state to track current visible log index
     const [currentCalendarMonth, setCurrentCalendarMonth] = useState(() => {
         if (ilogs.length > 0) {
-            return format(ilogs[0].log_date, 'yyyy-MM-01'); // Initialize with the month of the first log
+            return format(ilogs[0].logDate, 'yyyy-MM-01'); // Initialize with the month of the first log
         }
         return format(new Date(), 'yyyy-MM-01'); // Fallback to current month
     });
@@ -195,49 +55,61 @@ export default function DiaryScreen() {
     const [isMonthPickerVisible, setMonthPickerVisible] = useState(false); // New state for month picker modal
     const [isYearPickerVisible, setYearPickerVisible] = useState(false); // New state for year picker modal
 
-    // 1. 모든 로그에서 중복 없는 태그 목록 추출
-    const uniqueTags = useMemo(() => {
-        const allTags = ilogs
-            .flatMap(log => log.tags?.split(' ') || []) // 모든 태그를 하나의 배열로 펼치기
-            .filter(tag => tag.startsWith('#')); // #으로 시작하는 태그만 필터링
-        return [...new Set(allTags)]; // Set을 사용하여 중복 제거
-    }, [ilogs]);
-
     useEffect(() => {
-        // Handle new log creation
-        if (params.newLog) {
-            const newLogData = JSON.parse(params.newLog as string);
-            newLogData.log_date = new Date(newLogData.log_date);
-            newLogData.created_at = new Date(newLogData.created_at);
-            setIlogs(prevIlogs => [newLogData, ...prevIlogs].sort((a, b) => b.log_date.getTime() - a.log_date.getTime())); // 날짜순 정렬
-            setSelectedLogIndex(0); // Scroll to the new log
-            router.setParams({ newLog: '' });
-        }
+        const handleParams = async () => {
+            if (params.newLog) {
+                const newLogData: ILog = JSON.parse(params.newLog as string);
 
-        // Handle log deletion
-        if (params.deletedLogId) {
-            const deletedId = parseInt(params.deletedLogId as string, 10);
-            setIlogs(prevIlogs => prevIlogs.filter(log => log.id !== deletedId));
-            router.setParams({ deletedLogId: '' });
-        }
+                const visibilityMap: { [key: string]: number } = {
+                    "PUBLIC": 0,
+                    "FRIENDS_ONLY": 1,
+                    "PRIVATE": 2,
+                };
+                const visibilityAsNumber = visibilityMap[newLogData.visibility.toUpperCase()] ?? 1; // Default to FRIENDS_ONLY
 
-        // Handle log update
-        if (params.updatedLog) {
-            const updatedLogData: ILogData = JSON.parse(params.updatedLog as string);
-            // Ensure date objects are correctly parsed if they were stringified
-            updatedLogData.log_date = new Date(updatedLogData.log_date);
-            updatedLogData.created_at = new Date(updatedLogData.created_at);
+                const requestData: ILogCreateRequestFrontend = {
+                    writerId: newLogData.userId,
+                    logDate: format(new Date(newLogData.logDate), 'yyyy-MM-dd'),
+                    content: newLogData.content,
+                    visibility: visibilityAsNumber,
+                    friendTags: newLogData.friendTags,
+                };
 
-            setIlogs(prevIlogs => {
-                const newIlogs = prevIlogs.map(log =>
-                    log.id === updatedLogData.id ? updatedLogData : log
-                );
-                // Re-sort in case log_date was changed (though not expected in this flow)
-                return newIlogs.sort((a, b) => b.log_date.getTime() - a.log_date.getTime());
-            });
-            router.setParams({ updatedLog: '' });
-        }
-    }, [params.newLog, params.deletedLogId, params.updatedLog]);
+                await createILog({ request: requestData }); // Pass only the creation request
+                setSelectedLogIndex(0); // Scroll to the new log
+                router.setParams({ newLog: '' });
+            }
+
+            if (params.lastAction === 'deleted') {
+                setSuccessModalVisible(true);
+                router.setParams({ lastAction: '' }); // Clear the parameter
+            }
+
+            if (params.updatedLog) {
+                const updatedLogData: ILog = JSON.parse(params.updatedLog as string);
+                // Ensure date objects are correctly parsed if they were stringified
+                updatedLogData.logDate = new Date(updatedLogData.logDate);
+                updatedLogData.createdAt = new Date(updatedLogData.createdAt);
+
+                const visibilityMap: { [key: string]: number } = {
+                    "PUBLIC": 0,
+                    "FRIENDS_ONLY": 1,
+                    "PRIVATE": 2,
+                };
+                const visibilityAsNumber = visibilityMap[updatedLogData.visibility.toUpperCase()] ?? 1; // Default to FRIENDS_ONLY
+
+                const updateRequest: ILogUpdateRequest = {
+                    content: updatedLogData.content,
+                    visibility: visibilityAsNumber,
+                    existingImageUrls: updatedLogData.images,
+                };
+
+                await updateILog(updatedLogData.id, updateRequest); // Use context function
+                router.setParams({ updatedLog: '' });
+            }
+        };
+        handleParams();
+    }, [params.newLog, params.lastAction, params.updatedLog, createILog, updateILog]);
 
     // Reset scroll index when switching to page view
     useEffect(() => {
@@ -251,10 +123,10 @@ export default function DiaryScreen() {
     // --- Calendar Logic (for Page View) ---
     const markedDates = useMemo(() => {
         const markings: { [key: string]: { marked?: boolean, dotColor?: string, disabled?: boolean, disableTouchEvent?: boolean } } = {};
-        const logsByDate: { [key: string]: ILogData } = ilogs.reduce((acc, log) => {
-            acc[format(log.log_date, 'yyyy-MM-dd')] = log;
+        const logsByDate: { [key: string]: ILog } = ilogs.reduce((acc, log) => {
+            acc[format(log.logDate, 'yyyy-MM-dd')] = log;
             return acc;
-        }, {} as { [key: string]: ILogData });
+        }, {} as { [key: string]: ILog });
 
 
         const start = startOfMonth(new Date(currentCalendarMonth));
@@ -277,13 +149,13 @@ export default function DiaryScreen() {
     const openCalendar = () => {
         // Set currentCalendarMonth to the month of the currently viewed log explicitly
         if (ilogs[currentLogIndex]) {
-            setCurrentCalendarMonth(format(ilogs[currentLogIndex].log_date, 'yyyy-MM-01'));
+            setCurrentCalendarMonth(format(ilogs[currentLogIndex].logDate, 'yyyy-MM-01'));
         }
         setCalendarVisible(true);
     };
 
     const handleDateSelect = (day: DateData) => {
-        const index = ilogs.findIndex(log => format(log.log_date, 'yyyy-MM-dd') === day.dateString);
+        const index = ilogs.findIndex(log => format(log.logDate, 'yyyy-MM-dd') === day.dateString);
 
         if (index !== -1) {
             setSelectedLogIndex(null); // Reset to null to force re-render and scroll
@@ -303,10 +175,10 @@ export default function DiaryScreen() {
     // --- Calendar Logic (for List View) ---
     const markedDatesForListCalendar = useMemo(() => {
         const markings: { [key: string]: { marked?: boolean, dotColor?: string, disabled?: boolean, disableTouchEvent?: boolean } } = {};
-        const logsByDate: { [key: string]: ILogData } = ilogs.reduce((acc, log) => {
-            acc[format(log.log_date, 'yyyy-MM-dd')] = log;
+        const logsByDate: { [key: string]: ILog } = ilogs.reduce((acc, log) => {
+            acc[format(log.logDate, 'yyyy-MM-dd')] = log;
             return acc;
-        }, {} as { [key: string]: ILogData });
+        }, {} as { [key: string]: ILog });
 
         const start = startOfMonth(new Date(currentListCalendarMonth));
         const end = endOfMonth(new Date(currentListCalendarMonth));
@@ -386,7 +258,7 @@ export default function DiaryScreen() {
         }
 
         return ilogs.filter(log => {
-            const logDateString = format(log.log_date, 'yyyy-MM-dd');
+            const logDateString = format(log.logDate, 'yyyy-MM-dd');
             if (listFilterType === 'day') {
                 return logDateString === listFilterValue;
             } else if (listFilterType === 'month') {
@@ -402,13 +274,12 @@ export default function DiaryScreen() {
     const handleAddPress = () => {
         const simplifiedIlogs = ilogs.map(log => ({
             id: log.id,
-            log_date: log.log_date.toISOString(), // Convert Date to ISO string for passing
+            logDate: log.logDate.toISOString(), // Convert Date to ISO string for passing
         }));
 
         router.push({
-            pathname: '../add-ilog',
+            pathname: '../i-log/add-ilog/add-ilog',
             params: {
-                uniqueTags: JSON.stringify(uniqueTags),
                 existingLogs: JSON.stringify(simplifiedIlogs),
             },
         });
@@ -448,7 +319,6 @@ export default function DiaryScreen() {
                             setYearPickerVisible={setYearPickerVisible}
                             handleSelectMonth={handleSelectMonth}
                             handleSelectYear={handleSelectYear}
-                            colors={theme.colors}
                         />
                     ) : (
                         <ILogPageView
@@ -456,7 +326,6 @@ export default function DiaryScreen() {
                             onDatePress={openCalendar}
                             scrollToIndex={selectedLogIndex}
                             onPageChange={handlePageChange} // Pass the new prop
-                            colors={theme.colors}
                         />
                     )}
                 </MainContainer>
@@ -502,6 +371,29 @@ export default function DiaryScreen() {
                         />
                     </View>
                 </TouchableOpacity>
+            </Modal>
+
+            {/* Deletion Success Modal */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isSuccessModalVisible}
+                onRequestClose={() => setSuccessModalVisible(false)}
+            >
+                <I.DetailModalBackdrop
+                    activeOpacity={1}
+                    onPressOut={() => setSuccessModalVisible(false)}
+                >
+                    <I.DetailModalContainer>
+                        <I.DetailModalTitle>삭제 완료</I.DetailModalTitle>
+                        <I.DetailModalText>일기가 성공적으로 삭제되었습니다.</I.DetailModalText>
+                        <I.DetailModalButtonContainer>
+                            <I.DetailModalDeleteButton onPress={() => setSuccessModalVisible(false)}>
+                                <I.DetailModalButtonText color="white">확인</I.DetailModalButtonText>
+                            </I.DetailModalDeleteButton>
+                        </I.DetailModalButtonContainer>
+                    </I.DetailModalContainer>
+                </I.DetailModalBackdrop>
             </Modal>
         </GestureHandlerRootView>
     );
