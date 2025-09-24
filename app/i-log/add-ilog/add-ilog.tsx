@@ -242,6 +242,7 @@ export default function AddILogScreen() {
     const [isSaving, setIsSaving] = useState(false);
     const [captureQueue, setCaptureQueue] = useState<ImageAsset[]>([]);
     const [processedImages, setProcessedImages] = useState<ImageAsset[]>([]);
+    const [isImageLoadedForCapture, setIsImageLoadedForCapture] = useState(false);
     const offscreenViewShotRef = useRef<ViewShot>(null);
 
     const renderedModalImageLayout = useMemo(() => {
@@ -383,29 +384,48 @@ export default function AddILogScreen() {
 
     // --- Offscreen Image Processing ---
     useEffect(() => {
+        if (captureQueue.length > 0) {
+            setIsImageLoadedForCapture(false); // Reset for the new image in queue
+        }
+    }, [captureQueue]);
+
+    useEffect(() => {
         const processImage = async () => {
-            if (captureQueue.length > 0 && offscreenViewShotRef.current) {
-                const assetToCapture = captureQueue[0];
-                const currentViewShot = offscreenViewShotRef.current; // Capture current value here
-                if (!currentViewShot) { // This check is now more meaningful
-                    throw new Error("ViewShot ref is unexpectedly null after initial check.");
-                }
-                try {
-                    // Ensure the image is loaded before capturing
-                    const uri = await currentViewShot.capture!(); // Use the captured local constant
-                    const filename = `ilog-capture-${Date.now()}.png`;
-                    setProcessedImages(prev => [...prev, {...assetToCapture, path: uri, stickers: [], filename: filename}]);
-                    setCaptureQueue(prev => prev.slice(1));
-                } catch (e) {
-                    console.error("Image capture failed:", e);
-                    Alert.alert("오류", "이미지 처리에 실패했습니다.");
-                    setIsSaving(false);
-                    setCaptureQueue([]);
-                }
+            if (captureQueue.length === 0) return;
+
+            const assetToProcess = captureQueue[0];
+            const needsCapture = assetToProcess.stickers && assetToProcess.stickers.length > 0;
+
+            if (!needsCapture) {
+                // No stickers, just add to processed and move on
+                setProcessedImages(prev => [...prev, assetToProcess]);
+                setCaptureQueue(prev => prev.slice(1));
+                return;
+            }
+
+            // Needs capture, wait for image to be loaded in the offscreen view
+            if (isImageLoadedForCapture && offscreenViewShotRef.current) {
+                // Add a forced delay to ensure rendering is complete
+                setTimeout(async () => {
+                    if (!offscreenViewShotRef.current || captureQueue.length === 0 || captureQueue[0].path !== assetToProcess.path) return;
+
+                    try {
+                        const uri = await offscreenViewShotRef.current.capture!();
+                        const filename = `ilog-capture-${Date.now()}.png`;
+                        const newAsset = { ...assetToProcess, path: uri, stickers: [], filename: filename, mime: 'image/png' };
+                        setProcessedImages(prev => [...prev, newAsset]);
+                        setCaptureQueue(prev => prev.slice(1));
+                    } catch (e) {
+                        console.error("Image capture failed:", e);
+                        Alert.alert("오류", "이미지 처리에 실패했습니다.");
+                        setIsSaving(false);
+                        setCaptureQueue([]);
+                    }
+                }, 1000); // 1000ms delay
             }
         };
         processImage();
-    }, [captureQueue, offscreenViewShotRef]);
+    }, [captureQueue, isImageLoadedForCapture]);
 
     useEffect(() => {
         const finalizeSave = async () => {
@@ -462,14 +482,8 @@ export default function AddILogScreen() {
         }
 
         setIsSaving(true);
-
-        const imagesToProcess = imageAssets.filter(asset => asset.stickers && asset.stickers.length > 0);
-        const unprocessedImages = imageAssets.filter(asset => !asset.stickers || asset.stickers.length === 0);
-
-        // Immediately add images that don't need processing to the final list
-        setProcessedImages(unprocessedImages);
-        // Add images that need capturing to the queue
-        setCaptureQueue(imagesToProcess);
+        setProcessedImages([]); // Reset processed images
+        setCaptureQueue([...imageAssets]); // Set the whole queue, preserving order
     };
 
     return (
@@ -494,9 +508,15 @@ export default function AddILogScreen() {
             {isSaving && captureQueue.length > 0 && (
                 <View style={{position: 'absolute', opacity: 0, zIndex: -1}}>
                     <ViewShot ref={offscreenViewShotRef} options={{format: "png", quality: 0.9}}>
-                        <View style={{width: PREVIEW_SIZE, height: PREVIEW_SIZE, backgroundColor: 'white'}}>
-                            <Image source={{uri: captureQueue[0].path}} style={{width: '100%', height: '100%'}}/>
-                            {captureQueue[0].stickers.map(sticker => {
+                        <View style={{width: PREVIEW_SIZE, height: PREVIEW_SIZE, backgroundColor: 'transparent'}}>
+                            {captureQueue.length > 0 && (
+                                <Image
+                                    source={{uri: captureQueue[0].path}}
+                                    style={{width: '100%', height: '100%'}}
+                                    onLoadEnd={() => setIsImageLoadedForCapture(true)}
+                                />
+                            )}
+                            {captureQueue.length > 0 && captureQueue[0].stickers.map(sticker => {
                                 const scale = (sticker.normalizedScale || 0) * PREVIEW_SIZE;
                                 const stickerHalfSize = (STICKER_BASE_SIZE * scale) / 2;
                                 const x = (sticker.normalizedX || 0.5) * PREVIEW_SIZE - stickerHalfSize;
