@@ -12,6 +12,7 @@ import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {StatusBar} from "expo-status-bar";
 import {AntDesign} from "@expo/vector-icons";
 import CreateTagModal from "@/components/addTagModal/Add-tagmodal";
+import TagSelectionModal from "@/components/tag/TagSelectionModal";
 
 // 실제 앱에서는 이 화면으로 이동할 때 tags 목록을 prop으로 전달받거나
 // 전역 상태(global state)에서 가져와야 합니다. 여기서는 예시로 사용합니다.
@@ -55,6 +56,7 @@ const AddScheduleScreen = () => {
 
     // 태그 생성 모달 상태
     const [isTagModalVisible, setIsTagModalVisible] = useState(false);
+    const [isTagSelectionModalVisible, setIsTagSelectionModalVisible] = useState(false);
 
     const onDateTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || (pickerTarget === 'start' ? startTime : endTime);
@@ -216,20 +218,12 @@ const AddScheduleScreen = () => {
                             <AntDesign name="pluscircleo" size={24} color="mediumslateblue" />
                         </S.ASAddButton>
                     </S.ASTagHeaderRow>
-                    <S.ASPickerWrap>
-                        {loading ? (
-                            <ActivityIndicator size="small" color="mediumslateblue" />
-                        ) : (
-                            <Picker selectedValue={tagId}
-                                    onValueChange={(itemValue) => setTagId(itemValue)}
-                                    style={{ color: 'mediumslateblue' }}
-                            >
-                                {sortedTags && sortedTags.map((tag) => (
-                                    <Picker.Item key={tag.id} label={tag.label} value={tag.id}/>
-                                ))}
-                            </Picker>
-                        )}
-                    </S.ASPickerWrap>
+                    <S.ASDateTimeButton onPress={() => setIsTagSelectionModalVisible(true)}>
+                        <S.ASDateTimeButtonText>
+                            {selectedTag ? selectedTag.label : '태그 선택'}
+                        </S.ASDateTimeButtonText>
+                    </S.ASDateTimeButton>
+
 
                     {/* 2. 선택된 태그가 있을 경우, 해시태그 스타일로 화면에 표시합니다. */}
                     {selectedTag && (
@@ -256,6 +250,16 @@ const AddScheduleScreen = () => {
                     visible={isTagModalVisible}
                     onClose={() => setIsTagModalVisible(false)}
                     onSave={handleSaveTag}
+                />
+
+                <TagSelectionModal
+                    visible={isTagSelectionModalVisible}
+                    tags={sortedTags}
+                    onClose={() => setIsTagSelectionModalVisible(false)}
+                    onSelect={(tag) => {
+                        setTagId(tag.id);
+                        setIsTagSelectionModalVisible(false);
+                    }}
                 />
 
             </S.ASContainer>
