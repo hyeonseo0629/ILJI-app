@@ -31,7 +31,7 @@ export default function DiaryScreen() {
     const theme = useTheme(); // 테마 객체 가져오기
     const router = useRouter();
     const params = useLocalSearchParams();
-    const [viewMode, setViewMode] = useState('page');
+    const [viewMode, setViewMode] = useState('list');
     const { ilogs, fetchILogs, createILog, updateILog, deleteILog } = useILog();
     const [isSuccessModalVisible, setSuccessModalVisible] = useState(false);
 
