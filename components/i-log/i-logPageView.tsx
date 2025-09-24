@@ -7,18 +7,22 @@ import {
     Text,
     ScrollView,
     NativeSyntheticEvent,
-    NativeScrollEvent
+    NativeScrollEvent,
+    Modal,
+    Image,
+    Pressable
 } from "react-native";
 import * as I from "@/components/style/I-logStyled";
-import React, {useRef, useEffect} from "react";
+import React, {useRef, useEffect, useState} from "react";
 import {ILog} from '@/src/types/ilog';
 import {format} from 'date-fns';
 import {AntDesign, EvilIcons} from '@expo/vector-icons';
 import {useRouter} from "expo-router";
+import {useSafeAreaInsets} from "react-native-safe-area-context";
 
 const {width} = Dimensions.get("window");
 
-const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void }) => {
+const DiaryPage = ({item, onDatePress, onImagePress}: { item: ILog, onDatePress: () => void, onImagePress: (url: string) => void }) => {
     const router = useRouter();
     const [activeSlide, setActiveSlide] = React.useState(0);
     const scrollViewRef = React.useRef<ScrollView>(null);
@@ -48,27 +52,24 @@ const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void })
                     </I.PageDateInfo>
                 </I.PageHeader>
 
-                {/* Wrap content below header in a TouchableOpacity for navigation */}
-                <TouchableOpacity activeOpacity={0.8} onPress={handleNavigateToDetail}>
-
-                    {item.images && item.images.length > 0 && (
-                        <View>
-                            <ScrollView
-                                ref={scrollViewRef}
-                                horizontal
-                                pagingEnabled
-                                showsHorizontalScrollIndicator={false}
-                                onMomentumScrollEnd={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
-                                    const slide = Math.round(event.nativeEvent.contentOffset.x / (Dimensions.get('window').width - 45));
-                                    if (slide !== activeSlide) {
-                                        setActiveSlide(slide);
-                                    }
-                                }}
-                                snapToAlignment={'start'}
-                            >
-                                {item.images.map((imageUri, index) => (
-                                    <I.CarouselItemWrapper 
-                                        key={index}
+                {item.images && item.images.length > 0 && (
+                    <View>
+                        <ScrollView
+                            ref={scrollViewRef}
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
+                            onMomentumScrollEnd={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
+                                const slide = Math.round(event.nativeEvent.contentOffset.x / (Dimensions.get('window').width - 45));
+                                if (slide !== activeSlide) {
+                                    setActiveSlide(slide);
+                                }
+                            }}
+                            snapToAlignment={'start'}
+                        >
+                            {item.images.map((imageUri, index) => (
+                                <TouchableOpacity key={index} onPress={() => onImagePress(imageUri)}>
+                                    <I.CarouselItemWrapper
                                         isLast={index === item.images.length - 1}
                                     >
                                         <I.PageImage source={{uri: imageUri}}/>
@@ -83,39 +84,40 @@ const DiaryPage = ({item, onDatePress}: { item: ILog, onDatePress: () => void })
                                             </I.PageStatItem>
                                         </I.PageStatsContainer>
                                     </I.CarouselItemWrapper>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+
+                        {item.images.length > 1 && (
+                            <View style={{
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                padding: 10
+                            }}>
+                                {item.images.map((_, index) => (
+                                    <TouchableOpacity
+                                        key={index}
+                                        onPress={() => {
+                                            scrollViewRef.current?.scrollTo({
+                                                x: index * Dimensions.get('window').width,
+                                                animated: true
+                                            });
+                                            setActiveSlide(index);
+                                        }}
+                                    >
+                                        <Text style={{
+                                            fontSize: 24,
+                                            color: activeSlide === index ? 'black' : 'gray',
+                                            marginHorizontal: 4
+                                        }}>•</Text>
+                                    </TouchableOpacity>
                                 ))}
-                            </ScrollView>
-
-                            {item.images.length > 1 && (
-                                <View style={{
-                                    flexDirection: 'row',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    padding: 10
-                                }}>
-                                    {item.images.map((_, index) => (
-                                        <TouchableOpacity
-                                            key={index}
-                                            onPress={() => {
-                                                scrollViewRef.current?.scrollTo({
-                                                    x: index * Dimensions.get('window').width,
-                                                    animated: true
-                                                });
-                                                setActiveSlide(index);
-                                            }}
-                                        >
-                                            <Text style={{
-                                                fontSize: 24,
-                                                color: activeSlide === index ? 'black' : 'gray',
-                                                marginHorizontal: 4
-                                            }}>•</Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            )}
-                        </View>
-                    )}
-
+                            </View>
+                        )}
+                    </View>
+                )}
+                <TouchableOpacity onPress={handleNavigateToDetail}>
                     {parsedFriendTags.length > 0 && (
                         <I.PageFriendTagsContainer>
                             {parsedFriendTags.map(tag => (
@@ -140,6 +142,19 @@ const ILogPageView = ({ilogs, onDatePress, scrollToIndex, onPageChange}: {
     onPageChange: (index: number) => void
 }) => {
     const flatListRef = useRef<FlatList<ILog>>(null);
+    const [isImageModalVisible, setImageModalVisible] = useState(false);
+    const [selectedImageUrl, setSelectedImageUrl] = useState('');
+    const insets = useSafeAreaInsets();
+
+    const handleImagePress = (url: string) => {
+        setSelectedImageUrl(url);
+        setImageModalVisible(true);
+    };
+
+    const closeImageModal = () => {
+        setImageModalVisible(false);
+        setSelectedImageUrl('');
+    };
 
     const onViewableItemsChanged = useRef(({viewableItems}: { viewableItems: ViewToken[] }) => {
         if (viewableItems.length > 0) {
@@ -191,7 +206,7 @@ const ILogPageView = ({ilogs, onDatePress, scrollToIndex, onPageChange}: {
 
     const renderItem = ({item}: { item: ILog }) => (
         <View style={{width}}>
-            <DiaryPage item={item} onDatePress={onDatePress}/>
+            <DiaryPage item={item} onDatePress={onDatePress} onImagePress={handleImagePress} />
         </View>
     );
 
@@ -211,6 +226,25 @@ const ILogPageView = ({ilogs, onDatePress, scrollToIndex, onPageChange}: {
                 onViewableItemsChanged={onViewableItemsChanged.current}
                 viewabilityConfig={viewabilityConfig.current}
             />
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isImageModalVisible}
+                onRequestClose={closeImageModal}
+            >
+                <Pressable style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.9)', justifyContent: 'center', alignItems: 'center' }} onPress={closeImageModal}>
+                    <Image
+                        source={{ uri: selectedImageUrl }}
+                        style={{ width: '100%', height: '80%', resizeMode: 'contain' }}
+                    />
+                    <TouchableOpacity
+                        onPress={closeImageModal}
+                        style={{ position: 'absolute', top: insets.top + 10, right: 20, zIndex: 1 }}
+                    >
+                        <AntDesign name="close" size={32} color="white" />
+                    </TouchableOpacity>
+                </Pressable>
+            </Modal>
         </I.Container>
     );
 };

@@ -696,7 +696,11 @@ export default function AddILogScreen() {
                                     autoFocus={true}
                                     $colors={theme.colors}
                                     placeholderTextColor={theme.colors.text}
+                                    maxLength={3000}
                                 />
+                                <Text style={{ color: theme.colors.text, alignSelf: 'flex-end', marginTop: 4, marginRight: 10 }}>
+                                    {content.length} / 3000
+                                </Text>
                             </I.AddContentContainer>
                         </I.AddWrap>
                     </I.Container>

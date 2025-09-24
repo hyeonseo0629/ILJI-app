@@ -136,6 +136,7 @@ export const ListThumbnail = styled.Image<StyledProps>`
     border-radius: 10px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
     margin-right: 35px;
+    resize-mode: cover;
 `;
 
 export const ListMainContent = styled.View`
@@ -247,7 +248,7 @@ export const PageImage = styled.Image<StyledProps>`
     height: 100%;
     border-radius: 15px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
-    resize-mode: contain;
+    resize-mode: cover;
 `;
 
 export const PageStatsContainer = styled.View`
@@ -397,7 +398,7 @@ export const DetailImage = styled.Image<StyledProps>`
     height: 100%;
     border-radius: 15px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
-    resize-mode: contain;
+    resize-mode: cover;
 `;
 
 export const DetailStatsContainer = styled.View`

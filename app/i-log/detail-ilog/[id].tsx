@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {ScrollView, Alert, Modal, View, ActivityIndicator, Text, Dimensions, NativeSyntheticEvent, NativeScrollEvent, TouchableOpacity} from 'react-native';
+import {ScrollView, Alert, Modal, View, ActivityIndicator, Text, Dimensions, NativeSyntheticEvent, NativeScrollEvent, TouchableOpacity, Image, Pressable} from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import * as I from "@/components/style/I-logStyled";
 import { ILog } from '@/src/types/ilog';
@@ -17,6 +17,8 @@ export default function ILogDetailScreen() {
     const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false); // Add isDeleting state to prevent race condition
     const [activeSlide, setActiveSlide] = useState(0);
+    const [isImageModalVisible, setImageModalVisible] = useState(false);
+    const [selectedImageUrl, setSelectedImageUrl] = useState('');
     const scrollViewRef = useRef<ScrollView>(null);
     const insets = useSafeAreaInsets();
 
@@ -67,6 +69,16 @@ export default function ILogDetailScreen() {
             });
         }
         setDeleteModalVisible(false);
+    };
+
+    const handleImagePress = (url: string) => {
+        setSelectedImageUrl(url);
+        setImageModalVisible(true);
+    };
+
+    const closeImageModal = () => {
+        setImageModalVisible(false);
+        setSelectedImageUrl('');
     };
 
     if (!log) {
@@ -122,7 +134,9 @@ export default function ILogDetailScreen() {
                                       key={index}
                                       isLast={index === log.images.length - 1}
                                     >
-                                        <I.DetailImage source={{uri: imageUri}}/>
+                                        <TouchableOpacity onPress={() => handleImagePress(imageUri)}>
+                                            <I.DetailImage source={{uri: imageUri}} resizeMode="cover"/>
+                                        </TouchableOpacity>
                                         <I.DetailStatsContainer>
                                             <I.DetailStatItem>
                                                 <AntDesign name="heart" size={14} color="white"/>
@@ -217,6 +231,27 @@ export default function ILogDetailScreen() {
                         )}
                     </I.DetailModalContainer>
                 </I.DetailModalBackdrop>
+            </Modal>
+
+            {/* Image Modal */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isImageModalVisible}
+                onRequestClose={closeImageModal}
+            >
+                <Pressable style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.9)', justifyContent: 'center', alignItems: 'center' }} onPress={closeImageModal}>
+                    <Image
+                        source={{ uri: selectedImageUrl }}
+                        style={{ width: '100%', height: '80%', resizeMode: 'contain' }}
+                    />
+                    <TouchableOpacity
+                        onPress={closeImageModal}
+                        style={{ position: 'absolute', top: insets.top + 10, right: 20, zIndex: 1 }}
+                    >
+                        <AntDesign name="close" size={32} color="white" />
+                    </TouchableOpacity>
+                </Pressable>
             </Modal>
         </I.ScreenContainer>
     );

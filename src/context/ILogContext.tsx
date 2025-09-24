@@ -71,7 +71,7 @@ export function ILogProvider({ children }: ILogProviderProps) {
         setLoading(true);
         try {
             const response = await api.get<RawILog[]>('/mobile/i-log');
-            setIlogs(response.data.map(formatRawILog));
+            setIlogs(response.data.map(formatRawILog).sort((a, b) => b.logDate.getTime() - a.logDate.getTime()));
             setError(null);
         } catch (err) {
             console.error("i-log 목록 로딩 실패:", err);
@@ -217,7 +217,7 @@ export function ILogProvider({ children }: ILogProviderProps) {
                 },
             });
             const updatedLog = formatRawILog(response.data);
-            setIlogs(prev => prev.map(log => log.id === logId ? updatedLog : log));
+            setIlogs(prev => prev.map(log => log.id === logId ? updatedLog : log).sort((a, b) => b.logDate.getTime() - a.logDate.getTime()));
             return updatedLog;
         } catch (err) {
             console.error(`i-log (id: ${logId}) 업데이트 실패:`, err);

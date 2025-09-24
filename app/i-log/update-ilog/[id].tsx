@@ -479,7 +479,10 @@ export default function UpdateILogScreen() {
                                         <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText>
                                     </I.AddImagePlaceholder>
                                 )}
-                                <I.AddTextArea placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...`} value={content} onChangeText={setContent} multiline height={textAreaHeight} onContentSizeChange={(e) => setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height))} autoFocus={true} $colors={theme.colors} placeholderTextColor={theme.colors.text} />
+                                <I.AddTextArea placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...`} value={content} onChangeText={setContent} multiline height={textAreaHeight} onContentSizeChange={(e) => setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height))} autoFocus={true} $colors={theme.colors} placeholderTextColor={theme.colors.text} maxLength={3000} />
+                                <Text style={{ color: theme.colors.text, alignSelf: 'flex-end', marginTop: 4, marginRight: 10 }}>
+                                    {content.length} / 3000
+                                </Text>
                             </I.AddContentContainer>
                         </I.AddWrap>
                     </I.Container>
