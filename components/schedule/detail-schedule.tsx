@@ -32,6 +32,16 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
         return tags.find(tag => tag.id === formData.tagId);
     }, [formData, tags]);
 
+    const sortedTags = useMemo(() => {
+        if (!tags) return [];
+        const scheduleTag = tags.find(tag => tag.label === '일정');
+        const otherTags = tags.filter(tag => tag.label !== '일정');
+        if (scheduleTag) {
+            return [scheduleTag, ...otherTags];
+        }
+        return otherTags;
+    }, [tags]);
+
     useEffect(() => {
         setFormData(schedule);
         if (!visible) {
@@ -205,7 +215,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                                 <>
                                     <DS.Label>Tag</DS.Label>
                                     <DS.TagSelectorContainer>
-                                        {tags.map(tag => (
+                                        {sortedTags.map(tag => (
                                             <DS.TagSelectorItem
                                                 key={tag.id}
                                                 color={tag.color}
