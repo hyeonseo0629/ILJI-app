@@ -298,11 +298,14 @@ export default function UpdateILogScreen() {
     }, [captureQueue]);
 
     useEffect(() => {
-        const captureAndProcess = async () => {
-            if (isImageLoadedForCapture && captureQueue.length > 0 && offscreenViewShotRef.current) {
-                // Add a forced delay as requested to ensure rendering is complete
+        const processImage = async () => {
+            // If there's nothing to process, or the view is not ready, do nothing.
+            if (captureQueue.length === 0) return;
+
+            // Always process via capture to ensure order, as per user suggestion.
+            if (isImageLoadedForCapture && offscreenViewShotRef.current) {
                 setTimeout(async () => {
-                    // Re-check refs and state inside the timeout
+                    // Re-check refs and state inside the timeout to prevent race conditions
                     if (!offscreenViewShotRef.current || captureQueue.length === 0) return;
 
                     const assetToCapture = captureQueue[0];
@@ -312,18 +315,16 @@ export default function UpdateILogScreen() {
                         const newAsset = { ...assetToCapture, path: uri, stickers: [], filename: filename, mime: 'image/png' };
                         setProcessedImages(prev => [...prev, newAsset]);
                         setCaptureQueue(prev => prev.slice(1));
-                        setIsImageLoadedForCapture(false);
                     } catch (e) {
                         console.error("Image capture failed:", e);
                         Alert.alert("오류", "이미지 처리에 실패했습니다.");
                         setIsSaving(false);
                         setCaptureQueue([]);
-                        setIsImageLoadedForCapture(false);
                     }
                 }, 1000);
             }
         };
-        captureAndProcess();
+        processImage();
     }, [isImageLoadedForCapture, captureQueue]);
 
     useEffect(() => {
@@ -385,12 +386,8 @@ export default function UpdateILogScreen() {
         if (!content.trim() && imageAssets.length === 0) { Alert.alert('오류', '내용이나 사진을 추가해주세요.'); return; }
 
         setIsSaving(true);
-
-        const imagesToProcess = imageAssets.filter(asset => asset.stickers && asset.stickers.length > 0);
-        const unprocessedImages = imageAssets.filter(asset => !asset.stickers || asset.stickers.length === 0);
-
-        setProcessedImages(unprocessedImages);
-        setCaptureQueue(imagesToProcess);
+        setProcessedImages([]); // Reset processed images
+        setCaptureQueue([...imageAssets]); // Set the whole queue, preserving order
     };
 
     // --- Render Logic ---

@@ -263,8 +263,14 @@ export default function DiaryScreen() {
         });
     }, [ilogs, listFilterType, listFilterValue]);
 
+    // Determine container style based on view mode and content length
+    const containerStyle =
+        viewMode === 'page' || (viewMode === 'list' && filteredListIlogs.length < 5)
+            ? { height: screenHeight } // A calculated height for fixed views
+            : {}; // Let the parent ScrollView handle the height for long lists
+
     return (
-        <GestureHandlerRootView style={{ height: screenHeight }}>
+        <GestureHandlerRootView style={containerStyle}>
             <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
                 <MainContainer $colors={theme.colors} >
                     <TabsContainer $colors={theme.colors}>

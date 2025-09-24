@@ -260,6 +260,7 @@ const ILogListView = ({
                 data={ilogs}
                 renderItem={({item}) => <ListItem item={item}/>}
                 keyExtractor={(item) => item.id.toString()}
+                contentContainerStyle={{ flexGrow: 1 }}
                 ListEmptyComponent={
                     <I.ListNoSearchResultWrap>
                         <I.ListNoSearchResultText>
