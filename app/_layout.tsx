@@ -9,13 +9,13 @@ import ColorSchemeProvider, {useColorScheme} from '@/hooks/useColorScheme';
 import {StatusBar} from 'expo-status-bar';
 import {AuthProvider, useSession} from '@/hooks/useAuth';
 import {Colors} from '@/constants/Colors';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {ScheduleProvider} from '@/src/context/ScheduleContext';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import api from '@/src/lib/api'; // Import the centralized API instance
 import {useSafeAreaInsets} from "react-native-safe-area-context";
-import {ScheduleProvider} from "@/src/context/ScheduleContext";
 import {ILogProvider} from "@/src/context/ILogContext";
 
 
-// Layout 컴포넌트는 그대로 유지됩니다.
 function Layout() {
 
     const isnets = useSafeAreaInsets();
@@ -24,22 +24,61 @@ function Layout() {
     const segments = useSegments();
     const router = useRouter();
     const {isDarkColorScheme} = useColorScheme();
-    const theme = useTheme(); // theme 가져오기
+    const theme = useTheme();
     const [loaded] = useFonts({
         SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     });
 
     useEffect(() => {
-        if (isLoading) return;
-        const inAuthGroup = segments[0] === 'login';
-        if (!session && !inAuthGroup) {
-            router.replace('/login');
-        } else if (session && inAuthGroup) {
-            router.replace('/(tabs)');
+        const isAppLoading = isLoading || !loaded;
+        if (isAppLoading) {
+            return;
         }
-    }, [session, isLoading, segments]);
 
-    if (isLoading) {
+        const inAuthGroup = segments[0] === 'login';
+        const inSetupScreen = segments[0] === 'initial-profile-setup';
+
+        // 1. No session logic
+        if (!session) {
+            if (!inAuthGroup) {
+                router.replace('/login');
+            }
+            return;
+        }
+
+        // 2. Session exists logic
+        const checkProfileAndRedirect = async () => {
+            let hasNickname = false;
+            try {
+                // Use the centralized API instance which handles auth headers automatically
+                const response = await api.get('/user/profile');
+
+                if (response.status === 200 && response.data && response.data.nickname) {
+                    hasNickname = true;
+                }
+            } catch (error) {
+                // Errors (like 401) are expected if the token is invalid or expired.
+                // The user will be redirected to /login by the session check anyway.
+                console.log("Could not fetch profile, will redirect to login if session is invalid.");
+            }
+
+            // --- Final redirection rules ---
+            if (hasNickname) {
+                if (inAuthGroup || inSetupScreen) {
+                    router.replace('/(tabs)');
+                }
+            } else {
+                if (!inSetupScreen) {
+                    router.replace('/initial-profile-setup');
+                }
+            }
+        };
+
+        checkProfileAndRedirect();
+
+    }, [session, isLoading, segments, loaded]);
+
+    if (isLoading || !loaded) {
         return (
             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                 <ActivityIndicator/>
@@ -50,68 +89,67 @@ function Layout() {
     return (
         <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
             <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
-                        <Stack
-                            key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
-                            screenOptions={{
-                                headerStyle: {
-                                    backgroundColor: theme.colors.card,
-                                },
-                                headerTintColor: theme.colors.text,
-                                headerTitleStyle: {
-                                    fontWeight: 'bold',
-                                },
-                            }}
-                        >
-                            <Stack.Screen
-                                name="login"
-                                options={{headerShown: false}}
-                            />
-                            <Stack.Screen
-                                name="(settings)"
-                                options={{headerShown: false}}
-                            />
-
-                            <Stack.Screen
-                                name="(tabs)"
-                                options={{
-                                    headerShown: false,
-                                    title: ''
-                                }}
-                            />
-                            <Stack.Screen
-                                name="add-schedule"
-                                options={{
-                                    title: 'New Schedule',
-                                    presentation: 'modal',
-                                    headerStyle: {
-                                        backgroundColor: theme.colors.card,
-                                    },
-                                    headerTintColor: theme.colors.text,
-                                    headerShown: false
-                                }}
-                            />
-                            <Stack.Screen
-                                name="i-log/add-ilog/add-ilog"
-                                options={{headerShown: false}} // add-ilog 헤더 숨김
-                            />
-                            <Stack.Screen
-                                name="i-log/detail-ilog/[id]"
-                                options={{headerShown: false}} // i-log/[id] 헤더 숨김
-                            />
-                            <Stack.Screen
-                                name="i-log/update-ilog/[id]"
-                                options={{headerShown: false}} // update-ilog 헤더 숨김
-                            />
-                            <Stack.Screen
-                                name="+not-found"
-                            />
-                        </Stack>
+                <Stack
+                    key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
+                    screenOptions={{
+                        headerStyle: {
+                            backgroundColor: theme.colors.card,
+                        },
+                        headerTintColor: theme.colors.text,
+                        headerTitleStyle: {
+                            fontWeight: 'bold',
+                        },
+                    }}
+                >
+                    <Stack.Screen
+                        name="login"
+                        options={{headerShown: false}}
+                    />
+                    <Stack.Screen
+                        name="(tabs)"
+                        options={{headerShown: false, title: ''}}
+                    />
+                    <Stack.Screen
+                        name="initial-profile-setup"
+                        options={{headerShown: false}}
+                    />
+                    <Stack.Screen
+                        name="add-schedule"
+                        options={{
+                            title: 'New Schedule',
+                            presentation: 'modal',
+                            headerStyle: {
+                                backgroundColor: theme.colors.card,
+                            },
+                            headerTintColor: theme.colors.text,
+                        }}
+                    />
+                    <Stack.Screen
+                        name="i-log/add-ilog/add-ilog"
+                        options={{headerShown: false}} // add-ilog 헤더 숨김
+                    />
+                    <Stack.Screen
+                        name="i-log/detail-ilog/[id]"
+                        options={{headerShown: false}} // i-log/[id] 헤더 숨김
+                    />
+                    <Stack.Screen
+                        name="i-log/update-ilog/[id]"
+                        options={{headerShown: false}} // update-ilog 헤더 숨김
+                    />
+                    <Stack.Screen
+                        name="(settings)"
+                        options={{headerShown: false}}
+                    />
+                    <Stack.Screen
+                        name="+not-found"
+                        options={{title: 'Oops!'}}
+                    />
+                </Stack>
             </View>
         </View>
     );
 }
 
-// ColorSchemeProvider 내부에서 테마를 사용하는 새로운 핵심 컴포넌트입니다.
 function ThemedAppLayout() {
     const {isDarkColorScheme, isColorSchemeLoading} = useColorScheme();
     const [loaded] = useFonts({
@@ -164,29 +202,28 @@ function ThemedAppLayout() {
 
     const currentTheme: Theme = isDarkColorScheme ? customDarkTheme : customDefaultTheme;
 
-  return (
-    <ThemeProvider value={currentTheme}>
-      <AuthProvider>
-        <ScheduleProvider>
-          <ILogProvider>
-            <Layout />
-          </ILogProvider>
-        </ScheduleProvider>
-      </AuthProvider>
-      <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider value={currentTheme}>
+            <AuthProvider>
+                <ScheduleProvider>
+                    <ILogProvider>
+                        <Layout/>
+                    </ILogProvider>
+                </ScheduleProvider>
+            </AuthProvider>
+            <StatusBar style={isDarkColorScheme ? 'light' : 'dark'}/>
+        </ThemeProvider>
+    );
 }
 
-// 최상위 RootLayout은 Provider를 제공하는 역할만 합니다.
 export default function RootLayout() {
-  return (
-    <SafeAreaProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <ColorSchemeProvider>
-          <ThemedAppLayout />
-        </ColorSchemeProvider>
-      </GestureHandlerRootView>
-    </SafeAreaProvider>
-  );
+    return (
+        <SafeAreaProvider>
+            <GestureHandlerRootView style={{flex: 1}}>
+                <ColorSchemeProvider>
+                    <ThemedAppLayout/>
+                </ColorSchemeProvider>
+            </GestureHandlerRootView>
+        </SafeAreaProvider>
+    );
 }
