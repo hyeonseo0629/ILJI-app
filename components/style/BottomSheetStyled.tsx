@@ -63,75 +63,46 @@ export const ContentWrap = styled.View`
     width: 100%;
 `
 
+// New component for the vertical bar
+export const VerticalBar = styled.View<{ color: string }>`
+    width: 4px;
+    height: 100%;
+    background-color: ${props => props.color || 'gray'};
+    margin-right: 12px; // A bit more space
+    border-radius: 2px;
+`;
+
+// Wrapper for the list of schedules
 export const ScheduleListWrap = styled.View`
+    /* No specific styles needed for now */
+`;
 
-`
-
+// A single schedule item container
 export const ScheduleWrap = styled.View<StyledProps>`
+    flex-direction: row;
+    align-items: center; // Vertically align bar and text
+    margin: 8px 0;
+    padding: 12px;
     border-color: ${props => props.$colors?.border || '#555'};
-    border-bottom-width: 1px;
-    border-top-width: 1px;
-    flex-direction: row;
-    margin: 10px 0;
-    padding: 10px;
-    justify-content: space-between;
-`
+    border-radius: 8px;
+`;
 
-export const ScheduleState = styled.Text<StyledProps>`
-    position: absolute;
-    font-size: 18px;
-    top: -16px;
-    background-color: ${props => props.$colors?.card || '#ffffff'};
-    color: ${props => props.$colors?.text || '#000'};
-    text-align: center;
-    padding: 0 5px 0 0;
-`
-
-export const ScheduleCheckBox = styled(MaterialIcons).attrs<StyledProps>(props => ({
-    size: 28,
-    color: props.$colors?.primary || 'mediumslateblue',
-}))<StyledProps>`
-`
-
-interface TextProps extends StyledProps {
-    $isChecked?: boolean;
-}
-
-export const ScheduleTextsWrap = styled.View`
-    width: 100%;
-    flex-direction: row;
-`
-
-export const ScheduleLeftWrap = styled.View`
-    flex-direction: row;
-`
-
+// Wrapper for the text content (title and date/time)
 export const ScheduleTextWrap = styled.View`
-    margin-left: 10px;
-`
+    flex: 1;
+    flex-direction: column;
+`;
 
-export const ScheduleDayWrap = styled.View`
-flex-direction: row;
-`
+// Schedule Title
+export const ScheduleTitle = styled.Text`
+    font-size: 16px;
+    font-weight: 600; // Semi-bold
+    color: #333;
+    margin-bottom: 4px;
+`;
 
-export const ScheduleDate = styled.Text<TextProps>`
-    font-size: 20px;
-    padding: 2px 5px;
-    color: ${(props) => (props.$isChecked ? (props.$colors?.border || '#ccc') : (props.$colors?.text || '#8e8e93'))};
-    text-decoration-line: ${(props) => (props.$isChecked ? 'line-through' : 'none')};
-`
-
-export const ScheduleTime = styled.Text<TextProps>`
-    font-size: 20px;
-    padding: 2px 5px;
-    color: ${(props) => (props.$isChecked ? (props.$colors?.border || '#ccc') : (props.$colors?.text || '#8e8e93'))};
-    text-decoration-line: ${(props) => (props.$isChecked ? 'line-through' : 'none')};
-`
-
-export const ScheduleTitle = styled.Text<TextProps>`
-    font-size: 25px;
-    font-weight: bold;
-    padding: 5px 10px 0;
-    color: ${(props) => (props.$isChecked ? (props.$colors?.border || '#aaa') : (props.$colors?.text || '#333'))};
-    text-decoration-line: ${(props) => (props.$isChecked ? 'line-through' : 'none')};
-`
+// Schedule Date and Time
+export const ScheduleDateTime = styled.Text`
+    font-size: 13px;
+    color: #8e8e93;
+`;
