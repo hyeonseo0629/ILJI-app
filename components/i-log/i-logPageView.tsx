@@ -135,11 +135,18 @@ const DiaryPage = ({item, onDatePress, onImagePress}: { item: ILog, onDatePress:
     );
 };
 
-const ILogPageView = ({ilogs, onDatePress, scrollToIndex, onPageChange}: {
-    ilogs: ILog[],
-    onDatePress: () => void,
-    scrollToIndex: number | null,
-    onPageChange: (index: number) => void
+const ILogPageView = ({
+    ilogs,
+    onDatePress,
+    scrollToIndex,
+    onPageChange,
+    ListHeaderComponent, // New prop
+}: {
+    ilogs: ILog[];
+    onDatePress: () => void;
+    scrollToIndex: number | null;
+    onPageChange: (index: number) => void;
+    ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null | undefined; // New prop type
 }) => {
     const flatListRef = useRef<FlatList<ILog>>(null);
     const [isImageModalVisible, setImageModalVisible] = useState(false);
@@ -156,7 +163,7 @@ const ILogPageView = ({ilogs, onDatePress, scrollToIndex, onPageChange}: {
         setSelectedImageUrl('');
     };
 
-    const onViewableItemsChanged = useRef(({viewableItems}: { viewableItems: ViewToken[] }) => {
+    const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
         if (viewableItems.length > 0) {
             const currentIndex = viewableItems[0].index;
             if (currentIndex !== null) {
@@ -165,7 +172,7 @@ const ILogPageView = ({ilogs, onDatePress, scrollToIndex, onPageChange}: {
         }
     });
 
-    const viewabilityConfig = useRef({itemVisiblePercentThreshold: 50});
+    const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 });
 
     const getItemLayout = (data: any, index: number) => ({
         length: width,
@@ -199,19 +206,21 @@ const ILogPageView = ({ilogs, onDatePress, scrollToIndex, onPageChange}: {
     if (!ilogs || ilogs.length === 0) {
         return (
             <I.PageNoContentWrap>
+                {ListHeaderComponent && (React.isValidElement(ListHeaderComponent) ? ListHeaderComponent : React.createElement(ListHeaderComponent))}
                 <I.PageNoContentText>작성된 일지가 없습니다.</I.PageNoContentText>
             </I.PageNoContentWrap>
         );
     }
 
-    const renderItem = ({item}: { item: ILog }) => (
-        <View style={{width}}>
+    const renderItem = ({ item }: { item: ILog }) => (
+        <View style={{ width }}>
             <DiaryPage item={item} onDatePress={onDatePress} onImagePress={handleImagePress} />
         </View>
     );
 
     return (
         <I.Container>
+            {ListHeaderComponent && (React.isValidElement(ListHeaderComponent) ? ListHeaderComponent : React.createElement(ListHeaderComponent))}
             <FlatList
                 ref={flatListRef}
                 data={ilogs}

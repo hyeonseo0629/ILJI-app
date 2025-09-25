@@ -102,6 +102,7 @@ const ListItem = ({item}: { item: ILog }) => {
 
 // ILogListView 메인 컴포넌트
 const ILogListView = ({
+                          ListHeaderComponent,
                           ilogs,
                           listFilterType,
                           listFilterValue,
@@ -122,6 +123,7 @@ const ILogListView = ({
                           handleSelectMonth,
                           handleSelectYear,
                       }: {
+    ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
     ilogs: ILog[];
     listFilterType: 'day' | 'month' | 'year' | 'none';
     listFilterValue: string | null;
@@ -207,8 +209,9 @@ const ILogListView = ({
         },
     ];
 
-    return (
-        <I.Container>
+    const Header = () => (
+        <>
+            {ListHeaderComponent && React.createElement(ListHeaderComponent)}
             <I.ListSearchWrap>
                 <I.ListSearchButton
                     onPress={() => setDropdownVisible(!isDropdownVisible)}
@@ -255,8 +258,13 @@ const ILogListView = ({
                     </Modal>
                 )}
             </I.ListSearchWrap>
+        </>
+    );
 
+    return (
+        <>
             <FlatList
+                ListHeaderComponent={Header}
                 data={ilogs}
                 renderItem={({item}) => <ListItem item={item}/>}
                 keyExtractor={(item) => item.id.toString()}
@@ -316,7 +324,7 @@ const ILogListView = ({
                 onSelect={handleSelectYear}
                 title="연도 선택"
             />
-        </I.Container>
+        </>
     );
 };
 
