@@ -13,6 +13,7 @@ import {StatusBar} from "expo-status-bar";
 import {AntDesign} from "@expo/vector-icons";
 import CreateTagModal from "@/components/addTagModal/Add-tagmodal";
 import {useTheme} from '@react-navigation/native'; // useTheme import 추가
+import TagSelectionModal from "@/components/tag/TagSelectionModal";
 
 // 실제 앱에서는 이 화면으로 이동할 때 tags 목록을 prop으로 전달받거나
 // 전역 상태(global state)에서 가져와야 합니다. 여기서는 예시로 사용합니다.
@@ -31,10 +32,21 @@ const AddScheduleScreen = () => {
     const { createSchedule, tags, loading, createTag } = useSchedule();
 
     const [title, setTitle] = useState('');
-    const [tagId, setTagId] = useState<number>(0); // '태그 없음'을 기본값으로 설정
+    const [tagId, setTagId] = useState<number | null>(null); // 태그 ID 상태 (초기값 null)
     const [location, setLocation] = useState('');
     const [description, setDescription] = useState('');
     const [isAllDay, setIsAllDay] = useState(false);
+
+    useEffect(() => {
+        // 태그가 로드되었고, 아직 기본 태그가 설정되지 않았을 때 '일정' 태그를 기본값으로 설정합니다.
+        if (tags && tags.length > 0 && tagId === null) {
+            const scheduleTag = tags.find(tag => tag.label === '일정');
+            if (scheduleTag) {
+                setTagId(scheduleTag.id);
+            }
+        }
+    }, [tags]);
+
     // [수정] 상태 초기값으로 initialDateFromParams를 사용합니다.
     const [startTime, setStartTime] = useState(initialDateFromParams);
     const [endTime, setEndTime] = useState(new Date(initialDateFromParams.getTime() + 60 * 60 * 1000)); // 기본 1시간 뒤
@@ -46,6 +58,7 @@ const AddScheduleScreen = () => {
 
     // 태그 생성 모달 상태
     const [isTagModalVisible, setIsTagModalVisible] = useState(false);
+    const [isTagSelectionModalVisible, setIsTagSelectionModalVisible] = useState(false);
 
     const onDateTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || (pickerTarget === 'start' ? startTime : endTime);
@@ -53,9 +66,23 @@ const AddScheduleScreen = () => {
 
         if (pickerTarget === 'start') {
             setStartTime(currentDate);
-            // 시작 시간이 종료 시간보다 늦어지면, 종료 시간을 시작 시간 1시간 뒤로 자동 설정
-            if (currentDate >= endTime) {
+
+            // 시작 날짜가 변경되면, 종료 날짜도 동일하게 맞춰주되 시간은 유지합니다.
+            const newEndTime = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                currentDate.getDate(),
+                endTime.getHours(),
+                endTime.getMinutes(),
+                endTime.getSeconds()
+            );
+
+            // 만약 새로 계산된 종료 시간이 시작 시간보다 빠르다면,
+            // 종료 시간을 시작 시간 1시간 뒤로 설정합니다.
+            if (newEndTime < currentDate) {
                 setEndTime(new Date(currentDate.getTime() + 60 * 60 * 1000));
+            } else {
+                setEndTime(newEndTime);
             }
         } else {
             setEndTime(currentDate);
@@ -73,6 +100,10 @@ const AddScheduleScreen = () => {
             Alert.alert('오류', '제목은 필수 항목입니다.');
             return;
         }
+        if (tagId === null) {
+            Alert.alert('오류', '태그를 선택해주세요.');
+            return;
+        }
         if (!isAllDay && startTime >= endTime) {
             Alert.alert('오류', '종료 시간은 시작 시간보다 나중이어야 합니다.');
             return;
@@ -87,7 +118,6 @@ const AddScheduleScreen = () => {
             startTime: startTime,
             endTime: endTime,
             isAllDay: isAllDay,
-            rrule: '', // rrule은 null 대신 빈 문자열을 사용합니다.
             calendarId: 1,
         };
 
@@ -114,6 +144,15 @@ const AddScheduleScreen = () => {
         return tags.find(tag => tag.id === tagId);
     }, [tagId, tags]);
 
+    const sortedTags = useMemo(() => {
+        if (!tags) return [];
+        return [...tags].sort((a, b) => {
+            if (a.label === '일정') return -1;
+            if (b.label === '일정') return 1;
+            return 0;
+        });
+    }, [tags]);
+
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ['16%', '90%'], []);
 
@@ -135,7 +174,7 @@ const AddScheduleScreen = () => {
         <GestureHandlerRootView>
             <StatusBar style="dark"/>
             <S.ASContainer contentContainerStyle={{paddingBottom: 120}} $colors={theme.colors}>
-                <ASHeader $colors={theme.colors}>New Reminder</ASHeader>
+                <ASHeader $colors={theme.colors}>New Schedule</ASHeader>
                 <S.ASContentWrap>
 
                     <S.ASLabel $colors={theme.colors}>Title</S.ASLabel>
@@ -201,22 +240,12 @@ const AddScheduleScreen = () => {
                             <AntDesign name="pluscircleo" size={24} color={theme.colors.primary} />
                         </S.ASAddButton>
                     </S.ASTagHeaderRow>
-                    <S.ASPickerWrap $colors={theme.colors}>
-                        {loading ? (
-                            <ActivityIndicator size="small" color={theme.colors.primary} />
-                        ) : (
-                            <Picker selectedValue={tagId}
-                                    onValueChange={(itemValue) => setTagId(itemValue)}
-                                    style={{ color: theme.colors.text }}
-                                    dropdownIconColor={theme.colors.text}
-                            >
-                                <Picker.Item label="-- No Tag --" value={0} />
-                                {tags && tags.map((tag) => (
-                                    <Picker.Item key={tag.id} label={tag.label} value={tag.id} color={theme.colors.text}/>
-                                ))}
-                            </Picker>
-                        )}
-                    </S.ASPickerWrap>
+                    <S.ASDateTimeButton onPress={() => setIsTagSelectionModalVisible(true)}>
+                        <S.ASDateTimeButtonText>
+                            {selectedTag ? selectedTag.label : '태그 선택'}
+                        </S.ASDateTimeButtonText>
+                    </S.ASDateTimeButton>
+
 
                     {selectedTag && (
                         <S.ASSelectedTagWrap>
@@ -244,6 +273,16 @@ const AddScheduleScreen = () => {
                     onClose={() => setIsTagModalVisible(false)}
                     onSave={handleSaveTag}
                     colors={theme.colors}
+                />
+
+                <TagSelectionModal
+                    visible={isTagSelectionModalVisible}
+                    tags={sortedTags}
+                    onClose={() => setIsTagSelectionModalVisible(false)}
+                    onSelect={(tag) => {
+                        setTagId(tag.id);
+                        setIsTagSelectionModalVisible(false);
+                    }}
                 />
 
             </S.ASContainer>

@@ -26,7 +26,7 @@ const getProfileStylesAndTheme = (isDarkMode: boolean) => {
             backgroundColor: theme.background,
         },
         profileHeader: {
-            marginBottom: 60,
+
         },
         banner: {
             height: 150,
@@ -55,6 +55,7 @@ const getProfileStylesAndTheme = (isDarkMode: boolean) => {
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.2,
             shadowRadius: 2,
+            zIndex: 999
         },
         profilePicture: {
             width: '100%',
@@ -68,9 +69,15 @@ const getProfileStylesAndTheme = (isDarkMode: boolean) => {
             backgroundColor: theme.placeholder,
         },
         profileInfo: {
-            paddingHorizontal: 20,
+            paddingVertical: 30,
             alignItems: 'center',
-            marginTop: 20,
+            shadowColor: '#000',
+            shadowOffset: {width: 0, height: 2},
+            shadowOpacity: 0.1,
+            shadowRadius: 3.84,
+            elevation: 5,
+            zIndex: 10,
+            backgroundColor: theme.background
         },
         profileName: {
             fontSize: 22,

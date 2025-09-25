@@ -1,5 +1,6 @@
 import {Tabs} from 'expo-router';
 import React from 'react';
+import { FontAwesome5 } from '@expo/vector-icons';
 import {Platform} from 'react-native';
 import {useTheme} from '@react-navigation/native';
 
@@ -45,23 +46,15 @@ export default function TabLayout() {
                         tabBarIcon: ({color}) => <IconSymbol size={28} name="calendar" color={color}/>,
                     }}
                 />
-                <Tabs.Screen
-                    // 파일 이름(i-log.tsx)과 동일하게 설정합니다.
-                    name="i-log"
-                    options={{
-                        title: 'I-Log',
-                        // 아이콘은 'book.fill'을 사용합니다.
-                        tabBarIcon: ({color}) => <IconSymbol size={28} name="book.fill" color={color}/>,
-                    }}
-                />
+
                 <Tabs.Screen
                     name="profile" // 새 탭 이름
                     options={{
-                        title: "profile",
+                        title: "My I-Log",
                         tabBarIcon: ({color}) => (
-                            <IconSymbol
-                                size={28}
-                                name="person.fill"
+                            <FontAwesome5
+                                name="book-reader"
+                                size={24}
                                 color={color}
                             />
                         ),

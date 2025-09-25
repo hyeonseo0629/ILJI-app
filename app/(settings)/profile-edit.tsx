@@ -17,6 +17,8 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import api from '../../src/lib/api';
 
+type ManipulatedImageResult = Awaited<ReturnType<typeof ImageManipulator.manipulateAsync>>;
+
 console.log("--- AI DEBUG: File updated at " + new Date().toISOString() + " ---");
 
 export default function ProfileEditScreen() {
@@ -24,7 +26,7 @@ export default function ProfileEditScreen() {
     const [nickname, setNickname] = useState('');
     const [newNickname, setNewNickname] = useState('');
     const [profileImage, setProfileImage] = useState<string | null>(null);
-    const [newProfileImage, setNewProfileImage] = useState<ImageManipulator.ManipulationResult | null>(null);
+    const [newProfileImage, setNewProfileImage] = useState<ManipulatedImageResult | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isChecking, setIsChecking] = useState(false);

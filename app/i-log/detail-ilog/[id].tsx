@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {ScrollView, Alert, Modal, View, ActivityIndicator, Text, Dimensions, NativeSyntheticEvent, NativeScrollEvent, TouchableOpacity} from 'react-native';
+import {ScrollView, Alert, Modal, View, ActivityIndicator, Text, Dimensions, NativeSyntheticEvent, NativeScrollEvent, TouchableOpacity, Image, Pressable, StyleSheet} from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import * as I from "@/components/style/I-logStyled";
 import { ILog } from '@/src/types/ilog';
@@ -15,8 +15,11 @@ export default function ILogDetailScreen() {
     const { ilogs, deleteILog } = useILog();
     const [log, setLog] = useState<ILog | null>(null);
     const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false); // Add isDeleting state to prevent race condition
+    const [isDeleting, setIsDeleting] = useState(false);
     const [activeSlide, setActiveSlide] = useState(0);
+    const [isImageModalVisible, setImageModalVisible] = useState(false);
+    const [selectedImageUrl, setSelectedImageUrl] = useState('');
+    const [menuVisible, setMenuVisible] = useState(false);
     const scrollViewRef = useRef<ScrollView>(null);
     const insets = useSafeAreaInsets();
 
@@ -24,49 +27,48 @@ export default function ILogDetailScreen() {
         if (id) {
             const foundLog = ilogs.find(item => item.id.toString() === id);
             if (foundLog) {
-                // Ensure log_date and created_at are Date objects
                 setLog({
                     ...foundLog,
                     logDate: new Date(foundLog.logDate),
                     createdAt: new Date(foundLog.createdAt)
                 });
-            } else {
-                // Only navigate back if not in the process of deletion
-                if (!isDeleting) {
-                    router.back();
-                }
+            } else if (!isDeleting) {
+                router.back();
             }
         }
     }, [id, ilogs, isDeleting]);
 
     const handleEdit = () => {
+        setMenuVisible(false);
         if (log) {
             router.push({
                 pathname: '/i-log/update-ilog/[id]',
-                params: {
-                    id: log.id.toString(),
-                },
+                params: { id: log.id.toString() },
             });
         }
     };
 
     const handleDelete = () => {
+        setMenuVisible(false);
         setDeleteModalVisible(true);
     };
 
     const confirmDelete = async () => {
-        if (isDeleting) return; // Prevent multiple clicks
-        if (log) {
-            setIsDeleting(true);
-            await deleteILog(log.id);
-            setDeleteModalVisible(false);
-            // Navigate to list page with a parameter to indicate successful deletion
-            router.push({
-                pathname: '/i-log',
-                params: { lastAction: 'deleted' },
-            });
-        }
+        if (isDeleting || !log) return;
+        setIsDeleting(true);
+        await deleteILog(log.id);
         setDeleteModalVisible(false);
+        router.push({ pathname: '/profile', params: { lastAction: 'deleted' } });
+    };
+
+    const handleImagePress = (url: string) => {
+        setSelectedImageUrl(url);
+        setImageModalVisible(true);
+    };
+
+    const closeImageModal = () => {
+        setImageModalVisible(false);
+        setSelectedImageUrl('');
     };
 
     if (!log) {
@@ -81,19 +83,27 @@ export default function ILogDetailScreen() {
 
     let parsedFriendTags: { id: number, name: string }[] = [];
     try {
-        if (log.friendTags) {
-            parsedFriendTags = JSON.parse(log.friendTags);
-        }
+        if (log.friendTags) parsedFriendTags = JSON.parse(log.friendTags);
     } catch (e) {
         console.error("Failed to parse friend_tags:", e);
     }
 
+    const isMyLog = true; // Placeholder for actual ownership check
+
     return (
         <I.ScreenContainer>
-            <I.DetailHeader onPress={() => router.push('/i-log')}>
-                <AntDesign name="arrowleft" size={24} color="black"/>
-                <I.DetailHeaderText>뒤로가기</I.DetailHeaderText>
+            <I.DetailHeader style={{ justifyContent: 'space-between' }}>
+                <TouchableOpacity onPress={() => router.push('/profile')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <AntDesign name="arrowleft" size={24} color="black"/>
+                    <I.DetailHeaderText>뒤로가기</I.DetailHeaderText>
+                </TouchableOpacity>
+                {isMyLog && (
+                    <TouchableOpacity onPress={() => setMenuVisible(true)} style={{ padding: 5 }}>
+                        <MaterialCommunityIcons name="dots-vertical" size={24} color="black" />
+                    </TouchableOpacity>
+                )}
             </I.DetailHeader>
+
             <ScrollView style={{flex: 1}}>
                 <I.DetailWrap>
                     <I.DetailDateWrap>
@@ -110,19 +120,16 @@ export default function ILogDetailScreen() {
                                 showsHorizontalScrollIndicator={false}
                                 onMomentumScrollEnd={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
                                     const slide = Math.round(event.nativeEvent.contentOffset.x / (Dimensions.get('window').width - 45));
-                                    if (slide !== activeSlide) {
-                                        setActiveSlide(slide);
-                                    }
+                                    if (slide !== activeSlide) setActiveSlide(slide);
                                 }}
                                 snapToInterval={Dimensions.get('window').width}
                                 snapToAlignment={'start'}
                             >
                                 {log.images.map((imageUri, index) => (
-                                    <I.CarouselItemWrapper 
-                                      key={index}
-                                      isLast={index === log.images.length - 1}
-                                    >
-                                        <I.DetailImage source={{uri: imageUri}}/>
+                                    <I.CarouselItemWrapper key={index} isLast={index === log.images.length - 1}>
+                                        <TouchableOpacity onPress={() => handleImagePress(imageUri)}>
+                                            <I.DetailImage source={{uri: imageUri}} resizeMode="cover"/>
+                                        </TouchableOpacity>
                                         <I.DetailStatsContainer>
                                             <I.DetailStatItem>
                                                 <AntDesign name="heart" size={14} color="white"/>
@@ -155,16 +162,6 @@ export default function ILogDetailScreen() {
                         </View>
                     )}
 
-                    <I.DetailActionsWrap>
-                        <I.DetailActionButton onPress={handleEdit} style={{marginRight: 10}}>
-                            <MaterialCommunityIcons name="square-edit-outline" size={40} color="mediumslateblue"/>
-                        </I.DetailActionButton>
-                        <I.DetailActionButton onPress={handleDelete}>
-                            <MaterialCommunityIcons name="trash-can-outline" size={40} color="#D25A5A"/>
-                        </I.DetailActionButton>
-                    </I.DetailActionsWrap>
-
-
                     {parsedFriendTags.length > 0 && (
                         <I.DetailFriendTagsContainer>
                             {parsedFriendTags.map(tag => (
@@ -176,21 +173,28 @@ export default function ILogDetailScreen() {
                     )}
 
                     <I.DetailContent>{log.content}</I.DetailContent>
-
                 </I.DetailWrap>
             </ScrollView>
 
+            {/* Action Menu Modal */}
+            <Modal transparent={true} animationType="fade" visible={menuVisible} onRequestClose={() => setMenuVisible(false)}>
+                <Pressable style={styles.modalOverlay} onPress={() => setMenuVisible(false)}>
+                    <View style={styles.menuContent}>
+                        <TouchableOpacity style={styles.menuItem} onPress={handleEdit}>
+                            <Text style={styles.menuItemText}>수정</Text>
+                            <MaterialCommunityIcons name="square-edit-outline" size={24} color="#333"/>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.menuItem} onPress={handleDelete}>
+                            <Text style={[styles.menuItemText, {color: '#D25A5A'}]}>삭제</Text>
+                            <MaterialCommunityIcons name="trash-can-outline" size={24} color="#D25A5A"/>
+                        </TouchableOpacity>
+                    </View>
+                </Pressable>
+            </Modal>
+
             {/* Delete Confirmation Modal */}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={isDeleteModalVisible}
-                onRequestClose={() => setDeleteModalVisible(false)}
-            >
-                <I.DetailModalBackdrop
-                    activeOpacity={1}
-                    onPressOut={() => setDeleteModalVisible(false)}
-                >
+            <Modal animationType="fade" transparent={true} visible={isDeleteModalVisible} onRequestClose={() => setDeleteModalVisible(false)}>
+                <I.DetailModalBackdrop activeOpacity={1} onPressOut={() => setDeleteModalVisible(false)}>
                     <I.DetailModalContainer>
                         {isDeleting ? (
                             <>
@@ -202,14 +206,10 @@ export default function ILogDetailScreen() {
                                 <I.DetailModalTitle>일기 삭제</I.DetailModalTitle>
                                 <I.DetailModalText>정말로 이 일기를 삭제하시겠습니까?</I.DetailModalText>
                                 <I.DetailModalButtonContainer>
-                                    <I.DetailModalCancelButton
-                                        onPress={() => setDeleteModalVisible(false)}
-                                    >
+                                    <I.DetailModalCancelButton onPress={() => setDeleteModalVisible(false)}>
                                         <I.DetailModalButtonText color="black">취소</I.DetailModalButtonText>
                                     </I.DetailModalCancelButton>
-                                    <I.DetailModalDeleteButton
-                                        onPress={confirmDelete}
-                                    >
+                                    <I.DetailModalDeleteButton onPress={confirmDelete}>
                                         <I.DetailModalButtonText color="white">삭제</I.DetailModalButtonText>
                                     </I.DetailModalDeleteButton>
                                 </I.DetailModalButtonContainer>
@@ -218,11 +218,49 @@ export default function ILogDetailScreen() {
                     </I.DetailModalContainer>
                 </I.DetailModalBackdrop>
             </Modal>
+
+            {/* Image Modal */}
+            <Modal animationType="fade" transparent={true} visible={isImageModalVisible} onRequestClose={closeImageModal}>
+                <Pressable style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.9)', justifyContent: 'center', alignItems: 'center' }} onPress={closeImageModal}>
+                    <Image source={{ uri: selectedImageUrl }} style={{ width: '100%', height: '80%', resizeMode: 'contain' }}/>
+                    <TouchableOpacity onPress={closeImageModal} style={{ position: 'absolute', top: insets.top + 10, right: 20, zIndex: 1 }}>
+                        <AntDesign name="close" size={32} color="white" />
+                    </TouchableOpacity>
+                </Pressable>
+            </Modal>
         </I.ScreenContainer>
     );
 }
 
-
-
-
-
+const styles = StyleSheet.create({
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-end',
+    },
+    menuContent: {
+        backgroundColor: 'white',
+        borderRadius: 8,
+        padding: 10,
+        marginTop: 50, // Adjust as needed to position below the header
+        marginRight: 15,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+    },
+    menuItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        width: 120, // Adjust width as needed
+    },
+    menuItemText: {
+        fontSize: 16,
+        color: '#333',
+    },
+});

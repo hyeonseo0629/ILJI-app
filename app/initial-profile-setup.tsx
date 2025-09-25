@@ -7,6 +7,8 @@ import { useRouter } from 'expo-router';
 import { useSession } from '@/hooks/useAuth';
 import api from '../src/lib/api';
 
+type ManipulatedImageResult = Awaited<ReturnType<typeof ImageManipulator.manipulateAsync>>;
+
 type NicknameStatus = 'idle' | 'checking' | 'valid' | 'invalid';
 
 export default function InitialProfileSetupScreen() {
@@ -14,7 +16,7 @@ export default function InitialProfileSetupScreen() {
   const router = useRouter();
   const { session } = useSession();
   const [nickname, setNickname] = useState('');
-  const [profileImage, setProfileImage] = useState<ImageManipulator.ManipulationResult | null>(null);
+  const [profileImage, setProfileImage] = useState<ManipulatedImageResult | null>(null);
 
   const [nicknameStatus, setNicknameStatus] = useState<NicknameStatus>('idle');
   const [nicknameMessage, setNicknameMessage] = useState('');

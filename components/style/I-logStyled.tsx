@@ -55,7 +55,7 @@ export const TabsContainer = styled.View<StyledProps>`
 
 export const TabsButton = styled.TouchableOpacity<TabButtonProps>`
     width: 50%;
-    padding: 20px;
+    padding: 15px;
     align-items: center;
     border-bottom-width: 3px;
     border-bottom-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#7B68EE') : (props.$colors?.border || '#f0f0f0'))};
@@ -136,6 +136,7 @@ export const ListThumbnail = styled.Image<StyledProps>`
     border-radius: 10px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
     margin-right: 35px;
+    resize-mode: cover;
 `;
 
 export const ListMainContent = styled.View`
@@ -192,19 +193,19 @@ export const ListStatText = styled.Text<StyledProps>`
 // ----------------- //
 
 export const PageNoContentWrap = styled.View<StyledProps>`
-    flex: 1;
     background-color: ${props => props.$colors?.background || 'transparent'};
-    justify-content: center;
-    align-items: center;
 `
 
 export const PageNoContentText = styled.Text`
-    font-size: 20px;
+    width: 100%;
+    margin: auto;
+    text-align: center;
+    justify-content: center;
+    font-size: 15px;
 `
 
 export const PageWrap = styled.View<StyledProps>`
-    flex: 1;
-    margin: 20px;
+    margin: 20px 20px 0 20px;
     background-color: ${props => props.$colors?.background || 'transparent'};
 `;
 
@@ -247,7 +248,7 @@ export const PageImage = styled.Image<StyledProps>`
     height: 100%;
     border-radius: 15px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
-    resize-mode: contain;
+    resize-mode: cover;
 `;
 
 export const PageStatsContainer = styled.View`
@@ -397,7 +398,7 @@ export const DetailImage = styled.Image<StyledProps>`
     height: 100%;
     border-radius: 15px;
     background-color: ${props => props.$colors?.card || '#e0e0e0'};
-    resize-mode: contain;
+    resize-mode: cover;
 `;
 
 export const DetailStatsContainer = styled.View`

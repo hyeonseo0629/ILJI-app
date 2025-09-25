@@ -1,11 +1,12 @@
 import * as I from "@/components/style/I-logStyled";
-import {FlatList, View, Modal, TouchableOpacity, Text, TouchableWithoutFeedback} from "react-native";
+import {FlatList, View, Modal, TouchableOpacity, Text, TouchableWithoutFeedback, Dimensions} from "react-native";
 import {ILog} from "@/src/types/ilog";
 import {format} from 'date-fns';
 import {AntDesign, EvilIcons} from '@expo/vector-icons';
 import React, {useState} from "react";
 import {Calendar, DateData} from 'react-native-calendars';
 import {useRouter} from 'expo-router';
+import {useSafeAreaInsets} from "react-native-safe-area-context";
 
 // Month/Year Picker Modal Component
 const MonthYearPickerModal = ({
@@ -102,6 +103,7 @@ const ListItem = ({item}: { item: ILog }) => {
 
 // ILogListView 메인 컴포넌트
 const ILogListView = ({
+                          ListHeaderComponent,
                           ilogs,
                           listFilterType,
                           listFilterValue,
@@ -122,6 +124,7 @@ const ILogListView = ({
                           handleSelectMonth,
                           handleSelectYear,
                       }: {
+    ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null | undefined;
     ilogs: ILog[];
     listFilterType: 'day' | 'month' | 'year' | 'none';
     listFilterValue: string | null;
@@ -154,7 +157,7 @@ const ILogListView = ({
         } else if (listFilterType === 'year' && listFilterValue) {
             return format(new Date(listFilterValue + '-01-01'), 'yyyy년');
         }
-        return '전체 보기';
+        return '최근 한 달 간의 일기 보기';
     };
 
     const months = Array.from({length: 12}, (_, i) => ({
@@ -207,8 +210,13 @@ const ILogListView = ({
         },
     ];
 
-    return (
-        <I.Container>
+    const Header = () => (
+        <>
+            {ListHeaderComponent && (
+                typeof ListHeaderComponent === 'function'
+                    ? React.createElement(ListHeaderComponent)
+                    : ListHeaderComponent
+            )}
             <I.ListSearchWrap>
                 <I.ListSearchButton
                     onPress={() => setDropdownVisible(!isDropdownVisible)}
@@ -228,7 +236,8 @@ const ILogListView = ({
                     >
                         <TouchableWithoutFeedback onPress={() => setDropdownVisible(false)}>
                             <I.ListDropDownWrap>
-                                <View onStartShouldSetResponder={() => true}> {/* Prevents touch from propagating to outer TouchableWithoutFeedback */}
+                                <View
+                                    onStartShouldSetResponder={() => true}> {/* Prevents touch from propagating to outer TouchableWithoutFeedback */}
                                     <I.ListDropDownMenuWrap>
                                         {dropdownOptions.map((option, index) => (
                                             <TouchableOpacity
@@ -255,11 +264,19 @@ const ILogListView = ({
                     </Modal>
                 )}
             </I.ListSearchWrap>
+        </>
+    );
 
+    return (
+        <>
             <FlatList
-                data={ilogs}
-                renderItem={({item}) => <ListItem item={item}/>}
+                ListHeaderComponent={Header}
+                data={ilogs.slice(0, 31)}
+                renderItem={({item}) =>
+                    <ListItem item={item}/>
+                }
                 keyExtractor={(item) => item.id.toString()}
+                contentContainerStyle={{flexGrow: 1}}
                 ListEmptyComponent={
                     <I.ListNoSearchResultWrap>
                         <I.ListNoSearchResultText>
@@ -315,7 +332,7 @@ const ILogListView = ({
                 onSelect={handleSelectYear}
                 title="연도 선택"
             />
-        </I.Container>
+        </>
     );
 };
 
