@@ -1,4 +1,5 @@
 import {useState, useEffect} from 'react';
+import { API_BASE_URL } from '@/src/lib/api';
 
 // Based on the backend's ScheduleResponse.java
 export interface Schedule {
@@ -16,7 +17,7 @@ export interface Schedule {
     createdAt: string; // Assuming ISO 8601 format
 }
 
-const API_BASE_URL = 'http://10.0.2.2:8080'; // For Android emulator, this is the host machine
+
 
 export const useFetchSchedules = (tagIds?: number[]) => {
     const [schedules, setSchedules] = useState<Schedule[]>([]);

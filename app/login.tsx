@@ -10,6 +10,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import Constants from 'expo-constants';
+import { API_BASE_URL } from '@/src/lib/api';
 import {
     GoogleSignin,
     statusCodes,
@@ -87,11 +88,7 @@ export default function LoginScreen(): React.JSX.Element {
                 return;
             }
 
-            const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL;
-            if (!API_BASE_URL) {
-                Alert.alert('Configuration Error', 'API_BASE_URL is not set in app.json.');
-                return;
-            }
+
 
             const backendUrl = `${API_BASE_URL}/auth/google`;
             console.log(`[Login] Sending idToken to backend at: ${backendUrl}`);

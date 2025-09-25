@@ -4,7 +4,7 @@ import {Platform} from "react-native";
 import Constants from "expo-constants";
 
 // 안드로이드 에뮬레이터에서는 10.0.2.2가 localhost에 해당합니다.
-const API_BASE_URL = Platform.OS === 'android' ? Constants.expoConfig?.extra?.API_BASE_URL : 'http://192.168.2.11:8090/api';
+export const API_BASE_URL = Platform.OS === 'android' ? Constants.expoConfig?.extra?.API_BASE_URL : 'http://192.168.2.6:8090/api';
 // app.json의 extra 필드에서 API 기본 주소를 가져옵니다.
 
 const TOKEN_KEY = 'ilji_session'; // useAuth.tsx와 동일한 키

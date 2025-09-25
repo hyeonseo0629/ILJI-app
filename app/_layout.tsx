@@ -20,7 +20,7 @@ function Layout() {
 
     const isnets = useSafeAreaInsets();
 
-    const {session, isLoading} = useSession();
+    const {session, isLoading, signOut} = useSession();
     const segments = useSegments();
     const router = useRouter();
     const {isDarkColorScheme} = useColorScheme();
@@ -60,6 +60,7 @@ function Layout() {
                 // Errors (like 401) are expected if the token is invalid or expired.
                 // The user will be redirected to /login by the session check anyway.
                 console.log("Could not fetch profile, will redirect to login if session is invalid.");
+                signOut();
             }
 
             // --- Final redirection rules ---
