@@ -28,8 +28,8 @@ api.interceptors.request.use(
             // 세션 정보가 있으면 JSON으로 파싱합니다.
             const { token } = JSON.parse(storedSession);
             if (token) {
-                // 토큰이 있으면 Authorization 헤더에 'Bearer' 토큰을 추가합니다.
                 config.headers.Authorization = `Bearer ${token}`;
+                console.log('Request Interceptor: Authorization Header set to', config.headers.Authorization);
             }
         }
         // 수정된 설정으로 요청을 계속 진행합니다.
@@ -59,16 +59,31 @@ api.interceptors.response.use(
 
         // Axios 타임아웃 에러는 code 속성이 'ECONNABORTED'로 설정됩니다.
         const isTimeout = error.code === 'ECONNABORTED';
+        // 백엔드 연결 불가 (네트워크 오류)
+        const isBackendDown = error.code === 'ERR_NETWORK'; // New condition
+        // 401 Unauthorized 오류
+        const isUnauthorized = errorResponse && errorResponse.status === 401; // New condition
 
         if (isJwtExpired) {
             console.log('JWT token has expired. Clearing session and logging out.');
             await SecureStore.deleteItemAsync(TOKEN_KEY);
-            // 토큰이 삭제되면 useAuth 훅이 이를 감지하고,
-            // _layout.tsx의 로직에 따라 자동으로 로그인 화면으로 이동하게 됩니다.
+            error.code = 'SESSION_INVALIDATED'; // Add a custom code
+            return Promise.reject(error);
         } else if (isTimeout) {
             console.log('Request timed out. Clearing session and logging out.');
             await SecureStore.deleteItemAsync(TOKEN_KEY);
-            // 타임아웃 시에도 토큰을 삭제하여 재로그인을 유도할 수 있습니다.
+            error.code = 'SESSION_INVALIDATED'; // Add a custom code
+            return Promise.reject(error);
+        } else if (isBackendDown) { // New condition
+            console.log('Backend is unreachable. Clearing session and logging out.');
+            await SecureStore.deleteItemAsync(TOKEN_KEY);
+            error.code = 'SESSION_INVALIDATED'; // Add a custom code
+            return Promise.reject(error);
+        } else if (isUnauthorized) { // New condition
+            console.log('401 Unauthorized. Clearing session and logging out.');
+            await SecureStore.deleteItemAsync(TOKEN_KEY);
+            error.code = 'SESSION_INVALIDATED'; // Add a custom code
+            return Promise.reject(error);
         }
 
         // 처리 후, 에러를 다시 throw하여 API를 호출한 곳의 catch 블록에서 추가 처리를 할 수 있도록 합니다.

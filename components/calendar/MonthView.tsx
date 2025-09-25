@@ -63,17 +63,17 @@ const MonthView: React.FC<MonthViewProps> = ({date, schedules = [], tags = [], o
             const startDate = new Date(schedule.startTime);
             const endDate = new Date(schedule.endTime);
 
-            // UTC 기준 날짜로 하루씩 순회하며 맵에 추가합니다.
+            // 로컬 기준 날짜로 하루씩 순회하며 맵에 추가합니다.
             let current = new Date(startDate);
-            current.setUTCHours(0, 0, 0, 0);
+            current.setHours(0, 0, 0, 0);
 
             while (current <= endDate) {
-                const dateKey = current.toISOString().substring(0, 10); // 'YYYY-MM-DD'
+                const dateKey = format(current, 'yyyy-MM-dd'); // 'YYYY-MM-DD'
                 const existingSchedules = map.get(dateKey) || [];
                 map.set(dateKey, [...existingSchedules, schedule]);
 
-                // 다음 날짜로 이동 (UTC 기준)
-                current.setUTCDate(current.getUTCDate() + 1);
+                // 다음 날짜로 이동 (로컬 기준)
+                current.setDate(current.getDate() + 1);
             }
         });
         return map;

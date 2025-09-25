@@ -212,7 +212,7 @@ export function ILogProvider({ children }: ILogProviderProps) {
 
         try {
             const formData = new FormData();
-            const { newImageAssets, ...requestData } = request;
+            const { newImageAssets, removedImageUrls, ...requestData } = request;
 
             formData.append('request', JSON.stringify(requestData));
 
