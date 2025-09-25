@@ -204,8 +204,7 @@ export const PageNoContentText = styled.Text`
 `
 
 export const PageWrap = styled.View<StyledProps>`
-    flex: 1;
-    margin: 20px;
+    margin: 20px 20px 0 20px;
     background-color: ${props => props.$colors?.background || 'transparent'};
 `;
 

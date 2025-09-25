@@ -10,7 +10,7 @@ import {
     NativeScrollEvent,
     Modal,
     Image,
-    Pressable
+    Pressable, Platform
 } from "react-native";
 import * as I from "@/components/style/I-logStyled";
 import React, {useRef, useEffect, useState} from "react";
@@ -39,8 +39,15 @@ const DiaryPage = ({item, onDatePress, onImagePress}: { item: ILog, onDatePress:
         router.push({pathname: '/i-log/detail-ilog/[id]', params: {id: item.id.toString()}});
     };
 
+    const { height: windowHeight } = Dimensions.get('window'); // Get total window height
+    const insets = useSafeAreaInsets();
+    const statusBarHeight = insets.top;
+    const navigationBarHeight = insets.bottom;
+
+    const usableScreenHeight = windowHeight - statusBarHeight - navigationBarHeight;
+
     return (
-        <I.PageWrap>
+        <I.PageWrap style={{ height: usableScreenHeight }}>
             <I.PageScrollView showsVerticalScrollIndicator={false}>
                 <I.PageHeader>
                     <I.PageDateInfo>
@@ -152,6 +159,14 @@ const ILogPageView = ({
     const [isImageModalVisible, setImageModalVisible] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState('');
     const insets = useSafeAreaInsets();
+    const { height: windowHeight } = Dimensions.get('window');
+
+    useEffect(() => {
+        console.log('ILogPageView - Window Height:', windowHeight);
+        console.log('ILogPageView - Insets Top:', insets.top);
+        console.log('ILogPageView - Insets Bottom:', insets.bottom);
+        console.log('ILogPageView - Usable Height:', windowHeight - insets.top - insets.bottom);
+    }, [windowHeight, insets]);
 
     const handleImagePress = (url: string) => {
         setSelectedImageUrl(url);

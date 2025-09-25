@@ -384,13 +384,13 @@ export default function DiaryScreen({ListHeader}: { ListHeader?: React.Component
                 />
             ) : (
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    <ILogPageView
-                        ilogs={ilogs}
-                        onDatePress={openCalendar}
-                        scrollToIndex={selectedLogIndex}
-                        onPageChange={handlePageChange}
-                        ListHeaderComponent={CombinedHeader}
-                    />
+                <ILogPageView
+                    ilogs={ilogs}
+                    onDatePress={openCalendar}
+                    scrollToIndex={selectedLogIndex}
+                    onPageChange={handlePageChange}
+                    ListHeaderComponent={CombinedHeader}
+                />
                 </ScrollView>
             )}
 

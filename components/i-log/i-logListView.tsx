@@ -1,11 +1,12 @@
 import * as I from "@/components/style/I-logStyled";
-import {FlatList, View, Modal, TouchableOpacity, Text, TouchableWithoutFeedback} from "react-native";
+import {FlatList, View, Modal, TouchableOpacity, Text, TouchableWithoutFeedback, Dimensions} from "react-native";
 import {ILog} from "@/src/types/ilog";
 import {format} from 'date-fns';
 import {AntDesign, EvilIcons} from '@expo/vector-icons';
 import React, {useState} from "react";
 import {Calendar, DateData} from 'react-native-calendars';
 import {useRouter} from 'expo-router';
+import {useSafeAreaInsets} from "react-native-safe-area-context";
 
 // Month/Year Picker Modal Component
 const MonthYearPickerModal = ({
@@ -211,7 +212,11 @@ const ILogListView = ({
 
     const Header = () => (
         <>
-            {ListHeaderComponent && React.createElement(ListHeaderComponent)}
+            {ListHeaderComponent && (
+                typeof ListHeaderComponent === 'function'
+                    ? React.createElement(ListHeaderComponent)
+                    : ListHeaderComponent
+            )}
             <I.ListSearchWrap>
                 <I.ListSearchButton
                     onPress={() => setDropdownVisible(!isDropdownVisible)}
@@ -231,7 +236,8 @@ const ILogListView = ({
                     >
                         <TouchableWithoutFeedback onPress={() => setDropdownVisible(false)}>
                             <I.ListDropDownWrap>
-                                <View onStartShouldSetResponder={() => true}> {/* Prevents touch from propagating to outer TouchableWithoutFeedback */}
+                                <View
+                                    onStartShouldSetResponder={() => true}> {/* Prevents touch from propagating to outer TouchableWithoutFeedback */}
                                     <I.ListDropDownMenuWrap>
                                         {dropdownOptions.map((option, index) => (
                                             <TouchableOpacity
@@ -266,9 +272,11 @@ const ILogListView = ({
             <FlatList
                 ListHeaderComponent={Header}
                 data={ilogs}
-                renderItem={({item}) => <ListItem item={item}/>}
+                renderItem={({item}) =>
+                    <ListItem item={item}/>
+                }
                 keyExtractor={(item) => item.id.toString()}
-                contentContainerStyle={{ flexGrow: 1 }}
+                contentContainerStyle={{flexGrow: 1}}
                 ListEmptyComponent={
                     <I.ListNoSearchResultWrap>
                         <I.ListNoSearchResultText>
