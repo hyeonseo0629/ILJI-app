@@ -40,44 +40,59 @@ export function ILogProvider({ children }: ILogProviderProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
-    const formatRawILog = useCallback((raw: RawILog): ILog => ({
-        id: raw.id,
-        userId: raw.userId,
-        writerNickname: raw.writerNickname,
-        writerProfileImage: raw.writerProfileImage,
-        logDate: new Date(raw.logDate),
-        content: raw.content,
-        images: raw.images.map(url => {
-            // Regex to capture the object path between /o/ and ? or end of string
-            const regex = /\/o\/(.*?)(?:\?|$)/;
-            const match = url.match(regex);
-            if (match && match[1]) {
-                const objectPath = match[1]; // e.g., ilog/image.jpeg
-                // Replace all / with %2F within the object path
-                const encodedObjectPath = objectPath.replace(/\//g, '%2F');
-                return url.replace(objectPath, encodedObjectPath);
-            }
-            return url; // Return original URL if regex doesn't match
-        }),
-        visibility: Number(raw.visibility),
-        friendTags: raw.friendTags,
-        likeCount: raw.likeCount,
-        commentCount: raw.commentCount,
-        createdAt: new Date(raw.createdAt),
-    }), []);
+    const formatRawILog = useCallback((raw: RawILog): ILog => {
+        console.log("formatRawILog 입력 raw:", raw);
+        return {
+            id: raw.id,
+            userId: raw.userId,
+            writerNickname: raw.writerNickname,
+            writerProfileImage: raw.writerProfileImage,
+            logDate: new Date(raw.logDate),
+            content: raw.content,
+            images: raw.images.map(url => {
+                // Regex to capture the object path between /o/ and ? or end of string
+                const regex = /\/o\/(.*?)(?:\?|$)/;
+                const match = url.match(regex);
+                if (match && match[1]) {
+                    const objectPath = match[1]; // e.g., ilog/image.jpeg
+                    // Replace all / with %2F within the object path
+                    const encodedObjectPath = objectPath.replace(/\//g, '%2F');
+                    return url.replace(objectPath, encodedObjectPath);
+                }
+                return url; // Return original URL if regex doesn't match
+            }),
+            visibility: Number(raw.visibility),
+            friendTags: raw.friendTags,
+            likeCount: raw.likeCount,
+            commentCount: raw.commentCount,
+            createdAt: new Date(raw.createdAt),
+        };
+    }, []);
 
     const fetchILogs = useCallback(async () => {
-        if (!userId) return;
+        console.log("--- fetchILogs 시작 ---");
+        if (!userId) {
+            console.log("userId가 없어 fetchILogs 실행 중단.");
+            return;
+        }
+        console.log("현재 userId:", userId);
         setLoading(true);
         try {
             const response = await api.get<RawILog[]>('/mobile/i-log');
-            setIlogs(response.data.map(formatRawILog).sort((a, b) => b.logDate.getTime() - a.logDate.getTime()));
+            console.log("API 응답 데이터 (raw):", response.data);
+            const processedIlogs = response.data.map(item => {
+                console.log("map 함수에 전달된 item:", item);
+                return formatRawILog(item);
+            }).sort((a, b) => b.logDate.getTime() - a.logDate.getTime());
+            setIlogs(processedIlogs);
+            console.log("처리된 ilogs:", processedIlogs);
             setError(null);
         } catch (err) {
             console.error("i-log 목록 로딩 실패:", err);
             setError(err as Error);
         } finally {
             setLoading(false);
+            console.log("--- fetchILogs 종료 ---");
         }
     }, [userId, formatRawILog]);
 

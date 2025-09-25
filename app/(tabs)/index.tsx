@@ -210,9 +210,9 @@ export default function HomeScreen() {
         <GestureHandlerRootView style={{flex: 1}}>
             <SafeAreaView style={{flex: 1, backgroundColor: theme.colors.background}}>
                 <MainContainer $colors={theme.colors}>
-                    <Header sheetIndex={sheetIndex}/>
-                    <CalendarContainer sheetIndex={sheetIndex} colors={theme.colors}>
-                        <CalendarView $colors={theme.colors}
+                    <Header sheetIndex={sheetIndex} colors={theme.colors}/>
+                    <CalendarContainer $colors={theme.colors}>
+                        <CalendarView colors={theme.colors}
                                       date={currentDate}
                                       onDateChange={handleDateChange} // [수정] 새로 만든 핸들러 함수를 전달
                                       schedules={schedules} // Context에서 가져온 'schedules'를 전달합니다.

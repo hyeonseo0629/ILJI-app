@@ -157,7 +157,7 @@ const ILogListView = ({
         } else if (listFilterType === 'year' && listFilterValue) {
             return format(new Date(listFilterValue + '-01-01'), 'yyyy년');
         }
-        return '전체 보기';
+        return '최근 한 달 간의 일기 보기';
     };
 
     const months = Array.from({length: 12}, (_, i) => ({
@@ -271,7 +271,7 @@ const ILogListView = ({
         <>
             <FlatList
                 ListHeaderComponent={Header}
-                data={ilogs}
+                data={ilogs.slice(0, 31)}
                 renderItem={({item}) =>
                     <ListItem item={item}/>
                 }

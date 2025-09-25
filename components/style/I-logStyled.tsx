@@ -193,14 +193,15 @@ export const ListStatText = styled.Text<StyledProps>`
 // ----------------- //
 
 export const PageNoContentWrap = styled.View<StyledProps>`
-    flex: 1;
     background-color: ${props => props.$colors?.background || 'transparent'};
-    justify-content: center;
-    align-items: center;
 `
 
 export const PageNoContentText = styled.Text`
-    font-size: 20px;
+    width: 100%;
+    margin: auto;
+    text-align: center;
+    justify-content: center;
+    font-size: 15px;
 `
 
 export const PageWrap = styled.View<StyledProps>`

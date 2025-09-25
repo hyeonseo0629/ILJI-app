@@ -218,9 +218,14 @@ const ILogPageView = ({
         return () => clearTimeout(timer);
     }, [scrollToIndex, ilogs]);
 
+    const statusBarHeight = insets.top;
+    const navigationBarHeight = insets.bottom;
+
+    const usableScreenHeight = windowHeight - statusBarHeight - navigationBarHeight;
+
     if (!ilogs || ilogs.length === 0) {
         return (
-            <I.PageNoContentWrap>
+            <I.PageNoContentWrap style={{ height: usableScreenHeight }}>
                 {ListHeaderComponent && (React.isValidElement(ListHeaderComponent) ? ListHeaderComponent : React.createElement(ListHeaderComponent))}
                 <I.PageNoContentText>작성된 일지가 없습니다.</I.PageNoContentText>
             </I.PageNoContentWrap>
