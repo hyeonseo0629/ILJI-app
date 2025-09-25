@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Modal, TouchableOpacity, View, Dimensions } from 'react-native';
+import { Modal, TouchableOpacity, View, Dimensions, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { LocaleConfig, DateData, Calendar } from 'react-native-calendars';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
@@ -383,13 +383,15 @@ export default function DiaryScreen({ListHeader}: { ListHeader?: React.Component
                     handleSelectYear={handleSelectYear}
                 />
             ) : (
-                <ILogPageView
-                    ilogs={ilogs}
-                    onDatePress={openCalendar}
-                    scrollToIndex={selectedLogIndex}
-                    onPageChange={handlePageChange}
-                    ListHeaderComponent={CombinedHeader}
-                />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <ILogPageView
+                        ilogs={ilogs}
+                        onDatePress={openCalendar}
+                        scrollToIndex={selectedLogIndex}
+                        onPageChange={handlePageChange}
+                        ListHeaderComponent={CombinedHeader}
+                    />
+                </ScrollView>
             )}
 
             <PageViewCalendarModal
