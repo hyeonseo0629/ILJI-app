@@ -7,7 +7,7 @@ interface StyledProps {
 }
 
 export const Container = styled.View<StyledProps>`
-    background-color: ${props => props.$colors?.card || '#ffffff'};
+    background-color: ${props => props.$colors?.background || '#fff'};
     width: 99%;
     height: 100%;
     border-top-left-radius: 10px;
@@ -24,7 +24,7 @@ export const Header = styled.View<StyledProps>`
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    background-color: ${props => props.$colors?.card || '#ffffff'};
+    background-color: ${props => props.$colors?.background || '#fff'};
     border-radius: 10px;
 `
 
@@ -86,8 +86,6 @@ export const ScheduleWrap = styled.View<StyledProps>`
     align-items: center; // Vertically align bar and text
     margin: 8px 0;
     padding: 12px;
-    border-color: ${props => props.$colors?.border || '#555'};
-    border-radius: 8px;
 `;
 
 // Wrapper for the text content (title and date/time)

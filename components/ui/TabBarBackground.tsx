@@ -6,7 +6,7 @@ export default function TabBarBackground() {
   const theme = useTheme();
 
   return (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.card }]} />
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.background }]} />
   );
 }
 

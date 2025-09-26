@@ -25,7 +25,7 @@ const mainHeaderStyles = css<ContainerProps>`
 
 export const Container = styled.View<ContainerProps>`
     width: 100%;
-    background-color: ${props => props.$colors?.card || '#ffffff'};
+    background-color: ${props => props.$colors?.background || '#ffffff'};
     /* 바텀 시트가 확장되면 zIndex를 0으로, 아닐 때는 1로 설정합니다. */
     z-index: ${(props) => (props.$isSheetExpanded ? 0 : 1)};
 

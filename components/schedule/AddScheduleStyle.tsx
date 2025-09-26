@@ -18,7 +18,7 @@ export const ASHeader = styled.Text<StyledProps>`
     width: 85%;
     border-bottom-width: 3px;
     border-bottom-color: ${props => props.$colors?.primary || 'lavender'};
-    color: ${props => props.$colors?.primary || '#9970FF'};
+    color: ${props => props.theme.dark ? '#9970FF' : '#9970FF'};
 `
 
 export const ASContentWrap = styled.View`
@@ -29,7 +29,7 @@ export const ASContentWrap = styled.View`
 export const ASLabel = styled.Text<StyledProps>`
     font-size: 25px;
     font-weight: bold;
-    color: ${props => props.$colors?.text || '#9970FF'};
+    color: ${props => props.theme.dark ? '#9970FF' : '#9970FF'};
     margin-top: 20px;
     margin-bottom: 10px;
 `;
@@ -47,15 +47,14 @@ export const ASAddButton = styled.TouchableOpacity<StyledProps>`
 `;
 
 export const ASInput = styled.TextInput.attrs<StyledProps>(props => ({
-    placeholderTextColor: props.$colors?.text || "#9f9ff0",
+    placeholderTextColor: props.theme.dark ? '#575757' : "#9f9ff0",
 }))<StyledProps>`
     width: 100%;
-    border: 1px solid ${props => props.$colors?.border || '#e0e0e0'};
     border-radius: 8px;
     padding: 12px 15px;
     font-size: 16px;
-    background-color: ${props => props.$colors?.card || 'lavender'};
-    color: ${props => props.$colors?.text || '#9970FF'};
+    background-color: ${props => props.theme.dark ? '575757FF' : 'lavender'};
+    color: ${props => props.theme.dark ? '#575757' : '#9970FF'};
     margin-bottom: 20px;
 `;
 
@@ -83,16 +82,15 @@ export const ASDateTimeRow = styled.View`
 
 export const ASDateTimeButton = styled.TouchableOpacity<StyledProps>`
     flex: 1; /* 버튼이 사용 가능한 공간을 모두 차지하도록 하여, 1개일 땐 100%, 2개일 땐 50%씩 나눠 갖게 합니다. */
-    border: 1px solid ${props => props.$colors?.border || '#e0e0e0'};
     border-radius: 8px;
     padding: 10px;
-    background-color: ${props => props.$colors?.card || 'lavender'};
+    background-color: ${props => props.theme.dark ? '575757FF' : 'lavender'};
     align-items: center;
 `;
 
 export const ASDateTimeButtonText = styled.Text<StyledProps>`
     font-size: 16px;
-    color: ${props => props.$colors?.text || '#9970FF'};
+    color: ${props => props.theme.dark ? '#575757' : "#9f9ff0"};
     font-weight: bold;
 `;
 
@@ -106,15 +104,16 @@ export const ASSelectedTag = styled.View<StyledProps & { color: string }>`
     flex-direction: row;
     align-items: center;
     background-color: ${(props) => props.color || props.$colors?.card || 'gray'};
-    border-radius: 16px;
-    padding: 6px 12px;
-    margin-bottom: 30px;
+    border-radius: 30px;
+    padding: 10px 25px;
+    margin-bottom: 100px;
+    margin-top: 20px;
 `;
 
 export const ASSelectedTagText = styled.Text<StyledProps>`
     color: ${props => props.$colors?.text || '#ffffff'};
     font-weight: bold;
-    font-size: 14px;
+    font-size: 18px;
 `;
 
 export const ASButtonWrap = styled.View<StyledProps>`

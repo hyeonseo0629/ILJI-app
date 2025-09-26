@@ -100,7 +100,7 @@ function Layout() {
                     key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
                     screenOptions={{
                         headerStyle: {
-                            backgroundColor: theme.colors.card,
+                            backgroundColor: theme.colors.background,
                         },
                         headerTintColor: theme.colors.text,
                         headerTitleStyle: {
@@ -126,7 +126,7 @@ function Layout() {
                             title: 'New Schedule',
                             presentation: 'modal',
                             headerStyle: {
-                                backgroundColor: theme.colors.card,
+                                backgroundColor: theme.colors.background,
                             },
                             headerTintColor: theme.colors.text,
                         }}
@@ -178,6 +178,7 @@ function ThemedAppLayout() {
             background: Colors.light.background,
             card: Colors.light.card,
             text: Colors.light.text,
+            border: Colors.light.border,
             notification: Colors.light.notification,
         },
         fonts: {
@@ -195,6 +196,7 @@ function ThemedAppLayout() {
             background: Colors.dark.background,
             card: Colors.dark.card,
             text: Colors.dark.text,
+            border: Colors.dark.border,
             notification: Colors.dark.notification,
         },
         fonts: {
