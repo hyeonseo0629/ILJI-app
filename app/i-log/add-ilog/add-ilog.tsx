@@ -440,7 +440,6 @@ export default function AddILogScreen() {
                 const iLogData: ILogCreateRequestFrontend = {
                     content: content,
                     logDate: selectedLogDate ? format(selectedLogDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
-                    imageUrls: [], // Let backend handle image URLs
                     writerId: userId!,
                     visibility: 0, // Added default visibility
                 };
