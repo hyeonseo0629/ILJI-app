@@ -1,23 +1,33 @@
-import {useState, useEffect} from 'react';
-import { API_BASE_URL } from '@/src/lib/api';
+import { useState, useEffect } from 'react';
+import api from '../src/lib/api';
+import { Schedule } from "../components/calendar/scheduleTypes";
 
-// Based on the backend's ScheduleResponse.java
-export interface Schedule {
+// API 응답에 대한 임시 타입 (날짜가 문자열)
+interface RawSchedule {
     id: number;
     userId: number;
-    calendarId: number;
+    tagId: number;
     title: string;
     location: string;
-    tagId: number | null;
     description: string;
-    startTime: string; // Assuming ISO 8601 format
-    endTime: string;   // Assuming ISO 8601 format
+    startTime: string;
+    endTime: string;
     isAllDay: boolean;
-    rrule: string;
-    createdAt: string; // Assuming ISO 8601 format
+    rrule?: string;
+    createdAt: string;
+    updatedAt: string;
+    calendarId: number;
 }
 
-
+// RawSchedule을 Schedule (Date 객체 포함)으로 변환하는 함수
+const transformRawSchedule = (raw: RawSchedule): Schedule => ({
+    ...raw,
+    startTime: new Date(raw.startTime),
+    endTime: new Date(raw.endTime),
+    createdAt: new Date(raw.createdAt),
+    updatedAt: new Date(raw.updatedAt),
+    notificationTime: null,
+});
 
 export const useFetchSchedules = (tagIds?: number[]) => {
     const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -28,29 +38,23 @@ export const useFetchSchedules = (tagIds?: number[]) => {
         const fetchSchedules = async () => {
             try {
                 setLoading(true);
-                let url = `${API_BASE_URL}/api/schedules`;
+                const params = new URLSearchParams();
                 if (tagIds && tagIds.length > 0) {
-                    const params = new URLSearchParams();
                     tagIds.forEach(id => params.append('tagIds', id.toString()));
-                    url += `?${params.toString()}`;
                 }
 
-                // This assumes you have a way to get the auth token
-                // For now, we'll proceed without authentication.
-                // In a real app, you would get the token from storage.
-                const response = await fetch(url, {
-                    headers: {
-                        // 'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json',
-                    },
+                const response = await api.get<RawSchedule[]>('/schedules', {
+                    params: tagIds && tagIds.length > 0 ? { tagIds: tagIds.join(',') } : undefined,
                 });
 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch schedules');
-                }
+                const processedSchedules: Schedule[] = [];
 
-                const data: Schedule[] = await response.json();
-                setSchedules(data);
+                response.data.forEach(rawSchedule => {
+                    const schedule = transformRawSchedule(rawSchedule);
+                    processedSchedules.push(schedule);
+                });
+
+                setSchedules(processedSchedules);
             } catch (e) {
                 if (e instanceof Error) {
                     setError(e);
@@ -63,7 +67,7 @@ export const useFetchSchedules = (tagIds?: number[]) => {
         };
 
         fetchSchedules();
-    }, [tagIds]); // Refetch when tagIds change
+    }, [tagIds]);
 
     return {schedules, loading, error};
 };

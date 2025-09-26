@@ -1,59 +1,45 @@
-import React, {useState} from "react";
-import {TouchableOpacity} from "react-native";
-import {format} from "date-fns";
+import React, { useState } from "react";
+import { TouchableOpacity, View } from "react-native";
+import { format } from "date-fns";
+import { MaterialIcons } from '@expo/vector-icons';
 import * as BS from "@/components/style/BottomSheetStyled";
-import {Schedule} from "@/components/calendar/scheduleTypes";
-import {ScheduleTextsWrap} from "@/components/style/BottomSheetStyled";
+import { Schedule } from "@/components/calendar/scheduleTypes";
 
 interface ToDoProps {
     item: Schedule;
+    onPress: (schedule: Schedule) => void;
 }
 
-// ToDo 컴포넌트의 주요 내용(체크박스, 텍스트)을 담는 하위 컴포넌트입니다.
-interface ToDoMainContentProps {
-    title: string;
-    date: string;
-    time: string;
-}
-
-export const ToDoMainContent: React.FC<ToDoMainContentProps> = ({title, date, time}) => {
+export const ToDo: React.FC<ToDoProps> = ({ item, onPress }) => {
     const [isChecked, setIsChecked] = useState(false);
 
+    // isAllDay가 아니고, 시작 시간과 종료 시간이 다를 경우 시간 범위를 표시합니다.
+    const timeString = !item.isAllDay && item.startTime !== item.endTime
+        ? `${format(new Date(item.startTime), "HH:mm")} - ${format(new Date(item.endTime), "HH:mm")}`
+        : "All Day";
+
     return (
-        <BS.ScheduleTextsWrap>
-            <BS.ScheduleLeftWrap>
-                <TouchableOpacity onPress={() => setIsChecked(prev => !prev)}>
-                    <BS.ScheduleCheckBox
-                        name={isChecked ? 'check-circle-outline' : 'radio-button-unchecked'}
+        <TouchableOpacity onPress={() => onPress(item)}>
+            <BS.ScheduleWrap>
+                {/* VerticalBar는 BottomSheetStyled에 정의되어 있습니다. */}
+                {/* <BS.VerticalBar color={item.color || 'gray'} /> */}
+                <TouchableOpacity onPress={() => setIsChecked(prev => !prev)} style={{ marginRight: 12 }}>
+                    <MaterialIcons
+                        name={isChecked ? 'check-circle' : 'radio-button-unchecked'}
+                        size={24}
+                        color={isChecked ? 'lightgray' : 'mediumslateblue'}
                     />
                 </TouchableOpacity>
+
                 <BS.ScheduleTextWrap>
-                    <BS.ScheduleDayWrap>
-                        <BS.ScheduleDate $isChecked={isChecked}> {date}</BS.ScheduleDate>
-                        <BS.ScheduleTime $isChecked={isChecked}> {time}</BS.ScheduleTime>
-                    </BS.ScheduleDayWrap>
-                    <BS.ScheduleTitle $isChecked={isChecked}>{title}</BS.ScheduleTitle>
+                    <BS.ScheduleTitle style={{ textDecorationLine: isChecked ? 'line-through' : 'none', color: isChecked ? 'lightgray' : '#333' }}>
+                        {item.title}
+                    </BS.ScheduleTitle>
+                    <BS.ScheduleDateTime style={{ textDecorationLine: isChecked ? 'line-through' : 'none', color: isChecked ? 'lightgray' : '#8e8e93' }}>
+                        {timeString}
+                    </BS.ScheduleDateTime>
                 </BS.ScheduleTextWrap>
-            </BS.ScheduleLeftWrap>
-        </BS.ScheduleTextsWrap>
+            </BS.ScheduleWrap>
+        </TouchableOpacity>
     );
 };
-
-export const ToDo: React.FC<ToDoProps> = ({item}) => {
-    // 'Schedule' 타입에는 'state'와 'icon' 속성이 없어, 임시 값을 사용합니다.
-    // 추후 Schedule 타입에 해당 속성을 추가해야 할 수 있습니다.
-    const state = "Planning"; // Placeholder
-
-    return (
-        <BS.ScheduleWrap>
-            <BS.ScheduleState> {state} </BS.ScheduleState>
-            <BS.ScheduleListWrap>
-                <ToDoMainContent
-                    title={item.title}
-                    date={format(item.startTime, "yyyy / MM / dd")}
-                    time={format(item.startTime, "HH:mm")}
-                />
-            </BS.ScheduleListWrap>
-        </BS.ScheduleWrap>
-    )
-}

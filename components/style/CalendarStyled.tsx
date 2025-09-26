@@ -165,12 +165,17 @@ export const EventBarText = styled.Text.attrs({
     color: #ffffff;
 `;
 
+interface MoreScheduleTextProps extends StyledProps {
+    $top: number;
+}
+
 export const MoreScheduleText = styled.Text.attrs({
     numberOfLines: 1,
-})<StyledProps>`
+})<MoreScheduleTextProps>`
+    position: absolute;
+    top: ${props => props.$top}px;
     font-size: 10px;
     text-align: center;
-    margin-top: 2px;
     width: 100%;
     padding: 1px 3px;
     color: ${props => props.$colors?.text || '#555'}; /* 눈에 띄도록 다른 색상 사용 */
@@ -180,19 +185,25 @@ export const MoreScheduleText = styled.Text.attrs({
 export const ScheduleTitleText = styled.Text.attrs({
     numberOfLines: 1, // 텍스트를 한 줄로 제한합니다.
     ellipsizeMode: 'tail', // 길이가 길면 끝에 ...을 표시합니다.
-})<ScheduleTitleTextProps>`
-    font-size: 10px; /* 월별 캘린더에 맞게 작은 글씨 크기 */
+})<ScheduleTitleTextProps & { $top: number }>`
+    position: absolute;
+    top: ${props => props.$top}px;
+    height: 12px; /* Match EventBar height */
+    font-size: 8px; /* Match EventBarText font size */
     text-align: center;
-    margin-top: 2px;
-    width: 100%; /* 컨테이너 너비에 맞춤 */
+    width: 100%;
     border-radius: 4px;
-    padding: 1px 3px; /* 텍스트 주변에 약간의 여백을 줍니다. */
+    padding: 0 3px; /* Match EventBar horizontal padding */
+    background-color: ${props => props.color || 'gray'};
+    color: #ffffff;
+    overflow: hidden;
 `
 
 export const MonthSchedulesContainer = styled.View`
     position: relative;
     flex: 1; /* 날짜 텍스트를 제외한 나머지 세로 공간을 모두 차지합니다. */
     width: 100%; /* 부모 컨테이너의 너비에 맞춥니다. */
+    margin-top: 4px; /* 날짜와 일정 사이의 간격 */
 `;
 
 

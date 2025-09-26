@@ -49,6 +49,7 @@ function Layout() {
         // 2. Session exists logic
         const checkProfileAndRedirect = async () => {
             let hasNickname = false;
+            console.log("checkProfileAndRedirect: Session before API call:", session);
             try {
                 // Use the centralized API instance which handles auth headers automatically
                 const response = await api.get('/user/profile');
@@ -56,11 +57,16 @@ function Layout() {
                 if (response.status === 200 && response.data && response.data.nickname) {
                     hasNickname = true;
                 }
-            } catch (error) {
-                // Errors (like 401) are expected if the token is invalid or expired.
-                // The user will be redirected to /login by the session check anyway.
-                console.log("Could not fetch profile, will redirect to login if session is invalid.");
-                signOut();
+            } catch (error: any) { // Add : any for error type
+                console.log("Error caught in _layout.tsx checkProfileAndRedirect:", error);
+                if (error.code === 'SESSION_INVALIDATED') {
+                    console.log("Session invalidated by interceptor. Signing out.");
+                    signOut();
+                } else {
+                    // Other errors (like 401) are expected if the token is invalid or expired.
+                    // The user will be redirected to /login by the session check anyway.
+                    console.log("Could not fetch profile, will redirect to login if session is invalid.");
+                }
             }
 
             // --- Final redirection rules ---

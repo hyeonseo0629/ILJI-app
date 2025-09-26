@@ -4,17 +4,18 @@
 // 백엔드로부터 직접 받는 원시 i-log 데이터 타입
 // 날짜 관련 필드가 모두 문자열(string) 형태입니다.
 export interface RawILog {
-  id: number;
-  userId: number;
-  writerNickname: string;
-  writerProfileImage: string;
-  logDate: string; // ex: "2024-09-15"
-  content: string;
-  visibility: number;
-  friendTags: string | null;
-  likeCount: number;
-  commentCount: number;
-  createdAt: string; // ex: "2024-09-15T10:00:00"
+    id: number;
+    userId: number;
+    writerNickname: string;
+    writerProfileImage: string;
+    logDate: string; // Comes as string from backend
+    content: string;
+    images: string[];
+    visibility: number | string;
+    friendTags: string;
+    likeCount: number;
+    commentCount: number;
+    createdAt: string; // Comes as string
 }
 
 // 프론트엔드 애플리케이션 내부에서 사용할 i-log 데이터 타입
@@ -27,7 +28,7 @@ export interface ILog {
   logDate: Date;
   content: string;
   images: string[]; // List of image URLs
-  visibility: string;
+  visibility: number;
   friendTags: string | null;
   likeCount: number;
   commentCount: number;

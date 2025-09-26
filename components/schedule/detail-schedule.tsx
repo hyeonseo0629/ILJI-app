@@ -25,6 +25,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+    const [pickerTarget, setPickerTarget] = useState<'start' | 'end'>('start');
     // [추가] 삭제 확인 모달의 표시 상태를 관리합니다.
     const [isConfirmModalVisible, setConfirmModalVisible] = useState(false);
 
@@ -32,6 +33,16 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
         if (!formData) return null;
         return tags.find(tag => tag.id === formData.tagId);
     }, [formData, tags]);
+
+    const sortedTags = useMemo(() => {
+        if (!tags) return [];
+        const scheduleTag = tags.find(tag => tag.label === '일정');
+        const otherTags = tags.filter(tag => tag.label !== '일정');
+        if (scheduleTag) {
+            return [scheduleTag, ...otherTags];
+        }
+        return otherTags;
+    }, [tags]);
 
     useEffect(() => {
         setFormData(schedule);
@@ -52,7 +63,9 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
     // [추가] 커스텀 모달에서 '확인'을 눌렀을 때 실행될 함수입니다.
     const handleConfirmDelete = async () => {
         if (schedule) {
-            await deleteSchedule(schedule.id);
+            // ID가 문자열인 경우(반복 일정), 숫자 부분만 추출합니다.
+            const idToDelete = typeof schedule.id === 'string' ? parseInt(schedule.id.split('-')[0], 10) : schedule.id;
+            await deleteSchedule(idToDelete);
             setConfirmModalVisible(false); // 확인 모달 닫기
             onClose(); // 상세 정보 모달 닫기
         }
@@ -60,7 +73,12 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
 
     const handleUpdatePress = () => {
         if (formData) {
-            updateSchedule(formData);
+            // ID가 문자열인 경우(반복 일정), 숫자 부분만 추출하여 업데이트합니다.
+            const updatedFormData = {
+                ...formData,
+                id: typeof formData.id === 'string' ? parseInt(formData.id.split('-')[0], 10) : formData.id
+            };
+            updateSchedule(updatedFormData);
             setIsEditMode(false);
         }
     };
@@ -70,11 +88,35 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
     };
 
     const onDateChange = (event: any, selectedDate?: Date) => {
-        setShowDatePicker(Platform.OS === 'ios');
-        if (selectedDate) {
-            const newStartTime = set(formData.startTime, { year: selectedDate.getFullYear(), month: selectedDate.getMonth(), date: selectedDate.getDate() });
-            const newEndTime = set(formData.endTime, { year: selectedDate.getFullYear(), month: selectedDate.getMonth(), date: selectedDate.getDate() });
-            setFormData(prev => prev ? { ...prev, startTime: newStartTime, endTime: newEndTime } : null);
+        setShowDatePicker(false); // 항상 피커를 닫도록 수정
+
+        if (event.type === 'set' && selectedDate && formData) { // 날짜가 선택된 경우에만 상태 업데이트
+            if (pickerTarget === 'start') {
+                const newStartTime = set(formData.startTime, { year: selectedDate.getFullYear(), month: selectedDate.getMonth(), date: selectedDate.getDate() });
+
+                // 시작 날짜가 변경되면, 종료 날짜도 동일하게 맞춰주되 시간은 유지합니다.
+                const newEndTime = set(formData.endTime, {
+                    year: selectedDate.getFullYear(),
+                    month: selectedDate.getMonth(),
+                    date: selectedDate.getDate(),
+                });
+
+                // 만약 새로 계산된 종료 시간이 시작 시간보다 빠르다면,
+                // 종료 시간을 시작 시간 1시간 뒤로 설정합니다.
+                if (newEndTime < newStartTime) {
+                    setFormData(prev => prev ? { ...prev, startTime: newStartTime, endTime: new Date(newStartTime.getTime() + 60 * 60 * 1000) } : null);
+                } else {
+                    setFormData(prev => prev ? { ...prev, startTime: newStartTime, endTime: newEndTime } : null);
+                }
+            } else { // pickerTarget === 'end'
+                const newEndTime = set(formData.endTime, { year: selectedDate.getFullYear(), month: selectedDate.getMonth(), date: selectedDate.getDate() });
+                // If the new end time is before the start time, don't allow it (or adjust start time). Let's just set it to the start time.
+                if (newEndTime < formData.startTime) {
+                    setFormData(prev => prev ? { ...prev, endTime: formData.startTime } : null);
+                } else {
+                    setFormData(prev => prev ? { ...prev, endTime: newEndTime } : null);
+                }
+            }
         }
     };
 
@@ -130,8 +172,14 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                                             value={formData.isAllDay}
                                         />
                                     </DS.AllDayRow>
-                                    <DS.DateTimePickerButton onPress={() => setShowDatePicker(true)}>
+                                    <DS.Label>Start Date</DS.Label>
+                                    <DS.DateTimePickerButton onPress={() => { setPickerTarget('start'); setShowDatePicker(true); }}>
                                         <DS.DateTimePickerButtonText>{format(formData.startTime, 'yyyy. MM. dd')}</DS.DateTimePickerButtonText>
+                                    </DS.DateTimePickerButton>
+
+                                    <DS.Label>End Date</DS.Label>
+                                    <DS.DateTimePickerButton onPress={() => { setPickerTarget('end'); setShowDatePicker(true); }}>
+                                        <DS.DateTimePickerButtonText>{format(formData.endTime, 'yyyy. MM. dd')}</DS.DateTimePickerButtonText>
                                     </DS.DateTimePickerButton>
                                     {!formData.isAllDay && (
                                         <DS.DateTimePickersRow style={{ marginTop: 15 }}>
@@ -169,12 +217,12 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                                 <>
                                     <DS.Label>Tag</DS.Label>
                                     <DS.TagSelectorContainer>
-                                        {tags.map(tag => (
+                                        {sortedTags.map(tag => (
                                             <DS.TagSelectorItem
                                                 key={tag.id}
                                                 color={tag.color}
                                                 selected={formData.tagId === tag.id}
-                                                onPress={() => handleInputChange('tagId', formData.tagId === tag.id ? 0 : tag.id)}
+                                                onPress={() => handleInputChange('tagId', tag.id)}
                                             >
                                                 <DS.TagSelectorText selected={formData.tagId === tag.id}>
                                                     #{tag.label}
@@ -215,7 +263,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                         </DS.ContentWrap>
                         {isEditMode ? (
                             <DS.ButtonArea>
-                                <DS.ActionButton onPress={() => setIsEditMode(false)}>
+                                <DS.ActionButton onPress={() => { setIsEditMode(false); setFormData(schedule); }}>
                                     <DS.ActionButtonText>Cancel</DS.ActionButtonText>
                                 </DS.ActionButton>
                                 <DS.ButtonSeparator />
@@ -239,7 +287,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                 {/* ... DateTimePicker 모달들 ... */}
                 {showDatePicker && (
                     <DateTimePicker
-                        value={formData.startTime}
+                        value={pickerTarget === 'start' ? formData.startTime : formData.endTime}
                         mode="date"
                         display="spinner"
                         onChange={onDateChange}
