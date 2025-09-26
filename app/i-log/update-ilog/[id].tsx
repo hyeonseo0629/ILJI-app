@@ -244,12 +244,6 @@ export default function UpdateILogScreen() {
     const pickImage = async () => {
         try {
             const image = await ImagePicker.openPicker({ multiple: false, cropping: true, mediaType: 'photo' });
-
-            if (image.size > 30 * 1024 * 1024) { // 30MB limit
-                Alert.alert('용량 초과', '30MB 이하의 사진만 업로드할 수 있습니다.');
-                return;
-            }
-
             setImageAssets(prevAssets => [...prevAssets, {...image, stickers: []}]);
         } catch (e: any) {
             if (e.code !== 'E_PICKER_CANCELLED') { console.error('ImagePicker Error: ', e); Alert.alert('오류', '사진을 가져오는 데 실패했습니다.'); }
@@ -298,14 +292,11 @@ export default function UpdateILogScreen() {
     }, [captureQueue]);
 
     useEffect(() => {
-        const processImage = async () => {
-            // If there's nothing to process, or the view is not ready, do nothing.
-            if (captureQueue.length === 0) return;
-
-            // Always process via capture to ensure order, as per user suggestion.
-            if (isImageLoadedForCapture && offscreenViewShotRef.current) {
+        const captureAndProcess = async () => {
+            if (isImageLoadedForCapture && captureQueue.length > 0 && offscreenViewShotRef.current) {
+                // Add a forced delay as requested to ensure rendering is complete
                 setTimeout(async () => {
-                    // Re-check refs and state inside the timeout to prevent race conditions
+                    // Re-check refs and state inside the timeout
                     if (!offscreenViewShotRef.current || captureQueue.length === 0) return;
 
                     const assetToCapture = captureQueue[0];
@@ -315,16 +306,18 @@ export default function UpdateILogScreen() {
                         const newAsset = { ...assetToCapture, path: uri, stickers: [], filename: filename, mime: 'image/png' };
                         setProcessedImages(prev => [...prev, newAsset]);
                         setCaptureQueue(prev => prev.slice(1));
+                        setIsImageLoadedForCapture(false);
                     } catch (e) {
                         console.error("Image capture failed:", e);
                         Alert.alert("오류", "이미지 처리에 실패했습니다.");
                         setIsSaving(false);
                         setCaptureQueue([]);
+                        setIsImageLoadedForCapture(false);
                     }
                 }, 1000);
             }
         };
-        processImage();
+        captureAndProcess();
     }, [isImageLoadedForCapture, captureQueue]);
 
     useEffect(() => {
@@ -386,8 +379,12 @@ export default function UpdateILogScreen() {
         if (!content.trim() && imageAssets.length === 0) { Alert.alert('오류', '내용이나 사진을 추가해주세요.'); return; }
 
         setIsSaving(true);
-        setProcessedImages([]); // Reset processed images
-        setCaptureQueue([...imageAssets]); // Set the whole queue, preserving order
+
+        const imagesToProcess = imageAssets.filter(asset => asset.stickers && asset.stickers.length > 0);
+        const unprocessedImages = imageAssets.filter(asset => !asset.stickers || asset.stickers.length === 0);
+
+        setProcessedImages(unprocessedImages);
+        setCaptureQueue(imagesToProcess);
     };
 
     // --- Render Logic ---
@@ -476,10 +473,7 @@ export default function UpdateILogScreen() {
                                         <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText>
                                     </I.AddImagePlaceholder>
                                 )}
-                                <I.AddTextArea placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...`} value={content} onChangeText={setContent} multiline height={textAreaHeight} onContentSizeChange={(e) => setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height))} autoFocus={true} $colors={theme.colors} placeholderTextColor={theme.colors.text} maxLength={3000} />
-                                <Text style={{ color: theme.colors.text, alignSelf: 'flex-end', marginTop: 4, marginRight: 10 }}>
-                                    {content.length} / 3000
-                                </Text>
+                                <I.AddTextArea placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...`} value={content} onChangeText={setContent} multiline height={textAreaHeight} onContentSizeChange={(e) => setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height))} autoFocus={true} $colors={theme.colors} placeholderTextColor={theme.colors.text} />
                             </I.AddContentContainer>
                         </I.AddWrap>
                     </I.Container>
