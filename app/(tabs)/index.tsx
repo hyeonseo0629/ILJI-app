@@ -157,8 +157,8 @@ export default function HomeScreen() {
         const totalPages = Math.ceil(displayTags.length / TAGS_PER_PAGE);
 
         return (
-            <View style={{ alignItems: 'flex-start'}}>
-                {totalPages > 1 && (
+            <View style={{flexDirection: 'row', alignItems: 'flex-end'}}>
+                {totalPages > 0 && (
                     <TouchableOpacity
                         onPress={() => setTagPage(p => p - 1)}
                         disabled={tagPage === 0}
@@ -183,7 +183,7 @@ export default function HomeScreen() {
                         ))}
                     </MainToDoCategoryWarp>
                 </View>
-                {totalPages > 1 && (
+                {totalPages > 0 && (
                     <TouchableOpacity
                         onPress={() => setTagPage(p => p + 1)}
                         disabled={tagPage === totalPages - 1}
