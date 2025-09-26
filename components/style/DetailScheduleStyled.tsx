@@ -76,7 +76,7 @@ export const DateTimeInfo = styled.View`
 
 export const CalendarIcon = styled(MaterialIcons).attrs({})`
     margin-right: 12px; /* 아이콘과 텍스트 사이 간격 조정 */
-    color: mediumslateblue;
+    color: #9970FF;
 `;
 
 export const DateTimeTexts = styled.View`
@@ -92,14 +92,14 @@ export const DateText = styled.Text`
 export const TimeText = styled.Text`
     font-size: 22px;
     font-weight: 700;
-    color: mediumslateblue;
+    color: #9970FF;
     margin-top: 2px;
 `;
 
 export const Label = styled.Text`
     font-size: 22px; /* 라벨 폰트 크기를 약간 줄여 균형을 맞춥니다. */
     font-weight: bold;
-    color: mediumslateblue;
+    color: #9970FF;
     /* 상단 여백은 이전 요소에서 제어하도록 margin-top을 제거합니다. */
     margin-bottom: 8px; /* 내용과의 간격을 살짝 줄입니다. */
 `;
@@ -129,7 +129,7 @@ export const ValueInput = styled.TextInput`
     margin-bottom: 25px;
     line-height: 24px;
     border-width: 1px;
-    border-color: mediumslateblue;
+    border-color: #9970FF;
 `;
 
 export const AllDayRow = styled.View`
@@ -222,13 +222,13 @@ export const ActionButton = styled.TouchableOpacity<{ primary?: boolean }>`
     flex: 1; /* 버튼이 영역을 동일하게 나누어 가집니다. */
     padding: 18px;
     align-items: center;
-    background-color: ${({ primary }) => primary ? 'mediumslateblue' : '#eef0f4'}; /* secondary 버튼에 아주 연한 배경색 추가 */
+    background-color: ${({ primary }) => primary ? '#9970FF' : '#eef0f4'}; /* secondary 버튼에 아주 연한 배경색 추가 */
 `;
 
 export const ActionButtonText = styled.Text<{ primary?: boolean }>`
     font-size: 22px;
     font-weight: bold;
-    color: ${({ primary }) => primary ? 'white' : 'mediumslateblue'}; /* secondary 버튼 텍스트 색상 유지 */
+    color: ${({ primary }) => primary ? 'white' : '#9970FF'}; /* secondary 버튼 텍스트 색상 유지 */
 `;
 
 export const ButtonSeparator = styled.View`

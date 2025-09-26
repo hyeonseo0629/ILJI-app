@@ -166,7 +166,7 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                                     <DS.AllDayRow>
                                         <DS.Label>All Day</DS.Label>
                                         <Switch
-                                            trackColor={{ false: "#767577", true: "mediumslateblue" }}
+                                            trackColor={{ false: "#767577", true: "#9970FF" }}
                                             thumbColor={"#f4f3f4"}
                                             onValueChange={(value) => handleInputChange('isAllDay', value)}
                                             value={formData.isAllDay}

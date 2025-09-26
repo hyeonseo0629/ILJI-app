@@ -3,6 +3,7 @@ import React from 'react';
 import { FontAwesome5 } from '@expo/vector-icons';
 import {Platform} from 'react-native';
 import {useTheme} from '@react-navigation/native';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
 import {HapticTab} from '@/components/HapticTab';
 import {IconSymbol} from '@/components/ui/IconSymbol';
@@ -12,6 +13,7 @@ import {GestureHandlerRootView} from "react-native-gesture-handler";
 
 export default function TabLayout() {
     const theme = useTheme(); // useTheme 훅 사용
+    const { isDarkColorScheme } = useColorScheme();
 
     return (
         <GestureHandlerRootView style={{flex: 1}}>
@@ -27,15 +29,17 @@ export default function TabLayout() {
                             position: 'absolute',
                             height: 85,
                             paddingBottom: 25,
-                            backgroundColor: theme.colors.card, // iOS에도 배경색 다시 활성화
+                            backgroundColor: isDarkColorScheme ? '#1C1C1E' : '#fcfcfc',
                             borderTopWidth: 0,
+                            borderTopColor: 'none'
                         },
                         default: {
                             height: 65,
                             paddingTop: 5,
                             paddingBottom: 8,
-                            backgroundColor: theme.colors.card, // 여기도 테마 배경색 다시 활성화
+                            backgroundColor: isDarkColorScheme ? '#1C1C1E' : '#fcfcfc',
                             borderTopWidth: 0,
+                            borderTopColor: 'none',
                         },
                     }),
                 }}>

@@ -27,7 +27,7 @@ export const ToDo: React.FC<ToDoProps> = ({ item, onPress }) => {
                     <MaterialIcons
                         name={isChecked ? 'check-circle' : 'radio-button-unchecked'}
                         size={24}
-                        color={isChecked ? 'lightgray' : 'mediumslateblue'}
+                        color={isChecked ? 'lightgray' : '#9970FF'}
                     />
                 </TouchableOpacity>
 

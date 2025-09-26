@@ -94,13 +94,13 @@ function Layout() {
     }
 
     return (
-        <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
-            <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
+        <View style={{flex: 1, paddingTop: isnets.top + 5, backgroundColor: 'lavender'}}>
+            <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
                 <Stack
                     key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
                     screenOptions={{
                         headerStyle: {
-                            backgroundColor: theme.colors.card,
+                            backgroundColor: theme.colors.background,
                         },
                         headerTintColor: theme.colors.text,
                         headerTitleStyle: {
@@ -126,7 +126,7 @@ function Layout() {
                             title: 'New Schedule',
                             presentation: 'modal',
                             headerStyle: {
-                                backgroundColor: theme.colors.card,
+                                backgroundColor: theme.colors.background,
                             },
                             headerTintColor: theme.colors.text,
                         }}

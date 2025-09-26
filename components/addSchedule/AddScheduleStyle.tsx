@@ -14,7 +14,7 @@ export const ASHeader = styled.Text`
     width: 85%;
     border-bottom-width: 3px;
     border-bottom-color: lavender;
-    color: mediumslateblue;
+    color: #9970FF;
 `
 
 export const ASContentWrap = styled.View`
@@ -25,7 +25,7 @@ export const ASContentWrap = styled.View`
 export const ASLabel = styled.Text`
     font-size: 25px;
     font-weight: bold;
-    color: mediumslateblue;
+    color: #9970FF;
     margin-top: 20px;
     margin-bottom: 10px;
 `;
@@ -51,7 +51,7 @@ export const ASInput = styled.TextInput.attrs({
     padding: 12px 15px;
     font-size: 16px;
     background-color: lavender;
-    color: mediumslateblue;
+    color: #9970FF;
     margin-bottom: 20px;
 `;
 
@@ -88,7 +88,7 @@ export const ASDateTimeButton = styled.TouchableOpacity`
 
 export const ASDateTimeButtonText = styled.Text`
     font-size: 16px;
-    color: mediumslateblue;
+    color: #9970FF;
     font-weight: bold;
 `;
 
@@ -123,7 +123,7 @@ export const ASButtonWrap = styled.View`
 export const ASSaveButton = styled.TouchableOpacity`
     width: 50%;
     background-color: #ffffff;
-    color: mediumslateblue;
+    color: #9970FF;
     padding: 20px;
     align-items: center;
     border-right-width: 2px;
@@ -138,13 +138,13 @@ export const ASCancelButton = styled.TouchableOpacity`
 `
 
 export const ASCancelButtonText = styled.Text`
-    color: mediumslateblue;
+    color: #9970FF;
     font-size: 25px;
     font-weight: bold
 `
 
 export const ASSaveButtonText = styled.Text`
-    color: mediumslateblue;
+    color: #9970FF;
     font-size: 25px;
     font-weight: bold;
 `;
@@ -201,7 +201,7 @@ export const ColorDot = styled.TouchableOpacity<{ color: string; isSelected: boo
     background-color: ${props => props.color};
     margin: 5px;
     border-width: ${props => (props.isSelected ? '3px' : '0px')};
-    border-color: mediumslateblue;
+    border-color: #9970FF;
 `;
 
 export const ButtonContainer = styled.View`
@@ -215,7 +215,7 @@ export const ActionButton = styled.TouchableOpacity<{ primary?: boolean }>`
     padding: 15px;
     align-items: center;
     border-radius: 8px;
-    background-color: ${props => (props.primary ? 'mediumslateblue' : '#f0f0f0')};
+    background-color: ${props => (props.primary ? '#9970FF' : '#f0f0f0')};
     margin: 0 5px;
 `;
 

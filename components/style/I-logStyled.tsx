@@ -84,7 +84,7 @@ export const ListSearchButtonTextWrap = styled.View<StyledProps>`
     margin: 5px 10px;
     padding-bottom: 10px;
     border-bottom-width: 2px;
-    border-bottom-color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    border-bottom-color: ${props => props.$colors?.primary || '#9970FF'};
     flex-direction: row;
 `
 
@@ -226,7 +226,7 @@ export const PageDateButton = styled.TouchableOpacity<StyledProps>`
     flex-direction: row;
     align-items: center;
     border-bottom-width: 2px;
-    border-bottom-color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    border-bottom-color: ${props => props.$colors?.primary || '#9970FF'};
     padding: 0 10px 3px 5px;
 `
 
@@ -279,7 +279,7 @@ export const PageContent = styled.Text<StyledProps>`
     color: ${props => props.$colors?.text || '#333'};
     margin-bottom: 20px;
     border-left-width: 2px;
-    border-color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    border-color: ${props => props.$colors?.primary || '#9970FF'};
     padding: 10px 20px;
 `;
 
@@ -357,7 +357,7 @@ export const DetailDateText = styled.Text<StyledProps>`
     font-weight: bold;
     padding-right: 5px;
     border-bottom-width: 3px;
-    border-color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    border-color: ${props => props.$colors?.primary || '#9970FF'};
     color: ${props => props.$colors?.text || 'black'};
 `
 
@@ -447,7 +447,7 @@ export const DetailContent = styled.Text<StyledProps>`
     color: ${props => props.$colors?.text || '#333'};
     margin-bottom: 20px;
     border-left-width: 2px;
-    border-color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    border-color: ${props => props.$colors?.primary || '#9970FF'};
     padding: 10px 20px;
 `;
 
@@ -543,7 +543,7 @@ export const AddHeader = styled.TouchableOpacity<StyledProps>`
 
 export const AddHeaderText = styled.Text<StyledProps>`
     font-size: 30px;
-    color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    color: ${props => props.$colors?.primary || '#9970FF'};
 `
 
 export const AddIconWrap = styled.View`
@@ -553,15 +553,15 @@ export const AddIconWrap = styled.View`
 
 export const AddInput = styled.TextInput.attrs<StyledProps>(props => ({
     placeholderTextColor: props.$colors?.text || '#9f9ff0',
-    cursorColor: props.$colors?.primary || 'mediumslateblue'
+    cursorColor: props.$colors?.primary || '#9970FF'
 }))<StyledProps>`
     width: 95%;
-    border-color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    border-color: ${props => props.$colors?.primary || '#9970FF'};
     border-bottom-width: 2px;
     padding: 15px;
     font-size: 30px;
     background-color: ${props => props.$colors?.background || '#fff'};
-    color: ${props => props.$colors?.text || 'mediumslateblue'};
+    color: ${props => props.$colors?.text || '#9970FF'};
 `;
 
 export const AddTextArea = styled(AddInput)<StyledProps & { height?: number }>`
@@ -642,14 +642,14 @@ export const AddSuggestionContainer = styled.View<StyledProps & { $bottom?: numb
 
 export const AddSuggestionButton = styled.TouchableOpacity<StyledProps>`
     background-color: ${props => props.$colors?.background || '#fff'};
-    border: 1px solid ${props => props.$colors?.primary || 'mediumslateblue'};
+    border: 1px solid ${props => props.$colors?.primary || '#9970FF'};
     padding: 8px 12px;
     border-radius: 50px;
     margin: 10px;
 `;
 
 export const AddSuggestionButtonText = styled.Text<StyledProps>`
-    color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    color: ${props => props.$colors?.primary || '#9970FF'};
     font-weight: bold;
 `;
 
@@ -677,5 +677,5 @@ export const AddButtonText = styled.Text<StyledProps>`
     font-size: 25px;
     text-align: center;
     padding: 15px;
-    color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    color: ${props => props.$colors?.primary || '#9970FF'};
 `
