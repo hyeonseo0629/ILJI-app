@@ -8,9 +8,11 @@ interface StyledProps {
 
 export const Container = styled.View<StyledProps>`
     background-color: ${props => props.$colors?.card || '#ffffff'};
-    width: 100%;
+    width: 99%;
     height: 100%;
-    padding: 10px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border: 3px solid lavender;
 `
 
 // ------ //
@@ -23,6 +25,7 @@ export const Header = styled.View<StyledProps>`
     justify-content: space-between;
     align-items: center;
     background-color: ${props => props.$colors?.card || '#ffffff'};
+    border-radius: 10px;
 `
 
 export const HeaderLeft = styled.View`
@@ -50,7 +53,7 @@ export const TodayText = styled.Text<StyledProps>`
 export const ScheduleAddButton = styled(AntDesign).attrs({})<StyledProps>`
     margin-left: 10px;
     padding: 10px 0; /* 터치 영역 확보 및 수직 정렬 */
-    color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    color: ${props => props.$colors?.primary || '#9970FF'};
 `
 
 // ------- //

@@ -157,7 +157,7 @@ export default function HomeScreen() {
         const totalPages = Math.ceil(displayTags.length / TAGS_PER_PAGE);
 
         return (
-            <View style={{flexDirection: 'row', alignItems: 'flex-end'}}>
+            <View style={{ alignItems: 'flex-start'}}>
                 {totalPages > 1 && (
                     <TouchableOpacity
                         onPress={() => setTagPage(p => p - 1)}

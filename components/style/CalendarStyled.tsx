@@ -118,7 +118,7 @@ export const MonthDayText = styled.Text.attrs({
 export const MonthDayCircle = styled.View<StyledProps & { $isCurrentMonth?: boolean }>`
     width: 16px;
     height: 16px;
-    background-color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    background-color: ${props => props.$colors?.primary || '#9970FF'};
     border-radius: 15px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
     justify-content: center; /* 내부 텍스트를 세로 중앙에 정렬 */
     align-items: center; /* 내부 텍스트를 가로 중앙에 정렬 */
@@ -297,19 +297,19 @@ export const ViewMonthButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
     border-top-left-radius: 20px;
     border-bottom-left-radius: 20px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || 'mediumslateblue') : (props.$colors?.card || 'lavender'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') : (props.$colors?.card || 'lavender'))};
 `
 
 export const ViewWeekButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || 'mediumslateblue') : (props.$colors?.card || 'lavender'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') : (props.$colors?.card || 'lavender'))};
 `
 
 export const ViewDayButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
     border-top-right-radius: 20px;
     border-bottom-right-radius: 20px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || 'mediumslateblue') : (props.$colors?.card || 'lavender'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') : (props.$colors?.card || 'lavender'))};
 `
 
 export const ViewModeButtonText = styled.Text<ViewModeButtonProps>`

@@ -94,8 +94,8 @@ function Layout() {
     }
 
     return (
-        <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
-            <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
+        <View style={{flex: 1, paddingTop: isnets.top + 5, backgroundColor: 'lavender'}}>
+            <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
                 <Stack
                     key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
                     screenOptions={{
@@ -178,7 +178,6 @@ function ThemedAppLayout() {
             background: Colors.light.background,
             card: Colors.light.card,
             text: Colors.light.text,
-            border: Colors.light.border,
             notification: Colors.light.notification,
         },
         fonts: {
@@ -196,7 +195,6 @@ function ThemedAppLayout() {
             background: Colors.dark.background,
             card: Colors.dark.card,
             text: Colors.dark.text,
-            border: Colors.dark.border,
             notification: Colors.dark.notification,
         },
         fonts: {
