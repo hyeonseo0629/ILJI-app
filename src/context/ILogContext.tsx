@@ -78,7 +78,9 @@ export function ILogProvider({ children }: ILogProviderProps) {
         console.log("현재 userId:", userId);
         setLoading(true);
         try {
-            const response = await api.get<RawILog[]>('/mobile/i-log');
+            const response = await api.get<RawILog[]>('/mobile/i-log', {
+                timeout: 30000 // I-Log 목록 조회에만 30초 타임아웃 적용
+            });
             console.log("API 응답 데이터 (raw):", response.data);
             const processedIlogs = response.data.map(item => {
                 console.log("map 함수에 전달된 item:", item);

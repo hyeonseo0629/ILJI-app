@@ -81,8 +81,7 @@ const ListItem = ({item}: { item: ILog }) => {
                     </I.ListHeader>
 
                     <I.ListContent>
-                        {previewText}
-                        {singleLineContent.length > maxLength ? "..." : ""}
+                        {`${previewText}${singleLineContent.length > maxLength ? "..." : ""}`}
                     </I.ListContent>
 
                     <I.ListStatsContainer>
