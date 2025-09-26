@@ -299,19 +299,19 @@ export const ViewMonthButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
     border-top-left-radius: 20px;
     border-bottom-left-radius: 20px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') : (props.theme.dark ? '#2C2C2E' : '#fff'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') :  props.$colors?.border)};
 `
 
 export const ViewWeekButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') : (props.theme.dark ? '#2C2C2E' : '#fff'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') : props.$colors?.border)};
 `
 
 export const ViewDayButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
     border-top-right-radius: 20px;
     border-bottom-right-radius: 20px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') : (props.theme.dark ? '#2C2C2E' : '#fff'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') : props.$colors?.border)};
 `
 
 export const ViewModeButtonText = styled.Text<ViewModeButtonProps>`
