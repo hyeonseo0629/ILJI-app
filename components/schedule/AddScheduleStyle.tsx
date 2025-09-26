@@ -1,5 +1,5 @@
 import styled from 'styled-components/native';
-import { ThemeColors } from "@/types/theme"; // ThemeColors import 추가
+import { ThemeColors } from "@/types/theme";
 
 interface StyledProps {
   $colors?: ThemeColors;
@@ -18,7 +18,7 @@ export const ASHeader = styled.Text<StyledProps>`
     width: 85%;
     border-bottom-width: 3px;
     border-bottom-color: ${props => props.$colors?.primary || 'lavender'};
-    color: ${props => props.theme.dark ? '#9970FF' : '#9970FF'};
+    color: ${props => props.$colors?.primary || '#9970FF'};
 `
 
 export const ASContentWrap = styled.View`
@@ -29,7 +29,7 @@ export const ASContentWrap = styled.View`
 export const ASLabel = styled.Text<StyledProps>`
     font-size: 25px;
     font-weight: bold;
-    color: ${props => props.theme.dark ? '#9970FF' : '#9970FF'};
+    color: ${props => props.$colors?.primary || '#9970FF'};
     margin-top: 20px;
     margin-bottom: 10px;
 `;
@@ -47,14 +47,14 @@ export const ASAddButton = styled.TouchableOpacity<StyledProps>`
 `;
 
 export const ASInput = styled.TextInput.attrs<StyledProps>(props => ({
-    placeholderTextColor: props.theme.dark ? '#575757' : "#9f9ff0",
+    placeholderTextColor: props.$colors?.border,
 }))<StyledProps>`
     width: 100%;
     border-radius: 8px;
     padding: 12px 15px;
     font-size: 16px;
-    background-color: ${props => props.theme.dark ? '575757FF' : 'lavender'};
-    color: ${props => props.theme.dark ? '#575757' : '#9970FF'};
+    background-color: ${props => props.$colors?.card || 'lavender'};
+    color: ${props => props.$colors?.text || '#9970FF'};
     margin-bottom: 20px;
 `;
 
@@ -84,13 +84,13 @@ export const ASDateTimeButton = styled.TouchableOpacity<StyledProps>`
     flex: 1; /* 버튼이 사용 가능한 공간을 모두 차지하도록 하여, 1개일 땐 100%, 2개일 땐 50%씩 나눠 갖게 합니다. */
     border-radius: 8px;
     padding: 10px;
-    background-color: ${props => props.theme.dark ? '575757FF' : 'lavender'};
+    background-color: ${props => props.$colors?.card || 'lavender'};
     align-items: center;
 `;
 
 export const ASDateTimeButtonText = styled.Text<StyledProps>`
     font-size: 16px;
-    color: ${props => props.theme.dark ? '#575757' : "#9f9ff0"};
+    color: ${props => props.$colors?.text || "#9f9ff0"};
     font-weight: bold;
 `;
 

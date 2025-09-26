@@ -136,13 +136,13 @@ export const DayNumberWrapper = styled.View`
     align-items: center;
 `;
 
-export const EventBar = styled.View<{
+export const EventBar = styled.View<StyledProps & {
     color: string;
     $isCurrentMonth: boolean;
     $position: 'start' | 'middle' | 'end' | 'single';
     $top: number;
 }>`
-    background-color: ${props => props.color || 'gray'};
+    background-color: ${props => props.color || props.$colors?.border || 'gray'};
     opacity: ${({$isCurrentMonth = true}) => $isCurrentMonth ? 1 : 0.4};
     height: 12px;
     justify-content: center;
@@ -160,9 +160,9 @@ export const EventBar = styled.View<{
 export const EventBarText = styled.Text.attrs({
     numberOfLines: 1,
     ellipsizeMode: 'tail',
-})`
+})<StyledProps>`
     font-size: 8px;
-    color: #ffffff;
+    color: ${props => props.$colors?.card || '#ffffff'};
 `;
 
 interface MoreScheduleTextProps extends StyledProps {
@@ -178,32 +178,32 @@ export const MoreScheduleText = styled.Text.attrs({
     text-align: center;
     width: 100%;
     padding: 1px 3px;
-    color: ${props => props.$colors?.text || '#555'}; /* 눈에 띄도록 다른 색상 사용 */
+    color: ${props => props.$colors?.text || '#555'};
     font-weight: bold;
 `;
 
 export const ScheduleTitleText = styled.Text.attrs({
-    numberOfLines: 1, // 텍스트를 한 줄로 제한합니다.
-    ellipsizeMode: 'tail', // 길이가 길면 끝에 ...을 표시합니다.
-})<ScheduleTitleTextProps & { $top: number }>`
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
+})<ScheduleTitleTextProps & StyledProps & { $top: number }>`
     position: absolute;
     top: ${props => props.$top}px;
-    height: 12px; /* Match EventBar height */
-    font-size: 8px; /* Match EventBarText font size */
+    height: 12px;
+    font-size: 8px;
     text-align: center;
     width: 100%;
     border-radius: 2px;
-    padding: 0 3px; /* Match EventBar horizontal padding */
-    background-color: ${props => props.color || 'gray'};
-    color: #ffffff;
+    padding: 0 3px;
+    background-color: ${props => props.color || props.$colors?.border || 'gray'};
+    color: ${props => props.$colors?.card || '#ffffff'};
     overflow: hidden;
 `
 
 export const MonthSchedulesContainer = styled.View`
     position: relative;
-    flex: 1; /* 날짜 텍스트를 제외한 나머지 세로 공간을 모두 차지합니다. */
-    width: 100%; /* 부모 컨테이너의 너비에 맞춥니다. */
-    margin-top: 4px; /* 날짜와 일정 사이의 간격 */
+    flex: 1;
+    width: 100%;
+    margin-top: 4px;
 `;
 
 
@@ -213,7 +213,7 @@ export const MonthSchedulesContainer = styled.View`
 export const TimetableWrapper = styled.View<StyledProps>`
     flex: 1;
     border-top-width: 1px;
-    border-top-color: ${props => props.theme.dark ? '#f0f0f0' : '#e4d9ff'};
+    border-top-color: ${props => props.$colors?.border || '#e4d9ff'};
 `;
 
 export const TimetableGrid = styled.View`
@@ -227,7 +227,7 @@ export const TimeColumn = styled.View`
 `;
 
 export const TimeLabelCell = styled.View`
-    height: 40px; /* 1시간의 높이 */
+    height: 40px;
     justify-content: flex-start;
     align-items: center;
 `;
@@ -246,14 +246,14 @@ export const TimeTableDaysContainer = styled.View`
 export const TimeTableDayColumn = styled.View<StyledProps & { $isToday?: boolean }>`
     flex: 1;
     border-left-width: 1px;
-    border-left-color: ${props => props.theme.dark ? '#f0f0f0' : '#eee'};
+    border-left-color: ${props => props.$colors?.border || '#eee'};
     background-color: ${(props) => (props.$isToday ? (props.$colors?.card || '#f7f7f7') : 'transparent')};
 `;
 
 export const HourCell = styled.View<StyledProps>`
     height: 40px;
     border-bottom-width: 1px;
-    border-bottom-color:  ${props => props.theme.dark ? '#f0f0f0' : '#eee'};
+    border-bottom-color:  ${props => props.$colors?.border || '#eee'};
 `;
 
 export const ScheduleBlock = styled.TouchableOpacity<{ top: number; height: number; color: string }>`
@@ -268,8 +268,8 @@ export const ScheduleBlock = styled.TouchableOpacity<{ top: number; height: numb
     opacity: 0.85;
 `;
 
-export const ScheduleBlockText = styled.Text`
-    color: #ffffff;
+export const ScheduleBlockText = styled.Text<StyledProps>`
+    color: ${props => props.$colors?.card || '#ffffff'};
     font-size: 12px;
     font-weight: 500;
 `;
@@ -284,8 +284,7 @@ export const ViewModeButtonContainer = styled.View<StyledProps>`
     flex-direction: row;
     justify-content: center;
     padding-vertical: 10px;
-    border: 1.5px solid #9970FF;
-    
+    border: 1.5px solid ${props => props.$colors?.primary || '#9970FF'};
     border-bottom-color: ${props => props.$colors?.border || '#eee'};
     background-color: ${props => props.$colors?.card || 'lavender'};
     elevation: 10;
@@ -317,7 +316,7 @@ export const ViewDayButton = styled.TouchableOpacity<ViewModeButtonProps>`
 export const ViewModeButtonText = styled.Text<ViewModeButtonProps>`
     font-weight: 500;
     font-size: 20px;
-    color: ${(props) => (props.$isActive ? 'white' : (props.$colors?.text || 'black'))};
+    color: ${(props) => (props.$isActive ? (props.$colors?.card || 'white') : (props.$colors?.text || 'black'))};
 `;
 
 // ------------------------------------- //

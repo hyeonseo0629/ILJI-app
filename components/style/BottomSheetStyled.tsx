@@ -12,7 +12,7 @@ export const Container = styled.View<StyledProps>`
     height: 100%;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    border: 3px solid lavender;
+    border: 3px solid ${props => props.$colors?.primary || 'lavender'};
 `
 
 // ------ //
@@ -67,10 +67,10 @@ export const ContentWrap = styled.View`
 `
 
 // New component for the vertical bar
-export const VerticalBar = styled.View<{ color: string }>`
+export const VerticalBar = styled.View<StyledProps & { color: string }>`
     width: 4px;
     height: 100%;
-    background-color: ${props => props.color || 'gray'};
+    background-color: ${props => props.color || props.$colors?.border || 'gray'};
     margin-right: 12px; // A bit more space
     border-radius: 2px;
 `;
@@ -95,15 +95,16 @@ export const ScheduleTextWrap = styled.View`
 `;
 
 // Schedule Title
-export const ScheduleTitle = styled.Text`
+export const ScheduleTitle = styled.Text<StyledProps>`
     font-size: 16px;
     font-weight: 600; // Semi-bold
-    color: #333;
+    color: ${props => props.$colors?.text || '#333'};
     margin-bottom: 4px;
 `;
 
 // Schedule Date and Time
-export const ScheduleDateTime = styled.Text`
+export const ScheduleDateTime = styled.Text<StyledProps>`
     font-size: 13px;
-    color: #8e8e93;
+    color: ${props => props.$colors?.text || '#8e8e93'};
+    opacity: 0.8; /* Make it slightly less prominent than the title */
 `;
