@@ -109,7 +109,7 @@ export default function ILogDetailScreen() {
                 )}
             </I.DetailHeader>
 
-            <ScrollView>
+            <ScrollView style={{flex: 1}}>
                 <I.DetailWrap $colors={theme}>
                     <I.DetailDateWrap>
                         <I.DetailDateText $colors={theme}>{format(log.logDate, 'yyyy.MM.dd')}</I.DetailDateText>
@@ -121,20 +121,20 @@ export default function ILogDetailScreen() {
                             <ScrollView
                                 ref={scrollViewRef}
                                 horizontal
-                                pagingEnabled
                                 showsHorizontalScrollIndicator={false}
+                                decelerationRate="fast"
+                                snapToInterval={412.5} // Carousel item width (370) + margin (42.5)
                                 onMomentumScrollEnd={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
-                                    const slide = Math.round(event.nativeEvent.contentOffset.x / (Dimensions.get('window').width - 45));
+                                    const slide = Math.round(event.nativeEvent.contentOffset.x / 412.5);
                                     if (slide !== activeSlide) setActiveSlide(slide);
                                 }}
-                                snapToInterval={Dimensions.get('window').width}
                                 snapToAlignment={'start'}
                             >
                                 {log.images.map((imageUri, index) => (
                                     <I.CarouselItemWrapper key={index} isLast={index === log.images.length - 1}>
-                                        <I.HeaderButton onPress={() => handleImagePress(imageUri)}>
+                                        <I.DetailImageButton onPress={() => handleImagePress(imageUri)}>
                                             <I.DetailImage $colors={theme} source={{uri: imageUri}} resizeMode="cover"/>
-                                        </I.HeaderButton>
+                                        </I.DetailImageButton>
                                         <I.DetailStatsContainer>
                                             <I.DetailStatItem>
                                                 <AntDesign name="heart" size={14} color={theme.pointColors.white}/>

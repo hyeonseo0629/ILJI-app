@@ -131,10 +131,12 @@ export default function UpdateILogScreen() {
 
     const [content, setContent] = useState('');
     const [imageAssets, setImageAssets] = useState<ImageAsset[]>([]);
+    const [originalImageUrls, setOriginalImageUrls] = useState<string[]>([]); // For tracking removed images
     const [textAreaHeight, setTextAreaHeight] = useState(200);
     const [selectedLogDate, setSelectedLogDate] = useState<Date | null>(new Date());
     const [isCalendarVisible, setCalendarVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [visibility, setVisibility] = useState(0);
 
     const swipeHintTranslateX = useSharedValue(0);
 
@@ -162,7 +164,9 @@ export default function UpdateILogScreen() {
         if (log) {
             setContent(log.content);
             setSelectedLogDate(new Date(log.logDate));
-            setImageAssets(log.images.map(uri => ({ path: uri, stickers: [], originalUrl: uri })));
+            setVisibility(Number(log.visibility));
+            setOriginalImageUrls(log.images || []);
+            setImageAssets((log.images || []).map(uri => ({ path: uri, stickers: [], originalUrl: uri })));
         }
     }, [id, ilogs]);
 
@@ -266,11 +270,15 @@ export default function UpdateILogScreen() {
                 const newImageAssets = processedImages.filter(img => !img.originalUrl).map(img => ({ ...img, uri: img.path }));
                 const existingImageUrls = processedImages.filter(img => img.originalUrl).map(img => img.originalUrl!);
 
+                const currentImageUrls = imageAssets.map(asset => asset.originalUrl).filter(Boolean) as string[];
+                const removedImageUrls = originalImageUrls.filter(url => !currentImageUrls.includes(url));
+
                 const updateRequest: ILogUpdateRequest = {
                     content: content,
-                    visibility: 0,
+                    visibility: visibility,
                     existingImageUrls: existingImageUrls,
                     newImageAssets: newImageAssets,
+                    removedImageUrls: removedImageUrls,
                 };
 
                 try {
@@ -286,7 +294,7 @@ export default function UpdateILogScreen() {
             }
         };
         finalizeSave();
-    }, [isSaving, captureQueue, processedImages]);
+    }, [isSaving, captureQueue, processedImages, content, visibility, originalImageUrls, imageAssets]);
 
     const handleSave = async () => {
         if (isSaving || !selectedLogDate || doesLogExistForSelectedDate || (!content.trim() && imageAssets.length === 0) || !userId) {

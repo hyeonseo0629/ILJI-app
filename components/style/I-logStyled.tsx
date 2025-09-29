@@ -206,7 +206,6 @@ export const PageNoContentText = styled.Text`
 `
 
 export const PageWrap = styled.View<StyledProps>`
-    margin: 20px 20px 0 20px;
     background-color: ${props => props.$colors?.background || 'transparent'};
 `;
 
@@ -411,6 +410,9 @@ export const DetailImage = styled.Image<StyledProps>`
     background-color: ${props => props.$colors?.background || '#e0e0e0'};
     resize-mode: cover;
 `;
+
+export const DetailImageButton = styled.TouchableOpacity``; // Button for Detail Image
+
 
 export const DetailStatsContainer = styled.View`
     position: absolute;
@@ -713,7 +715,7 @@ export const AddSuggestionContainer = styled.View<StyledProps & { $bottom?: numb
     position: absolute; /* 절대 위치로 변경 */
     left: 0;
     right: 0;
-    background-color: ${props => props.$colors?.background || 'lavender'};
+    background-color: ${props => props.$colors?.background || '#fff'};
     z-index: 10; /* 다른 요소 위에 표시 */
     bottom: ${props => props.$bottom || 0}px; /* $bottom prop 적용 */
 `;
