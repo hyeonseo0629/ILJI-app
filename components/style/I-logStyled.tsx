@@ -2,7 +2,8 @@ import styled from "styled-components/native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import React from 'react';
 import { ScrollView, ScrollViewProps } from 'react-native';
-import { ThemeColors } from "@/types/theme"; // ThemeColors import 추가
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { ThemeColors } from "@/types/theme";
 
 interface StyledProps {
   $colors?: ThemeColors;
@@ -33,11 +34,11 @@ export const ButtonIconWrap = styled.TouchableOpacity`
  export const ButtonIcon = styled(MaterialCommunityIcons).attrs({
      size: 40
  })<StyledProps>`
-     background-color: ${props => props.$colors?.card ? `${props.$colors.card}B3` : 'rgba(230, 230, 250, 0.7)'};
+     background-color: ${props => props.$colors?.background ? `${props.$colors.background}B3` : 'rgba(230, 230, 250, 0.7)'};
      border-radius: 50px;
      padding: 15px;
      margin: 5px;
-     border: 2px solid ${props => props.$colors?.primary || '#7B68EE'};
+     border: 2px solid ${props => props.$colors?.pointColors.purple || '#7B68EE'};
  `;
 
 // --- //
@@ -58,7 +59,7 @@ export const TabsButton = styled.TouchableOpacity<TabButtonProps>`
     padding: 15px;
     align-items: center;
     border-bottom-width: 3px;
-    border-bottom-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#7B68EE') : (props.$colors?.border || '#f0f0f0'))};
+    border-bottom-color: ${(props) => (props.$isActive ? (props.$colors?.pointColors.purple || '#7B68EE') : (props.$colors?.borderColor || '#f0f0f0'))};
 `
 
 export const TabsButtonText = styled.Text<StyledProps>`
@@ -84,7 +85,7 @@ export const ListSearchButtonTextWrap = styled.View<StyledProps>`
     margin: 5px 10px;
     padding-bottom: 10px;
     border-bottom-width: 2px;
-    border-bottom-color: ${props => props.$colors?.primary || '#9970FF'};
+    border-bottom-color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
     flex-direction: row;
 `
 
@@ -106,7 +107,7 @@ export const ListDropDownMenuWrap = styled.View<StyledProps>`
     width: 300px;
     border-radius: 10px;
     padding: 0;
-    background-color: ${props => props.$colors?.card || '#fff'};
+    background-color: ${props => props.$colors?.background || '#fff'};
 
 `
 
@@ -127,14 +128,14 @@ export const ListWrap = styled.View<StyledProps>`
     flex-direction: row;
     padding: 15px;
     border-bottom-width: 1px;
-    border-bottom-color: ${props => props.$colors?.border || '#eee'};
+    border-bottom-color: ${props => props.$colors?.borderColor || '#eee'};
 `;
 
 export const ListThumbnail = styled.Image<StyledProps>`
     width: 80px;
     height: 80px;
     border-radius: 10px;
-    background-color: ${props => props.$colors?.card || '#e0e0e0'};
+    background-color: ${props => props.$colors?.background || '#e0e0e0'};
     margin-right: 35px;
     resize-mode: cover;
 `;
@@ -226,7 +227,7 @@ export const PageDateButton = styled.TouchableOpacity<StyledProps>`
     flex-direction: row;
     align-items: center;
     border-bottom-width: 2px;
-    border-bottom-color: ${props => props.$colors?.primary || '#9970FF'};
+    border-bottom-color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
     padding: 0 10px 3px 5px;
 `
 
@@ -247,7 +248,7 @@ export const PageImage = styled.Image<StyledProps>`
     width: 100%;
     height: 100%;
     border-radius: 15px;
-    background-color: ${props => props.$colors?.card || '#e0e0e0'};
+    background-color: ${props => props.$colors?.background || '#e0e0e0'};
     resize-mode: cover;
 `;
 
@@ -279,7 +280,7 @@ export const PageContent = styled.Text<StyledProps>`
     color: ${props => props.$colors?.text || '#333'};
     margin-bottom: 20px;
     border-left-width: 2px;
-    border-color: ${props => props.$colors?.primary || '#9970FF'};
+    border-color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
     padding: 10px 20px;
 `;
 
@@ -290,14 +291,14 @@ export const PageFriendTagsContainer = styled.View`
 `;
 
 export const PageFriendTag = styled.View<StyledProps>`
-    background-color: ${props => props.$colors?.card || '#eef2fa'};
+    background-color: ${props => props.$colors?.background || '#eef2fa'};
     border-radius: 15px;
     padding: 6px 12px;
     margin: 4px;
 `;
 
 export const PageFriendTagText = styled.Text<StyledProps>`
-    color: ${props => props.$colors?.primary || '#4c669f'};
+    color: ${props => props.$colors?.pointColors.purple || '#4c669f'};
     font-weight: bold;
 `;
 
@@ -319,22 +320,32 @@ export const CarouselItemWrapper = styled.View<CarouselItemWrapperProps>`
 // I-Log Detail View  //
 // ------------------ //
 
-export const DetailHeader = styled.TouchableOpacity<StyledProps>`
+export const DetailHeader = styled.View<StyledProps>`
     background-color: ${props => props.$colors?.background || '#fff'};
     padding: 15px;
     flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     
     /* iOS Shadow */
     shadow-color: ${props => props.$colors?.text || '#000'};
-    shadow-offset: 0px 2px; /* Corrected: Combined width and height into shadow-offset */
+    shadow-offset: 0px 2px;
     shadow-opacity: 0.25;
 
     /* Android Shadow */
     elevation: 5;
-`
+`;
+
+export const HeaderButton = styled.TouchableOpacity`
+    flex-direction: row;
+    align-items: center;
+`;
+
+export const MenuButton = styled.TouchableOpacity`
+    padding: 5px;
+`;
 
 export const DetailHeaderText = styled.Text<StyledProps>`
-    position: sticky;
     padding-left: 10px;
     font-size: 20px;
     color: ${props => props.$colors?.text || 'black'};
@@ -357,7 +368,7 @@ export const DetailDateText = styled.Text<StyledProps>`
     font-weight: bold;
     padding-right: 5px;
     border-bottom-width: 3px;
-    border-color: ${props => props.$colors?.primary || '#9970FF'};
+    border-color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
     color: ${props => props.$colors?.text || 'black'};
 `
 
@@ -374,7 +385,7 @@ export const DetailActionsWrap = styled.View`
 `;
 
 export const DetailActionButton = styled.TouchableOpacity<StyledProps>`
-    background-color: ${props => props.$colors?.card || 'lavender'};
+    background-color: ${props => props.$colors?.background || 'lavender'};
     padding: 5px 10px;
     border-radius: 50px;
     
@@ -397,7 +408,7 @@ export const DetailImage = styled.Image<StyledProps>`
     width: 100%;
     height: 100%;
     border-radius: 15px;
-    background-color: ${props => props.$colors?.card || '#e0e0e0'};
+    background-color: ${props => props.$colors?.background || '#e0e0e0'};
     resize-mode: cover;
 `;
 
@@ -430,14 +441,14 @@ export const DetailFriendTagsContainer = styled.View`
 `;
 
 export const DetailFriendTag = styled.View<StyledProps>`
-    background-color: ${props => props.$colors?.card || '#eef2fa'};
+    background-color: ${props => props.$colors?.background || '#eef2fa'};
     border-radius: 15px;
     padding: 6px 12px;
     margin: 4px;
 `;
 
 export const DetailFriendTagText = styled.Text<StyledProps>`
-    color: ${props => props.$colors?.primary || '#4c669f'};
+    color: ${props => props.$colors?.pointColors.purple || '#4c669f'};
     font-weight: bold;
 `;
 
@@ -447,8 +458,75 @@ export const DetailContent = styled.Text<StyledProps>`
     color: ${props => props.$colors?.text || '#333'};
     margin-bottom: 20px;
     border-left-width: 2px;
-    border-color: ${props => props.$colors?.primary || '#9970FF'};
+    border-color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
     padding: 10px 20px;
+`;
+
+export const PaginationContainer = styled.View`
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+`;
+
+export const PaginationDot = styled.Text<StyledProps & { active?: boolean }>`
+    font-size: 24px;
+    color: ${props => props.active ? props.$colors?.text : props.$colors?.borderColor};
+    margin-horizontal: 4px;
+`;
+
+export const ActionMenuModalOverlay = styled.Pressable`
+    flex: 1;
+    background-color: rgba(0,0,0,0.5);
+    justify-content: flex-start;
+    align-items: flex-end;
+`;
+
+export const ActionMenuContent = styled.View<StyledProps>`
+    background-color: ${props => props.$colors?.background};
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 50px;
+    margin-right: 15px;
+    elevation: 5;
+    shadow-color: #000;
+    shadow-offset: 0px 2px;
+    shadow-opacity: 0.25;
+    shadow-radius: 3.84px;
+`;
+
+export const ActionMenuItem = styled.TouchableOpacity`
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-vertical: 10px;
+    padding-horizontal: 15px;
+    width: 120px;
+`;
+
+export const ActionMenuItemText = styled.Text<StyledProps & { isDelete?: boolean }>`
+    font-size: 16px;
+    color: ${props => props.isDelete ? props.$colors?.notification : props.$colors?.text};
+`;
+
+export const ImageModalOverlay = styled.Pressable`
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.9);
+    justify-content: center;
+    align-items: center;
+`;
+
+export const FullScreenImage = styled.Image`
+    width: 100%;
+    height: 80%;
+    resize-mode: contain;
+`;
+
+export const ImageModalCloseButton = styled.TouchableOpacity<{ topInset: number }>`
+    position: absolute;
+    top: ${props => props.topInset + 10}px;
+    right: 20px;
+    z-index: 1;
 `;
 
 export const DetailModalBackdrop = styled.TouchableOpacity`
@@ -459,7 +537,7 @@ export const DetailModalBackdrop = styled.TouchableOpacity`
 `;
 
 export const DetailModalContainer = styled.View<StyledProps>`
-    background-color: ${props => props.$colors?.card || 'white'};
+    background-color: ${props => props.$colors?.background || 'white'};
     padding: 20px;
     border-radius: 10px;
     width: 80%;
@@ -493,7 +571,7 @@ const ModalButton = styled.TouchableOpacity`
 `;
 
 export const DetailModalCancelButton = styled(ModalButton)<StyledProps>`
-    background-color: ${props => props.$colors?.border || '#ccc'};
+    background-color: ${props => props.$colors?.borderColor || '#ccc'};
 `;
 
 export const DetailModalDeleteButton = styled(ModalButton)<StyledProps>`
@@ -537,13 +615,13 @@ export const AddHeader = styled.TouchableOpacity<StyledProps>`
     padding: 15px 30px;
     background-color: ${props => props.$colors?.background || '#fff'};
     justify-content: start;
-    border-color: ${props => props.$colors?.border || '#9f9ff0'};
+    border-color: ${props => props.$colors?.borderColor || '#9f9ff0'};
     border-bottom-width: 2px;
 `;
 
 export const AddHeaderText = styled.Text<StyledProps>`
     font-size: 30px;
-    color: ${props => props.$colors?.primary || '#9970FF'};
+    color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
 `
 
 export const AddIconWrap = styled.View`
@@ -553,10 +631,10 @@ export const AddIconWrap = styled.View`
 
 export const AddInput = styled.TextInput.attrs<StyledProps>(props => ({
     placeholderTextColor: props.$colors?.text || '#9f9ff0',
-    cursorColor: props.$colors?.primary || '#9970FF'
+    cursorColor: props.$colors?.pointColors.purple || '#9970FF'
 }))<StyledProps>`
     width: 95%;
-    border-color: ${props => props.$colors?.primary || '#9970FF'};
+    border-color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
     border-bottom-width: 2px;
     padding: 15px;
     font-size: 30px;
@@ -568,7 +646,7 @@ export const AddTextArea = styled(AddInput)<StyledProps & { height?: number }>`
     height: ${props => props.height || 200}px; /* 기본 높이 300px로 변경 */
     text-align-vertical: top;
     font-size: 15px;
-    border-color: ${props => props.$colors?.border || '#B5B5E9'};
+    border-color: ${props => props.$colors?.borderColor || '#B5B5E9'};
     border-top-width: 2px;
     border-bottom-width: 2px;
     width: 100%;
@@ -585,7 +663,7 @@ export const AddImagePickerText = styled.Text<StyledProps>`
     font-size: 15px;
     opacity: 0.8;
     color: ${props => props.$colors?.text || '#fff'};
-    background-color: ${props => props.$colors?.card || '#ccc'};
+    background-color: ${props => props.$colors?.background || '#ccc'};
     border-radius: 10px;
     /* iOS Shadow */
     shadow-color: ${props => props.$colors?.text || '#000'};
@@ -609,10 +687,10 @@ export const AddImagePlaceholder = styled.TouchableOpacity<StyledProps>`
     height: 375px;
     border-radius: 8px;
     margin: 20px 0 10px;
-    background-color: ${props => props.$colors?.card || '#f0f0f0'};
+    background-color: ${props => props.$colors?.background || '#f0f0f0'};
     justify-content: center;
     align-items: center;
-    border: 2px dashed ${props => props.$colors?.border || '#ccc'};
+    border: 2px dashed ${props => props.$colors?.borderColor || '#ccc'};
 `;
 
 export const AddImageRemoveButton = styled.TouchableOpacity`
@@ -635,21 +713,21 @@ export const AddSuggestionContainer = styled.View<StyledProps & { $bottom?: numb
     position: absolute; /* 절대 위치로 변경 */
     left: 0;
     right: 0;
-    background-color: ${props => props.$colors?.card || 'lavender'};
+    background-color: ${props => props.$colors?.background || 'lavender'};
     z-index: 10; /* 다른 요소 위에 표시 */
     bottom: ${props => props.$bottom || 0}px; /* $bottom prop 적용 */
 `;
 
 export const AddSuggestionButton = styled.TouchableOpacity<StyledProps>`
     background-color: ${props => props.$colors?.background || '#fff'};
-    border: 1px solid ${props => props.$colors?.primary || '#9970FF'};
+    border: 1px solid ${props => props.$colors?.pointColors.purple || '#9970FF'};
     padding: 8px 12px;
     border-radius: 50px;
     margin: 10px;
 `;
 
 export const AddSuggestionButtonText = styled.Text<StyledProps>`
-    color: ${props => props.$colors?.primary || '#9970FF'};
+    color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
     font-weight: bold;
 `;
 
@@ -663,12 +741,12 @@ export const AddButtonWrap = styled.View<StyledProps>`
 
 export const AddSaveButton = styled.TouchableOpacity<StyledProps>`
     width: 50%;
-    border: 2px solid ${props => props.$colors?.border || 'lavender'};
+    border: 2px solid ${props => props.$colors?.borderColor || 'lavender'};
 `
 
 export const AddCancelButton = styled.TouchableOpacity<StyledProps>`
     width: 50%;
-    border: 2px solid ${props => props.$colors?.border || 'lavender'};
+    border: 2px solid ${props => props.$colors?.borderColor || 'lavender'};
     border-right-width: 0;
     
 `
@@ -677,5 +755,171 @@ export const AddButtonText = styled.Text<StyledProps>`
     font-size: 25px;
     text-align: center;
     padding: 15px;
-    color: ${props => props.$colors?.primary || '#9970FF'};
-`
+    color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
+`;
+
+// -------------------------------- //
+// Add/Update I-Log Specifics     //
+// -------------------------------- //
+
+export const SavingOverlay = styled.View`
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 999;
+`;
+
+export const SavingOverlayText = styled.Text`
+    color: white;
+    margin-top: 10px;
+`;
+
+export const OffscreenContainer = styled.View`
+    position: absolute;
+    opacity: 0;
+    z-index: -1;
+`;
+
+export const DraggableStickerImage = styled.Image<StyledProps & { isSelected?: boolean }>`
+    width: 100px; /* STICKER_BASE_SIZE */
+    height: 100px; /* STICKER_BASE_SIZE */
+    resize-mode: contain;
+    border-width: ${props => props.isSelected ? '2px' : '0px'};
+    border-color: ${props => props.$colors?.pointColors.purple};
+    border-radius: 10px;
+`;
+
+export const StickerDeleteButton = styled.TouchableOpacity`
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: red;
+    border-radius: 15px;
+    width: 30px;
+    height: 30px;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+`;
+
+export const SwipeHintContainer = styled.View<StyledProps>`
+    background-color: ${props => props.$colors?.borderColor};
+    border-radius: 15px;
+    padding-vertical: 4px;
+    padding-horizontal: 8px;
+`;
+
+export const SwipeHintText = styled.Text<StyledProps>`
+    color: ${props => props.$colors?.text};
+    font-size: 12px;
+`;
+
+export const ImagePreviewContainer = styled.View`
+    width: 375px; /* PREVIEW_SIZE */
+    align-self: center;
+    margin-top: 15px;
+`;
+
+export const ImageContainer = styled.View<StyledProps>`
+    margin-right: 10px;
+    width: 375px; /* PREVIEW_SIZE */
+    height: 375px; /* PREVIEW_SIZE */
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: ${props => props.$colors?.borderColor};
+`;
+
+export const ImageEditButton = styled.TouchableOpacity`
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 12px;
+    padding: 2px;
+    z-index: 1;
+`;
+
+export const AddMoreButton = styled.TouchableOpacity<StyledProps>`
+    width: 375px;
+    height: 375px;
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: ${props => props.$colors?.borderColor};
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    margin-left: 10px;
+`;
+
+export const CharacterCountText = styled.Text<StyledProps>`
+    color: ${props => props.$colors?.text};
+    align-self: flex-end;
+    margin-top: 4px;
+    margin-right: 10px;
+`;
+
+export const CalendarModalOverlay = styled.TouchableOpacity`
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+`;
+
+export const CalendarModalContent = styled.View<StyledProps>`
+    width: 90%;
+    background-color: ${props => props.$colors?.background};
+    border-radius: 10px;
+    padding: 10px;
+`;
+
+export const EmojiEditorContainer = styled(GestureHandlerRootView)<StyledProps>`
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    background-color: ${props => props.$colors?.background};
+`;
+
+export const EmojiContainer = styled.View<StyledProps>`
+    border-top-width: 1px;
+    border-color: ${props => props.$colors?.borderColor};
+`;
+
+export const EmojiButton = styled.TouchableOpacity`
+    padding: 10px;
+`;
+
+export const EmojiImage = styled.Image`
+    width: 50px;
+    height: 50px;
+    resize-mode: contain;
+`;
+
+export const EditorFooter = styled.View<StyledProps>`
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 10px;
+    background-color: ${props => props.$colors?.background};
+`;
+
+export const EditorFooterButton = styled.TouchableOpacity``;
+
+export const EditorFooterButtonText = styled.Text<StyledProps & { isPrimary?: boolean }>`
+    color: ${props => props.isPrimary ? props.$colors?.pointColors.purple : props.$colors?.text};
+`;
+
+export const EditorImageContainer = styled.View`
+    width: 100%;
+    aspect-ratio: 1;
+`;
+
+export const EditorImage = styled.Image`
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    resize-mode: contain;
+`;

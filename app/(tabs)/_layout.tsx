@@ -2,44 +2,41 @@ import {Tabs} from 'expo-router';
 import React from 'react';
 import { FontAwesome5 } from '@expo/vector-icons';
 import {Platform} from 'react-native';
-import {useTheme} from '@react-navigation/native';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
-import {HapticTab} from '@/components/HapticTab';
-import {IconSymbol} from '@/components/ui/IconSymbol';
-// import TabBarBackground from '@/components/ui/TabBarBackground'; // TabBarBackground import 제거
-import {StatusBar} from "expo-status-bar";
-import {GestureHandlerRootView} from "react-native-gesture-handler";
+import { Colors } from '@/constants/Colors';
+import { HapticTab } from '@/components/HapticTab';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { StatusBar } from "expo-status-bar";
+import { StyledGestureHandlerRootView } from '@/components/style/MainStyled';
 
 export default function TabLayout() {
-    const theme = useTheme(); // useTheme 훅 사용
-    const { isDarkColorScheme } = useColorScheme();
+    const { colorScheme } = useColorScheme();
+    const theme = Colors[colorScheme];
 
     return (
-        <GestureHandlerRootView style={{flex: 1}}>
-            <StatusBar style="dark"/>
+        <StyledGestureHandlerRootView>
+            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'}/>
             <Tabs
                 screenOptions={{
-                    tabBarActiveTintColor: theme.colors.primary,
+                    tabBarActiveTintColor: theme.tabIconSelected,
                     headerShown: false,
                     tabBarButton: HapticTab,
-                    // tabBarBackground: TabBarBackground, // TabBarBackground prop 제거
                     tabBarStyle: Platform.select({
                         ios: {
                             position: 'absolute',
                             height: 85,
                             paddingBottom: 25,
-                            backgroundColor: isDarkColorScheme ? '#1C1C1E' : '#fcfcfc',
+                            backgroundColor: theme.background,
                             borderTopWidth: 0,
-                            borderTopColor: 'none'
+                            borderTopColor: 'transparent'
                         },
                         default: {
                             height: 65,
                             paddingTop: 5,
                             paddingBottom: 8,
-                            backgroundColor: isDarkColorScheme ? '#1C1C1E' : '#fcfcfc',
+                            backgroundColor: theme.background,
                             borderTopWidth: 0,
-                            borderTopColor: 'none',
+                            borderTopColor: 'transparent',
                         },
                     }),
                 }}>
@@ -65,6 +62,6 @@ export default function TabLayout() {
                     }}
                 />
             </Tabs>
-        </GestureHandlerRootView>
+        </StyledGestureHandlerRootView>
     );
 }

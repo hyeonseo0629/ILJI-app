@@ -1,15 +1,5 @@
 import React, {useState, useEffect, useMemo, useRef, useCallback} from 'react';
-import {
-    Alert,
-    View,
-    ScrollView,
-    Keyboard,
-    TouchableOpacity,
-    Modal,
-    Text,
-    Image,
-    ActivityIndicator,
-} from 'react-native';
+import { Alert, Keyboard, ActivityIndicator, ImageSourcePropType, Modal, ScrollView, View, Image } from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, useSharedValue, runOnJS, withRepeat, withSequence, withTiming, withDelay} from 'react-native-reanimated';
@@ -17,26 +7,20 @@ import ImagePicker from 'react-native-image-crop-picker';
 import * as I from "@/components/style/I-logStyled";
 import {AntDesign, SimpleLineIcons} from '@expo/vector-icons';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
-import {AddImagePickerText} from "@/components/style/I-logStyled";
-import {Calendar} from 'react-native-calendars';
+import {Calendar, DateData} from 'react-native-calendars';
 import {format, isSameDay} from 'date-fns';
 import {useILog} from '@/src/context/ILogContext';
-import {ILogUpdateRequest, Sticker, ImageAsset, ImagePickerAssetType} from '@/src/types/ilog';
+import {ILogUpdateRequest, Sticker, ImageAsset} from '@/src/types/ilog';
 import {useSession} from '@/hooks/useAuth';
 import {emogeStickers} from '@/assets/images/emoge';
-import {useTheme} from '@react-navigation/native';
+import {useColorScheme} from '@/hooks/useColorScheme';
+import {Colors} from '@/constants/Colors';
 import ViewShot from "react-native-view-shot";
 
-// --- Constants ---
-const EMOJI_ASSETS = Object.keys(emogeStickers).map(key => ({
-    id: key,
-    source: emogeStickers[key],
-}));
-
+const EMOJI_ASSETS = Object.keys(emogeStickers).map(key => ({ id: key, source: emogeStickers[key] }));
 const PREVIEW_SIZE = 375;
 const STICKER_BASE_SIZE = 100;
 
-// --- DraggableSticker Component ---
 interface DraggableStickerProps {
     sticker: Sticker;
     onUpdate: (sticker: any) => void;
@@ -47,7 +31,8 @@ interface DraggableStickerProps {
 }
 
 const DraggableSticker = ({sticker, onUpdate, onDelete, onSelect, isSelected, imageLayout}: DraggableStickerProps) => {
-    const theme = useTheme();
+    const { colorScheme } = useColorScheme();
+    const theme = Colors[colorScheme];
 
     const deNormalizePosition = (val: number | undefined, total: number, offset: number) => (val || 0) * total + offset;
     const deNormalizeScale = (val: number | undefined, total: number) => (val || 0) * total;
@@ -112,7 +97,8 @@ const DraggableSticker = ({sticker, onUpdate, onDelete, onSelect, isSelected, im
 
     const animatedStyle = useAnimatedStyle(() => {
         const stickerHalfSize = (STICKER_BASE_SIZE * scale.value) / 2;
-        return { position: 'absolute', top: 0, left: 0, transform: [ {translateX: translateX.value - stickerHalfSize}, {translateY: translateY.value - stickerHalfSize}, {scale: scale.value}, {rotate: `${(rotate.value * 180) / Math.PI}deg`}, ]}
+        return { position: 'absolute', top: 0, left: 0, transform: [ {translateX: translateX.value - stickerHalfSize}, {translateY: translateY.value - stickerHalfSize}, {scale: scale.value}, {rotate: `${(rotate.value * 180) / Math.PI}deg`}, ],
+        }
     });
 
     const longPressGesture = Gesture.LongPress().minDuration(250).onBegin(() => { 'worklet'; runOnJS(onSelect)(); });
@@ -122,85 +108,42 @@ const DraggableSticker = ({sticker, onUpdate, onDelete, onSelect, isSelected, im
     return (
         <GestureDetector gesture={selectionGesture}>
             <Animated.View style={animatedStyle}>
-                <Image source={sticker.source} style={{ width: STICKER_BASE_SIZE, height: STICKER_BASE_SIZE, resizeMode: 'contain', borderWidth: isSelected ? 2 : 0, borderColor: theme.colors.primary, borderRadius: 10, }} />
-                {isSelected && ( <TouchableOpacity onPress={onDelete} style={{ position: 'absolute', top: -10, right: -10, backgroundColor: 'red', borderRadius: 15, width: 30, height: 30, justifyContent: 'center', alignItems: 'center', zIndex: 100 }} >
+                <I.DraggableStickerImage $colors={theme} isSelected={isSelected} source={sticker.source} />
+                {isSelected && (
+                    <I.StickerDeleteButton onPress={onDelete}>
                         <AntDesign name="close" size={20} color="white"/>
-                </TouchableOpacity> )}
+                    </I.StickerDeleteButton>
+                )}
             </Animated.View>
         </GestureDetector>
     );
 };
 
-// --- Main Screen Component ---
 export default function UpdateILogScreen() {
     const insets = useSafeAreaInsets();
-    const theme = useTheme();
+    const { colorScheme } = useColorScheme();
+    const theme = Colors[colorScheme];
     const router = useRouter();
     const { id } = useLocalSearchParams();
-    const {ilogs, updateILog} = useILog();
+    const { updateILog, ilogs } = useILog();
     const {session} = useSession();
+    const userId = session?.user?.id;
 
-    // --- State Management ---
     const [content, setContent] = useState('');
     const [imageAssets, setImageAssets] = useState<ImageAsset[]>([]);
     const [textAreaHeight, setTextAreaHeight] = useState(200);
     const [selectedLogDate, setSelectedLogDate] = useState<Date | null>(new Date());
     const [isCalendarVisible, setCalendarVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
-    const [visibility, setVisibility] = useState<number>(0);
 
-    // --- Data loading for update ---
-    useEffect(() => {
-        if (id) {
-            const logId = Number(id);
-            const foundLog = ilogs.find(l => l.id === logId);
-            if (foundLog) {
-                setContent(foundLog.content);
-                setSelectedLogDate(new Date(foundLog.logDate));
-                setVisibility(Number(foundLog.visibility));
-
-                const fetchImageAssets = async () => {
-                    const promises = (foundLog.images || []).map((url: string) =>
-                        new Promise<ImageAsset>((resolve) => {
-                            Image.getSize(url, (width, height) => {
-                                resolve({
-                                    path: url,
-                                    originalUrl: url, // Store the original server URL
-                                    mime: 'image/jpeg',
-                                    stickers: [],
-                                    width: width,
-                                    height: height,
-                                });
-                            }, (error) => {
-                                console.error(`Failed to get size for image ${url}`, error);
-                                resolve({
-                                    path: url,
-                                    originalUrl: url,
-                                    mime: 'image/jpeg',
-                                    stickers: [],
-                                    width: PREVIEW_SIZE,
-                                    height: PREVIEW_SIZE,
-                                });
-                            });
-                        })
-                    );
-                    const assets = await Promise.all(promises);
-                    setImageAssets(assets);
-                };
-                fetchImageAssets();
-            } else {
-                Alert.alert("오류", "수정할 일기를 찾을 수 없습니다.");
-                router.back();
-            }
-        }
-    }, [id, ilogs]);
-
-    // --- Animation for swipe hint ---
     const swipeHintTranslateX = useSharedValue(0);
-    useEffect(() => { swipeHintTranslateX.value = withRepeat( withSequence( withTiming(-15, { duration: 150 }), withTiming(0, { duration: 150 }), withTiming(-15, { duration: 150 }), withTiming(0, { duration: 150 }), withDelay(2500, withTiming(0, { duration: 100 })) ), -1 ); }, []);
+
+    useEffect(() => {
+        swipeHintTranslateX.value = withRepeat(withSequence(withTiming(-15, { duration: 150 }), withTiming(0, { duration: 150 }), withTiming(-15, { duration: 150 }), withTiming(0, { duration: 150 }), withDelay(2500, withTiming(0, { duration: 100 }))), -1);
+    }, []);
+
     const swipeHintAnimatedStyle = useAnimatedStyle(() => ({ transform: [{ translateX: swipeHintTranslateX.value }] }));
 
-    // --- Editor Modal State ---
     const [isEmojiEditorVisible, setEmojiEditorVisible] = useState(false);
     const [imageToEdit, setImageToEdit] = useState<ImageAsset | null>(null);
     const [editingImageIndex, setEditingImageIndex] = useState<number | null>(null);
@@ -208,80 +151,86 @@ export default function UpdateILogScreen() {
     const [selectedStickerId, setSelectedStickerId] = useState<number | null>(null);
     const [modalContainerLayout, setModalContainerLayout] = useState<{ width: number, height: number } | null>(null);
 
-    // --- Save/Capture State (add-ilog style) ---
     const [isSaving, setIsSaving] = useState(false);
     const [captureQueue, setCaptureQueue] = useState<ImageAsset[]>([]);
     const [processedImages, setProcessedImages] = useState<ImageAsset[]>([]);
     const [isImageLoadedForCapture, setIsImageLoadedForCapture] = useState(false);
     const offscreenViewShotRef = useRef<ViewShot>(null);
 
+    useEffect(() => {
+        const log = ilogs.find(l => l.id === Number(id));
+        if (log) {
+            setContent(log.content);
+            setSelectedLogDate(new Date(log.logDate));
+            setImageAssets(log.images.map(uri => ({ path: uri, stickers: [], originalUrl: uri })));
+        }
+    }, [id, ilogs]);
 
     const renderedModalImageLayout = useMemo(() => {
         if (!modalContainerLayout || !imageToEdit || !imageToEdit.width || !imageToEdit.height) return null;
         const { width: containerWidth, height: containerHeight } = modalContainerLayout;
         const { width: imageWidth, height: imageHeight } = imageToEdit;
-        const imageRatio = imageWidth / imageHeight;
         const containerRatio = containerWidth / containerHeight;
+        const imageRatio = imageWidth / imageHeight;
         let renderedWidth, renderedHeight, x, y;
         if (imageRatio > containerRatio) { renderedWidth = containerWidth; renderedHeight = containerWidth / imageRatio; x = 0; y = (containerHeight - renderedHeight) / 2; } else { renderedHeight = containerHeight; renderedWidth = containerHeight * imageRatio; y = 0; x = (containerWidth - renderedWidth) / 2; }
         return {width: renderedWidth, height: renderedHeight, x, y};
     }, [modalContainerLayout, imageToEdit]);
 
-    const calendarMarkedDates = useMemo(() => {
-        const marked: { [key: string]: any } = {};
-        ilogs.forEach(log => { marked[format(log.logDate, 'yyyy-MM-dd')] = {disabled: true, disableTouchEvent: true}; });
-        if (selectedLogDate) { const selectedDateString = format(selectedLogDate, 'yyyy-MM-dd'); marked[selectedDateString] = { ...marked[selectedDateString], selected: true, selectedColor: theme.colors.primary }; }
-        return marked;
-    }, [ilogs, selectedLogDate, theme.colors.primary]);
+    const doesLogExistForSelectedDate = useMemo(() => {
+        if (!selectedLogDate || ilogs.length === 0) return false;
+        const currentLog = ilogs.find(l => l.id === Number(id));
+        return ilogs.some(log => log.id !== currentLog?.id && isSameDay(log.logDate, selectedLogDate));
+    }, [ilogs, selectedLogDate, id]);
 
-    // --- Listeners & Handlers ---
+    const calendarMarkedDates = useMemo(() => {
+        const marked: { [key: string]: { disabled?: boolean, disableTouchEvent?: boolean, selected?: boolean, selectedColor?: string } } = {};
+        ilogs.forEach(log => {
+            const isCurrentLog = log.id === Number(id);
+            if (!isCurrentLog) {
+                marked[format(log.logDate, 'yyyy-MM-dd')] = {disabled: true, disableTouchEvent: true};
+            }
+        });
+        if (selectedLogDate) { marked[format(selectedLogDate, 'yyyy-MM-dd')] = { ...marked[format(selectedLogDate, 'yyyy-MM-dd')], selected: true, selectedColor: theme.pointColors.purple }; }
+        return marked;
+    }, [ilogs, selectedLogDate, id, theme.pointColors.purple]);
+
     useEffect(() => {
-        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => setKeyboardHeight(e.endCoordinates.height));
-        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => setKeyboardHeight(0));
-        return () => { keyboardDidShowListener.remove(); keyboardDidHideListener.remove(); };
+        const show = Keyboard.addListener('keyboardDidShow', (e) => setKeyboardHeight(e.endCoordinates.height));
+        const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardHeight(0));
+        return () => { show.remove(); hide.remove(); };
     }, []);
 
     const pickImage = async () => {
         try {
             const image = await ImagePicker.openPicker({ multiple: false, cropping: true, mediaType: 'photo' });
-
-            if (image.size > 30 * 1024 * 1024) { // 30MB limit
-                Alert.alert('용량 초과', '30MB 이하의 사진만 업로드할 수 있습니다.');
-                return;
-            }
-
-            setImageAssets(prevAssets => [...prevAssets, {...image, stickers: []}]);
-        } catch (e: any) {
-            if (e.code !== 'E_PICKER_CANCELLED') { console.error('ImagePicker Error: ', e); Alert.alert('오류', '사진을 가져오는 데 실패했습니다.'); }
-        }
+            if (image.size > 30 * 1024 * 1024) { Alert.alert('용량 초과', '30MB 이하의 사진만 업로드할 수 있습니다.'); return; }
+            setImageAssets(prev => [...prev, {...image, stickers: []}]);
+        } catch (e: any) { if (e.code !== 'E_PICKER_CANCELLED') { console.error('ImagePicker Error: ', e); Alert.alert('오류', '사진을 가져오는 데 실패했습니다.'); } }
     };
 
-    const removeImage = (indexToRemove: number) => {
-        setImageAssets(prevAssets => prevAssets.filter((_, index) => index !== indexToRemove));
-    };
+    const removeImage = (index: number) => setImageAssets(prev => prev.filter((_, i) => i !== index));
 
-    const addSticker = (stickerSource: any) => {
+    const addSticker = (source: ImageSourcePropType) => {
         if (renderedModalImageLayout) {
-            const newSticker: Sticker = { id: Date.now(), source: stickerSource, normalizedX: 0.5, normalizedY: 0.5, normalizedScale: 1 / renderedModalImageLayout.width, rotate: 0 };
-            setStickers(currentStickers => [...currentStickers, newSticker]);
+            const newSticker = { id: Date.now(), source, normalizedX: 0.5, normalizedY: 0.5, normalizedScale: 1 / renderedModalImageLayout.width, rotate: 0 };
+            setStickers(curr => [...curr, newSticker]);
         }
     };
 
-    const deleteSticker = (stickerId: number) => {
-        setStickers(currentStickers => currentStickers.filter(s => s.id !== stickerId));
-    };
+    const deleteSticker = (id: number) => setStickers(curr => curr.filter(s => s.id !== id));
 
-    const handleEditImageWithEmojis = (imageAssetToEdit: ImageAsset, index: number) => {
-        setImageToEdit(imageAssetToEdit);
+    const handleEditImageWithEmojis = (asset: ImageAsset, index: number) => {
+        setImageToEdit(asset);
         setEditingImageIndex(index);
-        setStickers(imageAssetToEdit.stickers || []);
+        setStickers(asset.stickers || []);
         setSelectedStickerId(null);
         setEmojiEditorVisible(true);
     };
 
     const handleSaveEditedImage = () => {
         if (editingImageIndex !== null) {
-            const updatedAssets = imageAssets.map((asset, index) => index === editingImageIndex ? { ...asset, stickers: stickers } : asset);
+            const updatedAssets = imageAssets.map((asset, index) => index === editingImageIndex ? { ...asset, stickers } : asset);
             setImageAssets(updatedAssets);
         }
         setEmojiEditorVisible(false);
@@ -290,86 +239,44 @@ export default function UpdateILogScreen() {
         setModalContainerLayout(null);
     };
 
-    // --- Save Logic (add-ilog style) ---
-    useEffect(() => {
-        if (captureQueue.length > 0) {
-            setIsImageLoadedForCapture(false); // Reset for the new image in queue
-        }
-    }, [captureQueue]);
+    useEffect(() => { if (captureQueue.length > 0) { setIsImageLoadedForCapture(false); } }, [captureQueue]);
 
     useEffect(() => {
         const processImage = async () => {
-            // If there's nothing to process, or the view is not ready, do nothing.
             if (captureQueue.length === 0) return;
-
-            // Always process via capture to ensure order, as per user suggestion.
+            const asset = captureQueue[0];
+            if (!asset.stickers || asset.stickers.length === 0) { setProcessedImages(p => [...p, asset]); setCaptureQueue(q => q.slice(1)); return; }
             if (isImageLoadedForCapture && offscreenViewShotRef.current) {
                 setTimeout(async () => {
-                    // Re-check refs and state inside the timeout to prevent race conditions
-                    if (!offscreenViewShotRef.current || captureQueue.length === 0) return;
-
-                    const assetToCapture = captureQueue[0];
+                    if (!offscreenViewShotRef.current || captureQueue.length === 0 || captureQueue[0].path !== asset.path) return;
                     try {
                         const uri = await offscreenViewShotRef.current.capture!();
-                        const filename = `ilog-capture-${Date.now()}.png`;
-                        const newAsset = { ...assetToCapture, path: uri, stickers: [], filename: filename, mime: 'image/png' };
-                        setProcessedImages(prev => [...prev, newAsset]);
-                        setCaptureQueue(prev => prev.slice(1));
-                    } catch (e) {
-                        console.error("Image capture failed:", e);
-                        Alert.alert("오류", "이미지 처리에 실패했습니다.");
-                        setIsSaving(false);
-                        setCaptureQueue([]);
-                    }
+                        setProcessedImages(p => [...p, { ...asset, path: uri, stickers: [], filename: `ilog-capture-${Date.now()}.png`, mime: 'image/png' }]);
+                        setCaptureQueue(q => q.slice(1));
+                    } catch (e) { console.error("Image capture failed:", e); Alert.alert("오류", "이미지 처리에 실패했습니다."); setIsSaving(false); setCaptureQueue([]); }
                 }, 1000);
             }
         };
         processImage();
-    }, [isImageLoadedForCapture, captureQueue]);
+    }, [captureQueue, isImageLoadedForCapture]);
 
     useEffect(() => {
         const finalizeSave = async () => {
             if (isSaving && captureQueue.length === 0 && processedImages.length === imageAssets.length) {
-                const logId = Number(id);
-                const originalLog = ilogs.find(l => l.id === logId);
-                if (!originalLog) {
-                    Alert.alert("오류", "원본 일기를 찾지 못해 업데이트 할 수 없습니다.");
-                    setIsSaving(false);
-                    return;
-                }
-
-                const originalImageUrls = originalLog.images || [];
-
-                const existingImageUrls = processedImages
-                    .filter(a => a.originalUrl && a.path === a.originalUrl)
-                    .map(a => a.originalUrl!);
-
-                const newImageAssets: ImagePickerAssetType[] = processedImages
-                    .filter(a => !a.originalUrl || a.path !== a.originalUrl)
-                    .map(a => ({
-                        uri: a.path,
-                        fileName: a.filename || a.path.split('/').pop() || `image-${Date.now()}.jpg`,
-                        mimeType: a.mime || 'image/jpeg',
-                        width: a.width,
-                        height: a.height,
-                    }));
-
-                const removedImageUrls = originalImageUrls.filter(
-                    url => !processedImages.some(a => a.originalUrl === url)
-                );
+                const newImageAssets = processedImages.filter(img => !img.originalUrl).map(img => ({ ...img, uri: img.path }));
+                const existingImageUrls = processedImages.filter(img => img.originalUrl).map(img => img.originalUrl!);
 
                 const updateRequest: ILogUpdateRequest = {
                     content: content,
-                    visibility: visibility,
-                    removedImageUrls: removedImageUrls,
+                    visibility: 0,
                     existingImageUrls: existingImageUrls,
                     newImageAssets: newImageAssets,
                 };
 
                 try {
-                    await updateILog(logId, updateRequest);
+                    await updateILog(Number(id), updateRequest);
                     Alert.alert('성공', '일기가 성공적으로 수정되었습니다.');
-                    router.replace(`/i-log/detail-ilog/${logId}`);
+                    router.back();
                 } catch (e) {
                     console.error("Failed to update iLog:", e);
                     Alert.alert('오류', '일기 수정에 실패했습니다.');
@@ -379,33 +286,32 @@ export default function UpdateILogScreen() {
             }
         };
         finalizeSave();
-    }, [isSaving, captureQueue, processedImages, imageAssets.length, content, visibility, id, ilogs, updateILog, router]);
+    }, [isSaving, captureQueue, processedImages]);
 
     const handleSave = async () => {
-        if (isSaving) return;
-        if (!content.trim() && imageAssets.length === 0) { Alert.alert('오류', '내용이나 사진을 추가해주세요.'); return; }
-
+        if (isSaving || !selectedLogDate || doesLogExistForSelectedDate || (!content.trim() && imageAssets.length === 0) || !userId) {
+            Alert.alert('오류', !selectedLogDate ? '날짜를 선택해주세요.' : doesLogExistForSelectedDate ? '이미 일기가 있는 날짜입니다.' : (!content.trim() && imageAssets.length === 0) ? '내용이나 사진을 추가해주세요.' : '로그인 정보가 없습니다.');
+            return;
+        }
         setIsSaving(true);
-        setProcessedImages([]); // Reset processed images
-        setCaptureQueue([...imageAssets]); // Set the whole queue, preserving order
+        setProcessedImages([]);
+        setCaptureQueue([...imageAssets]);
     };
 
-    // --- Render Logic ---
     return (
         <View style={{flex: 1}}>
             {isSaving && (
-                <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }}>
-                    <ActivityIndicator size="large" color={theme.colors.primary}/>
-                    <Text style={{color: 'white', marginTop: 10}}>일기를 저장하는 중...</Text>
-                </View>
+                <I.SavingOverlay>
+                    <ActivityIndicator size="large" color={theme.pointColors.white}/>
+                    <I.SavingOverlayText>일기를 저장하는 중...</I.SavingOverlayText>
+                </I.SavingOverlay>
             )}
-
             {isSaving && captureQueue.length > 0 && (
-                <View style={{position: 'absolute', opacity: 0, zIndex: -1}}>
+                <I.OffscreenContainer>
                     <ViewShot ref={offscreenViewShotRef} options={{format: "png", quality: 0.9}}>
-                        <View style={{width: PREVIEW_SIZE, height: PREVIEW_SIZE, backgroundColor: 'white'}}>
-                            <Image source={{uri: captureQueue[0].path}} style={{width: '100%', height: '100%', resizeMode: 'stretch'}} onLoadEnd={() => setIsImageLoadedForCapture(true)} />
-                            {captureQueue[0].stickers.map(sticker => {
+                        <View style={{width: PREVIEW_SIZE, height: PREVIEW_SIZE, backgroundColor: 'transparent'}}>
+                            {captureQueue.length > 0 && <Image source={{uri: captureQueue[0].path}} style={{width: '100%', height: '100%'}} onLoadEnd={() => setIsImageLoadedForCapture(true)} />}
+                            {captureQueue.length > 0 && captureQueue[0].stickers.map(sticker => {
                                 const scale = (sticker.normalizedScale || 0) * PREVIEW_SIZE;
                                 const stickerHalfSize = (STICKER_BASE_SIZE * scale) / 2;
                                 const x = (sticker.normalizedX || 0.5) * PREVIEW_SIZE - stickerHalfSize;
@@ -418,29 +324,31 @@ export default function UpdateILogScreen() {
                             })}
                         </View>
                     </ViewShot>
-                </View>
+                </I.OffscreenContainer>
             )}
 
-            <I.ScreenContainer $colors={theme.colors}>
+            <I.ScreenContainer $colors={theme}>
                 <View style={{flex: 1}}>
                     <I.Container>
                         <I.AddWrap contentContainerStyle={{paddingBottom: 40 + keyboardHeight}} stickyHeaderIndices={[0]}>
-                            <I.AddHeader $colors={theme.colors}>
-                                <I.AddIconWrap><AntDesign name="calendar" size={30} color={theme.colors.primary}/></I.AddIconWrap>
-                                <I.AddHeaderText $colors={theme.colors}>{selectedLogDate ? format(selectedLogDate, 'yyyy년 MM월 dd일') : '날짜를 선택해주세요.'}</I.AddHeaderText>
+                            <I.AddHeader onPress={() => setCalendarVisible(true)} $colors={theme}>
+                                <I.AddIconWrap><AntDesign name="calendar" size={30} color={theme.pointColors.purple}/></I.AddIconWrap>
+                                <I.AddHeaderText $colors={theme}>{selectedLogDate && !doesLogExistForSelectedDate ? format(selectedLogDate, 'yyyy년 MM월 dd일') : '날짜를 선택해주세요.'}</I.AddHeaderText>
                             </I.AddHeader>
-
                             <I.AddContentContainer>
                                 {imageAssets.length > 0 ? (
-                                    <View style={{width: PREVIEW_SIZE, alignSelf: 'center', marginTop: 15}}>
-                                        <View style={{alignItems: 'flex-end', marginBottom: 8}}><Animated.View style={[swipeHintAnimatedStyle]}><View style={{backgroundColor: theme.colors.border, borderRadius: 15, paddingVertical: 4, paddingHorizontal: 8}}><Text style={{color: theme.colors.text, fontSize: 12}}>Add More Picture... →</Text></View></Animated.View></View>
+                                    <I.ImagePreviewContainer>
+                                        <View style={{alignItems: 'flex-end', marginBottom: 8}}>
+                                            <Animated.View style={swipeHintAnimatedStyle}>
+                                                <I.SwipeHintContainer $colors={theme}><I.SwipeHintText $colors={theme}>Add More Picture... →</I.SwipeHintText></I.SwipeHintContainer>
+                                            </Animated.View>
+                                        </View>
                                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{height: 375, marginBottom: 10}}>
                                             {imageAssets.map((asset, index) => {
-                                                const imageRatio = (asset.height || 1) / (asset.width || 1);
-                                                let contentWidth, contentHeight, contentX, contentY;
-                                                if (imageRatio < 1) { contentHeight = PREVIEW_SIZE; contentWidth = PREVIEW_SIZE / imageRatio; contentY = 0; contentX = -(contentWidth - PREVIEW_SIZE) / 2; } else { contentWidth = PREVIEW_SIZE; contentHeight = PREVIEW_SIZE * imageRatio; contentX = 0; contentY = -(contentHeight - PREVIEW_SIZE) / 2; }
+                                                const imageRatio = (asset.height || 1) / (asset.width || 1); const previewRatio = 1; let contentWidth, contentHeight, contentX, contentY;
+                                                if (imageRatio < previewRatio) { contentHeight = PREVIEW_SIZE; contentWidth = PREVIEW_SIZE / imageRatio; contentY = 0; contentX = -(contentWidth - PREVIEW_SIZE) / 2; } else { contentWidth = PREVIEW_SIZE; contentHeight = PREVIEW_SIZE * imageRatio; contentX = 0; contentY = -(contentHeight - PREVIEW_SIZE) / 2; }
                                                 return (
-                                                    <View key={`${asset.path}-${index}`} style={{ marginRight: 10, width: PREVIEW_SIZE, height: PREVIEW_SIZE, borderRadius: 10, overflow: 'hidden', backgroundColor: theme.colors.border }}>
+                                                    <I.ImageContainer key={asset.path} $colors={theme}>
                                                         <View style={{ width: contentWidth, height: contentHeight, top: contentY, left: contentX }}>
                                                             <Image source={{uri: asset.path}} style={{width: '100%', height: '100%'}}/>
                                                             {asset.stickers && asset.stickers.map(sticker => {
@@ -450,72 +358,59 @@ export default function UpdateILogScreen() {
                                                                 const previewY = (sticker.normalizedY || 0.5) * contentHeight - stickerHalfSize;
                                                                 return (
                                                                     <Animated.View key={sticker.id} style={{ position: 'absolute', top: 0, left: 0, transform: [ {translateX: previewX}, {translateY: previewY}, {scale: previewScale}, {rotate: `${((sticker.rotate || 0) * 180) / Math.PI}deg`}, ] }}>
-                                                                        <Image source={sticker.source} style={{ width: STICKER_BASE_SIZE, height: STICKER_BASE_SIZE, resizeMode: 'contain' }} />
+                                                                        <Image source={sticker.source} style={{ width: STICKER_BASE_SIZE, height: STICKER_BASE_SIZE, resizeMode: 'contain' }}/>
                                                                     </Animated.View>
                                                                 );
                                                             })}
                                                         </View>
-                                                        <TouchableOpacity onPress={() => handleEditImageWithEmojis(asset, index)} style={{ position: 'absolute', top: 5, left: 5, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12, padding: 2, zIndex: 1 }}>
-                                                            <AntDesign name="edit" size={20} color="white"/>
-                                                        </TouchableOpacity>
-                                                        <I.AddImageRemoveButton onPress={() => removeImage(index)} style={{position: 'absolute', top: 5, right: 5, zIndex: 1}}>
-                                                            <AntDesign name="closecircle" size={24} color="red"/>
-                                                        </I.AddImageRemoveButton>
-                                                    </View>
+                                                        <I.ImageEditButton onPress={() => handleEditImageWithEmojis(asset, index)}><AntDesign name="edit" size={20} color="white"/></I.ImageEditButton>
+                                                        <I.AddImageRemoveButton style={{position: 'absolute', top: 5, right: 5, zIndex: 1}} onPress={() => removeImage(index)}><AntDesign name="closecircle" size={24} color="red"/></I.AddImageRemoveButton>
+                                                    </I.ImageContainer>
                                                 )
                                             })}
-                                            <TouchableOpacity onPress={pickImage} style={{ width: 375, height: 375, borderRadius: 10, borderWidth: 1, borderColor: theme.colors.border, justifyContent: 'center', alignItems: 'center', marginBottom: 10, marginLeft: 10 }}>
-                                                <AntDesign name="pluscircleo" size={50} color={theme.colors.border}/>
-                                                <AddImagePickerText $colors={theme.colors}>Add More</AddImagePickerText>
-                                            </TouchableOpacity>
+                                            <I.AddMoreButton $colors={theme} onPress={pickImage}><AntDesign name="pluscircleo" size={50} color={theme.borderColor}/><I.AddImagePickerText $colors={theme}>Add More</I.AddImagePickerText></I.AddMoreButton>
                                         </ScrollView>
-                                    </View>
+                                    </I.ImagePreviewContainer>
                                 ) : (
-                                    <I.AddImagePlaceholder onPress={pickImage} $colors={theme.colors}>
-                                        <SimpleLineIcons name="picture" size={150} color={theme.colors.border}/>
-                                        <AddImagePickerText $colors={theme.colors}>Add a picture...</AddImagePickerText>
-                                    </I.AddImagePlaceholder>
+                                    <I.AddImagePlaceholder onPress={pickImage} $colors={theme}><SimpleLineIcons name="picture" size={150} color={theme.borderColor}/><I.AddImagePickerText $colors={theme}>Add a picture...</I.AddImagePickerText></I.AddImagePlaceholder>
                                 )}
-                                <I.AddTextArea placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...`} value={content} onChangeText={setContent} multiline height={textAreaHeight} onContentSizeChange={(e) => setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height))} autoFocus={true} $colors={theme.colors} placeholderTextColor={theme.colors.text} maxLength={3000} />
-                                <Text style={{ color: theme.colors.text, alignSelf: 'flex-end', marginTop: 4, marginRight: 10 }}>
-                                    {content.length} / 3000
-                                </Text>
+                                <I.AddTextArea placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...`} value={content} onChangeText={setContent} multiline height={textAreaHeight} onContentSizeChange={(e) => setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height))} autoFocus={true} $colors={theme} placeholderTextColor={theme.text} maxLength={3000} />
+                                <I.CharacterCountText $colors={theme}>{content.length} / 3000</I.CharacterCountText>
                             </I.AddContentContainer>
                         </I.AddWrap>
                     </I.Container>
-
-                    <I.AddSuggestionContainer $bottom={keyboardHeight} $colors={theme.colors}>
-                        <I.AddButtonWrap $colors={theme.colors}>
-                            <I.AddCancelButton onPress={() => router.back()} $colors={theme.colors}><I.AddButtonText $colors={theme.colors}>Cancel</I.AddButtonText></I.AddCancelButton>
-                            <I.AddSaveButton onPress={handleSave} $colors={theme.colors}><I.AddButtonText $colors={theme.colors}>Save</I.AddButtonText></I.AddSaveButton>
+                    <I.AddSuggestionContainer $bottom={keyboardHeight} $colors={theme}>
+                        <I.AddButtonWrap $colors={theme}>
+                            <I.AddCancelButton onPress={() => router.back()} $colors={theme}><I.AddButtonText $colors={theme}>Cancel</I.AddButtonText></I.AddCancelButton>
+                            <I.AddSaveButton onPress={handleSave} $colors={theme}><I.AddButtonText $colors={theme}>Save</I.AddButtonText></I.AddSaveButton>
                         </I.AddButtonWrap>
                     </I.AddSuggestionContainer>
                 </View>
 
                 <Modal animationType="fade" transparent={true} visible={isCalendarVisible} onRequestClose={() => setCalendarVisible(false)}>
-                    <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' }} activeOpacity={1} onPressOut={() => setCalendarVisible(false)}>
-                        <View style={{width: '90%', backgroundColor: theme.colors.card, borderRadius: 10, padding: 10}} onStartShouldSetResponder={() => true}>
-                            <Calendar onDayPress={(day) => { if (calendarMarkedDates[day.dateString]?.disabled) { Alert.alert("알림", "이미 일기가 작성된 날짜입니다."); return; } setSelectedLogDate(new Date(day.dateString)); setCalendarVisible(false); }} markedDates={calendarMarkedDates} maxDate={format(new Date(), 'yyyy-MM-dd')} theme={{ backgroundColor: theme.colors.card, calendarBackground: theme.colors.card, dayTextColor: theme.colors.text, textDisabledColor: theme.colors.border, monthTextColor: theme.colors.text, textSectionTitleColor: theme.colors.text, selectedDayBackgroundColor: theme.colors.primary, selectedDayTextColor: 'white', todayTextColor: theme.colors.primary, arrowColor: theme.colors.primary }}/>
-                        </View>
-                    </TouchableOpacity>
+                    <I.CalendarModalOverlay activeOpacity={1} onPressOut={() => setCalendarVisible(false)}>
+                        <I.CalendarModalContent $colors={theme} onStartShouldSetResponder={() => true}>
+                            <Calendar onDayPress={(day) => { if (calendarMarkedDates[day.dateString]?.disabled) { Alert.alert("알림", "이미 일기가 작성된 날짜입니다."); return; } setSelectedLogDate(new Date(day.dateString)); setCalendarVisible(false); }} markedDates={calendarMarkedDates} maxDate={format(new Date(), 'yyyy-MM-dd')} theme={{ backgroundColor: theme.background, calendarBackground: theme.background, dayTextColor: theme.text, textDisabledColor: theme.borderColor, monthTextColor: theme.text, textSectionTitleColor: theme.text, selectedDayBackgroundColor: theme.pointColors.purple, selectedDayTextColor: theme.pointColors.white, todayTextColor: theme.pointColors.purple, arrowColor: theme.pointColors.purple }}/>
+                        </I.CalendarModalContent>
+                    </I.CalendarModalOverlay>
                 </Modal>
 
                 <Modal animationType={"slide"} transparent={false} visible={isEmojiEditorVisible} onRequestClose={handleSaveEditedImage}>
-                    <GestureHandlerRootView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
-                        <View style={{width: '100%', aspectRatio: 1}} onLayout={(e) => setModalContainerLayout(e.nativeEvent.layout)}>
-                            {imageToEdit && <Image source={{uri: imageToEdit.path}} style={{flex: 1, width: '100%', height: '100%', resizeMode: 'contain'}} />}
+                    <I.EmojiEditorContainer $colors={theme}>
+                        <I.EditorImageContainer onLayout={(e) => setModalContainerLayout(e.nativeEvent.layout)}>
+                            {imageToEdit && <I.EditorImage source={{uri: imageToEdit.path}} />}
                             {renderedModalImageLayout && stickers.map((sticker) => ( <DraggableSticker key={sticker.id} sticker={sticker} onSelect={() => setSelectedStickerId(sticker.id)} isSelected={selectedStickerId === sticker.id} onUpdate={(updatedSticker) => setStickers(currentStickers => currentStickers.map(s => s.id === updatedSticker.id ? updatedSticker : s))} onDelete={() => deleteSticker(sticker.id)} imageLayout={renderedModalImageLayout} /> ))}
-                        </View>
-                    </GestureHandlerRootView>
-                    <View style={{borderTopWidth: 1, borderColor: theme.colors.border}}>
+                        </I.EditorImageContainer>
+                    </I.EmojiEditorContainer>
+                    <I.EmojiContainer $colors={theme}>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            {EMOJI_ASSETS.map(emoji => ( <TouchableOpacity key={emoji.id} onPress={() => addSticker(emoji.source)} style={{padding: 10}}> <Image source={emoji.source} style={{width: 50, height: 50, resizeMode: 'contain'}}/> </TouchableOpacity> ))}
+                            {EMOJI_ASSETS.map(emoji => ( <I.EmojiButton key={emoji.id} onPress={() => addSticker(emoji.source)}><I.EmojiImage source={emoji.source}/></I.EmojiButton> ))}
                         </ScrollView>
-                    </View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-around', padding: 10, backgroundColor: theme.colors.card }}>
-                        <TouchableOpacity onPress={handleSaveEditedImage}><Text style={{color: theme.colors.text}}>Cancel</Text></TouchableOpacity>
-                        <TouchableOpacity onPress={handleSaveEditedImage}><Text style={{color: theme.colors.primary}}>Save</Text></TouchableOpacity>
-                    </View>
+                    </I.EmojiContainer>
+                    <I.EditorFooter $colors={theme}>
+                        <I.EditorFooterButton onPress={handleSaveEditedImage}><I.EditorFooterButtonText $colors={theme}>Cancel</I.EditorFooterButtonText></I.EditorFooterButton>
+                        <I.EditorFooterButton onPress={handleSaveEditedImage}><I.EditorFooterButtonText $colors={theme} isPrimary={true}>Save</I.EditorFooterButtonText></I.EditorFooterButton>
+                    </I.EditorFooter>
                 </Modal>
             </I.ScreenContainer>
         </View>
