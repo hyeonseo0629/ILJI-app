@@ -15,6 +15,14 @@ export interface PointColors {
 }
 
 /**
+ * Defines the shape of a stateful button color object.
+ */
+export interface StatefulButtonColors {
+  active: string;
+  inactive: string;
+}
+
+/**
  * Defines the shape of the main theme object (Colors.light and Colors.dark).
  */
 export interface ThemeColors {
@@ -26,4 +34,5 @@ export interface ThemeColors {
   borderColor: string;
   notification: string;
   pointColors: PointColors;
+  statefulButton: StatefulButtonColors;
 }

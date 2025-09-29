@@ -1,17 +1,20 @@
 import { Stack, useRouter } from 'expo-router';
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@react-navigation/native';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
+import { BackButton } from '@/components/style/SettingStyled';
 
 // A custom back button that uses the router to go back
 const CustomBackButton = () => {
   const router = useRouter();
-  const theme = useTheme();
+  const { colorScheme } = useColorScheme();
+  const theme = Colors[colorScheme];
+
   return (
-    <TouchableOpacity onPress={() => router.back()} style={{ paddingHorizontal: 15 }}>
-      <Ionicons name="chevron-back" size={24} color={theme.colors.text} />
-    </TouchableOpacity>
+    <BackButton onPress={() => router.back()}>
+      <Ionicons name="chevron-back" size={24} color={theme.text} />
+    </BackButton>
   );
 };
 

@@ -78,6 +78,10 @@ export const Colors = {
       blue: palette.blue_300,
       red: palette.red_300,
       yellow: palette.yellow_500,
+    },
+    statefulButton: {
+      active: palette.purple_400,
+      inactive: palette.gray_300,
     }
   },
   dark: {
@@ -95,6 +99,10 @@ export const Colors = {
       blue: palette.blue_300,
       red: palette.red_300,
       yellow: palette.yellow_500,
+    },
+    statefulButton: {
+      active: palette.purple_400,
+      inactive: palette.gray_800, // Using a darker gray for dark mode
     }
   },
 };
