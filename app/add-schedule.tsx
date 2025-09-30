@@ -61,32 +61,51 @@ const AddScheduleScreen = () => {
     const [isTagModalVisible, setIsTagModalVisible] = useState(false);
     const [isTagSelectionModalVisible, setIsTagSelectionModalVisible] = useState(false);
 
+    // 미리 알림 선택 BottomSheet 상태
+    const [isReminderSheetVisible, setIsReminderSheetVisible] = useState(false);
+    const reminderSheetRef = useRef<BottomSheet>(null);
+    // 미리 알림 옵션
+    const reminderOptions = [
+        { label: '없음', value: null },
+        { label: '정시', value: 0 },
+        { label: '1분 전', value: 1 },
+        { label: '10분 전', value: 10 },
+        { label: '30분 전', value: 30 },
+        { label: '1시간 전', value: 60 },
+    ];
+    const selectedReminderLabel = reminderOptions.find(option => option.value === reminderMinutesBefore)?.label || '없음';
+    const reminderSnapPoints = useMemo(() => ['45%'], []);
+
+
     const onDateTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-        const currentDate = selectedDate || (pickerTarget === 'start' ? startTime : endTime);
-        setShowPicker(Platform.OS === 'ios'); // iOS에서는 수동으로 닫아야 함
+        setShowPicker(false); // Picker를 닫습니다.
 
-        if (pickerTarget === 'start') {
-            setStartTime(currentDate);
+        if (selectedDate) { // 날짜가 선택된 경우에만 상태를 업데이트합니다.
+            const currentDate = selectedDate;
 
-            // 시작 날짜가 변경되면, 종료 날짜도 동일하게 맞춰주되 시간은 유지합니다.
-            const newEndTime = new Date(
-                currentDate.getFullYear(),
-                currentDate.getMonth(),
-                currentDate.getDate(),
-                endTime.getHours(),
-                endTime.getMinutes(),
-                endTime.getSeconds()
-            );
+            if (pickerTarget === 'start') {
+                setStartTime(currentDate);
 
-            // 만약 새로 계산된 종료 시간이 시작 시간보다 빠르다면,
-            // 종료 시간을 시작 시간 1시간 뒤로 설정합니다.
-            if (newEndTime < currentDate) {
-                setEndTime(new Date(currentDate.getTime() + 60 * 60 * 1000));
+                // 시작 날짜가 변경되면, 종료 날짜도 동일하게 맞춰주되 시간은 유지합니다.
+                const newEndTime = new Date(
+                    currentDate.getFullYear(),
+                    currentDate.getMonth(),
+                    currentDate.getDate(),
+                    endTime.getHours(),
+                    endTime.getMinutes(),
+                    endTime.getSeconds()
+                );
+
+                // 만약 새로 계산된 종료 시간이 시작 시간보다 빠르다면,
+                // 종료 시간을 시작 시간 1시간 뒤로 설정합니다.
+                if (newEndTime < currentDate) {
+                    setEndTime(new Date(currentDate.getTime() + 60 * 60 * 1000));
+                } else {
+                    setEndTime(newEndTime);
+                }
             } else {
-                setEndTime(newEndTime);
+                setEndTime(currentDate);
             }
-        } else {
-            setEndTime(currentDate);
         }
     };
 
@@ -237,19 +256,11 @@ const AddScheduleScreen = () => {
                     />
 
                     <S.ASLabel $colors={theme.colors}>Notification</S.ASLabel>
-                    <S.ASPickerWrap $colors={theme.colors}>
-                        <Picker
-                            selectedValue={reminderMinutesBefore}
-                            onValueChange={(itemValue) => setReminderMinutesBefore(itemValue)}
-                            style={{ color: theme.colors.text }}
-                            dropdownIconColor={theme.colors.text}
-                        >
-                            <Picker.Item label="None" value={null} />
-                            <Picker.Item label="10 minutes before" value={10} />
-                            <Picker.Item label="30 minutes before" value={30} />
-                            <Picker.Item label="1 hour before" value={60} />
-                        </Picker>
-                    </S.ASPickerWrap>
+                    <S.ASDateTimeButton onPress={() => setIsReminderSheetVisible(true)} style={{ marginBottom: 20 }}>
+                        <S.ASDateTimeButtonText $colors={theme.colors}>
+                            {selectedReminderLabel}
+                        </S.ASDateTimeButtonText>
+                    </S.ASDateTimeButton>
 
                     <S.ASTagHeaderRow>
                         <S.ASLabel $colors={theme.colors}>Tag</S.ASLabel>
@@ -279,10 +290,39 @@ const AddScheduleScreen = () => {
                         value={pickerTarget === 'start' ? startTime : endTime}
                         mode={pickerMode}
                         is24Hour={true}
-                        display="default"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                         onChange={onDateTimeChange}
                         textColor={theme.colors.text}
                     />
+                )}
+
+                {isReminderSheetVisible && (
+                    <BottomSheet
+                        ref={reminderSheetRef}
+                        index={0}
+                        snapPoints={reminderSnapPoints}
+                        onClose={() => setIsReminderSheetVisible(false)}
+                        backdropComponent={renderBackdrop}
+                        backgroundStyle={{ backgroundColor: theme.colors.card, borderTopWidth: 1, borderTopColor: theme.colors.border }}
+                        handleIndicatorStyle={{ backgroundColor: theme.colors.primary }}
+                    >
+                        <View style={{ flex: 1, alignItems: 'center', paddingTop: 20 }}>
+                            {reminderOptions.map((option, index) => (
+                                <S.ASDateTimeButton
+                                    key={index}
+                                    onPress={() => {
+                                        setReminderMinutesBefore(option.value);
+                                        setIsReminderSheetVisible(false);
+                                    }}
+                                    style={{ width: '90%', marginBottom: 10, backgroundColor: reminderMinutesBefore === option.value ? theme.colors.primary : theme.colors.card }}
+                                >
+                                    <S.ASDateTimeButtonText $colors={theme.colors} style={{ color: reminderMinutesBefore === option.value ? theme.colors.background : theme.colors.text }}>
+                                        {option.label}
+                                    </S.ASDateTimeButtonText>
+                                </S.ASDateTimeButton>
+                            ))}
+                        </View>
+                    </BottomSheet>
                 )}
 
                 <CreateTagModal
