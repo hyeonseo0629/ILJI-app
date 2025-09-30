@@ -217,7 +217,7 @@ const AddScheduleScreen = () => {
                     <S.ASSwitchRow>
                         <S.ASLabel style={{marginTop: 0, marginBottom: 0}} $colors={theme.colors}>All Day</S.ASLabel>
                         <Switch
-                            trackColor={{false: theme.colors.border, true: theme.colors.primary}}
+                            trackColor={{false: theme.colors.border, true: theme.dark ? '#575757' : 'lavender'}}
                             thumbColor={theme.colors.primary}
                             ios_backgroundColor={theme.colors.border}
                             onValueChange={setIsAllDay}
@@ -343,27 +343,6 @@ const AddScheduleScreen = () => {
                 />
 
             </S.ASContainer>
-            <BottomSheet
-                ref={bottomSheetRef}
-                index={0}
-                snapPoints={snapPoints}
-                backdropComponent={renderBackdrop}
-                backgroundStyle={{
-                    borderTopWidth: 1,
-                    borderTopColor: theme.colors.border,
-                    borderRadius: 0,
-                    backgroundColor: theme.colors.card,
-                }}
-                handleIndicatorStyle={{
-                    backgroundColor: theme.colors.primary,
-                    width: 200,
-                    height: 5,
-                    margin:10,
-                }}
-            >
-                <S.ASContentWrap>
-                </S.ASContentWrap>
-            </BottomSheet>
             <ASButtonWrap $colors={theme.colors}>
                 <S.ASCancelButton onPress={() => router.back()} $colors={theme.colors}>
                     <ASCancelButtonText $colors={theme.colors}>Cancel</ASCancelButtonText>

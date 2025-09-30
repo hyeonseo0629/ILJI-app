@@ -1,27 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '@react-navigation/native';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
+import {
+    NotificationContainer,
+    NotificationText
+} from '@/components/style/SettingStyled';
 
 export default function NotificationSettingsScreen() {
-  const theme = useTheme();
+  const { colorScheme } = useColorScheme();
+  const theme = Colors[colorScheme];
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Text style={[styles.text, { color: theme.colors.text }]}>알림 설정 화면입니다.</Text>
+    <NotificationContainer $colors={theme}>
+      <NotificationText $colors={theme}>알림 설정 화면입니다.</NotificationText>
       {/* 여기에 알림 설정 관련 항목들을 추가할 수 있습니다. */}
-    </View>
+    </NotificationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  text: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-});

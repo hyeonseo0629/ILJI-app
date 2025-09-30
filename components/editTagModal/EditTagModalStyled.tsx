@@ -123,7 +123,7 @@ export const ActionButton = styled.TouchableOpacity<StyledProps & { primary?: bo
     flex: 1;
     padding: 12px;
     border-radius: 5px;
-    background-color: ${(props) => (props.primary ? (props.$colors?.primary || 'mediumslateblue') : (props.$colors?.card || '#f0f0f0'))};
+    background-color: ${(props) => (props.primary ? (props.$colors?.primary || '#9970FF') : (props.$colors?.card || '#f0f0f0'))};
     align-items: center;
     margin: 0 5px;
 `;
@@ -131,5 +131,5 @@ export const ActionButton = styled.TouchableOpacity<StyledProps & { primary?: bo
 export const ButtonText = styled.Text<StyledProps & { primary?: boolean }>`
     font-size: 16px;
     font-weight: bold;
-    color: ${(props) => (props.primary ? 'white' : (props.$colors?.text || '#333'))};
+    color: ${(props) => (props.primary ? (props.$colors?.card || 'white') : (props.$colors?.text || '#333'))};
 `;

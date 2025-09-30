@@ -87,7 +87,7 @@ export const MonthDayContainer = styled.TouchableOpacity<MonthDayContainerProps>
     align-items: center; /* 가로 중앙 정렬 */
     justify-content: flex-start; /* 세로 상단 정렬 */
     padding: 5px;
-    background-color: ${(props) => (props.$isSelected ? (props.$colors?.primary || '#EFEFEF') : 'transparent')};
+    background-color: ${(props) => (props.$isSelected ? (props.$colors?.pointColors.purple || '#EFEFEF') : 'transparent')};
     border-radius: 8px;
 `;
 
@@ -108,17 +108,17 @@ export const MonthDayText = styled.Text.attrs({
     font-size: 12px;
     text-align: center;
     color: ${(props) => {
-        if (props.$isSelected) return props.$colors?.card || '#FFFFFF';
-        if (props.$isNotInMonth) return props.$colors?.border || '#D1D1D6';
+        if (props.$isSelected) return props.$colors?.background || '#FFFFFF';
+        if (props.$isNotInMonth) return props.$colors?.borderColor || '#D1D1D6';
         return props.$colors?.text || '#333';
     }};
     font-weight: ${(props) => (props.$isToday && !props.$isSelected ? 'bold' : 'normal')};
 `;
 
 export const MonthDayCircle = styled.View<StyledProps & { $isCurrentMonth?: boolean }>`
-    width: 16px;
-    height: 16px;
-    background-color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    width: 20px;
+    height: 20px;
+    background-color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
     border-radius: 15px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
     justify-content: center; /* 내부 텍스트를 세로 중앙에 정렬 */
     align-items: center; /* 내부 텍스트를 가로 중앙에 정렬 */
@@ -136,13 +136,13 @@ export const DayNumberWrapper = styled.View`
     align-items: center;
 `;
 
-export const EventBar = styled.View<{
+export const EventBar = styled.View<StyledProps & {
     color: string;
     $isCurrentMonth: boolean;
     $position: 'start' | 'middle' | 'end' | 'single';
     $top: number;
 }>`
-    background-color: ${props => props.color || 'gray'};
+    background-color: ${props => props.color || props.$colors?.borderColor || 'gray'};
     opacity: ${({$isCurrentMonth = true}) => $isCurrentMonth ? 1 : 0.4};
     height: 12px;
     justify-content: center;
@@ -151,18 +151,18 @@ export const EventBar = styled.View<{
     top: ${props => props.$top}px;
     left: ${props => (props.$position === 'middle' || props.$position === 'end') ? '-6px' : '0px'};
     right: ${props => (props.$position === 'start' || props.$position === 'middle') ? '-6px' : '0px'};
-    border-top-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '4px' : '0px'};
-    border-bottom-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '4px' : '0px'};
-    border-top-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '4px' : '0px'};
-    border-bottom-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '4px' : '0px'};
+    border-top-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '2px' : '0px'};
+    border-bottom-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '2px' : '0px'};
+    border-top-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '2px' : '0px'};
+    border-bottom-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '2px' : '0px'};
 `;
 
 export const EventBarText = styled.Text.attrs({
     numberOfLines: 1,
     ellipsizeMode: 'tail',
-})`
+})<StyledProps>`
     font-size: 8px;
-    color: #ffffff;
+    color: ${props => props.$colors?.background || '#ffffff'};
 `;
 
 interface MoreScheduleTextProps extends StyledProps {
@@ -178,32 +178,32 @@ export const MoreScheduleText = styled.Text.attrs({
     text-align: center;
     width: 100%;
     padding: 1px 3px;
-    color: ${props => props.$colors?.text || '#555'}; /* 눈에 띄도록 다른 색상 사용 */
+    color: ${props => props.$colors?.text || '#555'};
     font-weight: bold;
 `;
 
 export const ScheduleTitleText = styled.Text.attrs({
-    numberOfLines: 1, // 텍스트를 한 줄로 제한합니다.
-    ellipsizeMode: 'tail', // 길이가 길면 끝에 ...을 표시합니다.
-})<ScheduleTitleTextProps & { $top: number }>`
+    numberOfLines: 1,
+    ellipsizeMode: 'tail',
+})<ScheduleTitleTextProps & StyledProps & { $top: number }>`
     position: absolute;
     top: ${props => props.$top}px;
-    height: 12px; /* Match EventBar height */
-    font-size: 8px; /* Match EventBarText font size */
+    height: 12px;
+    font-size: 8px;
     text-align: center;
     width: 100%;
-    border-radius: 4px;
-    padding: 0 3px; /* Match EventBar horizontal padding */
-    background-color: ${props => props.color || 'gray'};
-    color: #ffffff;
+    border-radius: 2px;
+    padding: 0 3px;
+    background-color: ${props => props.color || props.$colors?.borderColor || 'gray'};
+    color: ${props => props.$colors?.background || '#ffffff'};
     overflow: hidden;
 `
 
 export const MonthSchedulesContainer = styled.View`
     position: relative;
-    flex: 1; /* 날짜 텍스트를 제외한 나머지 세로 공간을 모두 차지합니다. */
-    width: 100%; /* 부모 컨테이너의 너비에 맞춥니다. */
-    margin-top: 4px; /* 날짜와 일정 사이의 간격 */
+    flex: 1;
+    width: 100%;
+    margin-top: 4px;
 `;
 
 
@@ -213,7 +213,7 @@ export const MonthSchedulesContainer = styled.View`
 export const TimetableWrapper = styled.View<StyledProps>`
     flex: 1;
     border-top-width: 1px;
-    border-top-color: ${props => props.$colors?.border || '#f0f0f0'};
+    border-top-color: ${props => props.$colors?.borderColor || '#e4d9ff'};
 `;
 
 export const TimetableGrid = styled.View`
@@ -227,7 +227,7 @@ export const TimeColumn = styled.View`
 `;
 
 export const TimeLabelCell = styled.View`
-    height: 40px; /* 1시간의 높이 */
+    height: 40px;
     justify-content: flex-start;
     align-items: center;
 `;
@@ -246,30 +246,30 @@ export const TimeTableDaysContainer = styled.View`
 export const TimeTableDayColumn = styled.View<StyledProps & { $isToday?: boolean }>`
     flex: 1;
     border-left-width: 1px;
-    border-left-color: ${props => props.$colors?.border || '#f0f0f0'};
-    background-color: ${(props) => (props.$isToday ? (props.$colors?.card || '#f7f7f7') : 'transparent')};
+    border-left-color: ${props => props.$colors?.borderColor || '#eee'};
+    background-color: ${(props) => (props.$isToday ? (props.$colors?.background || '#f7f7f7') : 'transparent')};
 `;
 
 export const HourCell = styled.View<StyledProps>`
     height: 40px;
     border-bottom-width: 1px;
-    border-bottom-color: ${props => props.$colors?.border || '#f0f0f0'};
+    border-bottom-color:  ${props => props.$colors?.borderColor || '#eee'};
 `;
 
 export const ScheduleBlock = styled.TouchableOpacity<{ top: number; height: number; color: string }>`
     position: absolute;
-    left: 5px;
-    right: 5px;
+    left: 0.1px;
+    right: 0.1px;
     top: ${(props) => props.top}px;
     height: ${(props) => props.height}px;
     background-color: ${(props) => props.color};
     padding: 4px;
-    border-radius: 4px;
+    border-radius: 2px;
     opacity: 0.85;
 `;
 
-export const ScheduleBlockText = styled.Text`
-    color: #ffffff;
+export const ScheduleBlockText = styled.Text<StyledProps>`
+    color: ${props => props.$colors?.background || '#ffffff'};
     font-size: 12px;
     font-weight: 500;
 `;
@@ -280,12 +280,13 @@ export const ScheduleBlockText = styled.Text`
 
 export const ViewModeButtonContainer = styled.View<StyledProps>`
     padding: 0px;
-    border-radius: 20px;
+    border-radius: 25px;
     flex-direction: row;
     justify-content: center;
     padding-vertical: 10px;
-    border-bottom-color: ${props => props.$colors?.border || '#eee'};
-    background-color: ${props => props.$colors?.card || 'lavender'};
+    border: 1.5px solid ${props => props.$colors?.pointColors.purple || '#9970FF'};
+    border-bottom-color: ${props => props.$colors?.borderColor || '#eee'};
+    background-color: ${props => props.$colors?.background || 'lavender'};
     elevation: 10;
 `;
 
@@ -297,25 +298,25 @@ export const ViewMonthButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
     border-top-left-radius: 20px;
     border-bottom-left-radius: 20px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || 'mediumslateblue') : (props.$colors?.card || 'lavender'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.pointColors.purple || '#9970FF') :  props.$colors?.borderColor)};
 `
 
 export const ViewWeekButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || 'mediumslateblue') : (props.$colors?.card || 'lavender'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.pointColors.purple || '#9970FF') : props.$colors?.borderColor)};
 `
 
 export const ViewDayButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
     border-top-right-radius: 20px;
     border-bottom-right-radius: 20px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || 'mediumslateblue') : (props.$colors?.card || 'lavender'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.pointColors.purple || '#9970FF') : props.$colors?.borderColor)};
 `
 
 export const ViewModeButtonText = styled.Text<ViewModeButtonProps>`
     font-weight: 500;
     font-size: 20px;
-    color: ${(props) => (props.$isActive ? 'white' : (props.$colors?.text || 'black'))};
+    color: ${(props) => (props.$isActive ? (props.$colors?.background || 'white') : (props.$colors?.text || 'black'))};
 `;
 
 // ------------------------------------- //
@@ -324,9 +325,9 @@ export const ViewModeButtonText = styled.Text<ViewModeButtonProps>`
 
 export const DayHeader = styled.View<StyledProps>`
     padding: 10px 20px;
-    background-color: ${props => props.$colors?.card || '#f8f8f8'};
+    background-color: ${props => props.$colors?.background || '#f8f8f8'};
     border-bottom-width: 1px;
-    border-bottom-color: ${props => props.$colors?.border || '#eee'};
+    border-bottom-color: ${props => props.$colors?.borderColor || '#eee'};
 `;
 
 export const DayHeaderText = styled.Text<StyledProps>`

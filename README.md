@@ -48,18 +48,3 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-
-
-## install
-- npm install date-fns
-- npx expo install react-native-shadow-2 react-native-svg
-- npm install react-native-calendars
-- npm install lodash
-- npm install react-native-vector-icons
-- npx expo install expo-dev-client
-- npx expo install expo-secure-store
-- npx expo install react-native-pager-view
-- npx expo install @react-native-picker/picker
-- npx expo install @react-native-community/datetimepicker
-- npm install react-native-wheel-color-picker
-

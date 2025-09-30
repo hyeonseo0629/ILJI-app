@@ -97,13 +97,13 @@ function Layout() {
     }
 
     return (
-        <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
-            <View style={{flex: 1, paddingTop: isnets.top, backgroundColor: 'lavender'}}>
+        <View style={{flex: 1, paddingTop: isnets.top + 5, backgroundColor: 'lavender'}}>
+            <View style={{flex: 1, paddingBottom: isnets.bottom, backgroundColor: 'lavender'}}>
                 <Stack
                     key={isDarkColorScheme ? 'dark-theme' : 'light-theme'}
                     screenOptions={{
                         headerStyle: {
-                            backgroundColor: theme.colors.card,
+                            backgroundColor: theme.colors.background,
                         },
                         headerTintColor: theme.colors.text,
                         headerTitleStyle: {
@@ -129,7 +129,7 @@ function Layout() {
                             title: 'New Schedule',
                             presentation: 'modal',
                             headerStyle: {
-                                backgroundColor: theme.colors.card,
+                                backgroundColor: theme.colors.background,
                             },
                             headerTintColor: theme.colors.text,
                         }}
@@ -177,11 +177,11 @@ function ThemedAppLayout() {
     const customDefaultTheme: Theme = {
         dark: false,
         colors: {
-            primary: Colors.light.tint,
+            primary: Colors.light.tabIconSelected,
             background: Colors.light.background,
-            card: Colors.light.card,
+            card: Colors.light.background,
             text: Colors.light.text,
-            border: Colors.light.border,
+            border: Colors.light.borderColor,
             notification: Colors.light.notification,
         },
         fonts: {
@@ -195,11 +195,11 @@ function ThemedAppLayout() {
     const customDarkTheme: Theme = {
         dark: true,
         colors: {
-            primary: Colors.dark.tint,
+            primary: Colors.dark.tabIconSelected,
             background: Colors.dark.background,
-            card: Colors.dark.card,
+            card: Colors.dark.background,
             text: Colors.dark.text,
-            border: Colors.dark.border,
+            border: Colors.dark.borderColor,
             notification: Colors.dark.notification,
         },
         fonts: {

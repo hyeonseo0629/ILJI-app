@@ -233,7 +233,7 @@ const ILogPageView = ({
     }
 
     const renderItem = ({ item }: { item: ILog }) => (
-        <View style={{ width }}>
+        <View style={{width: width, paddingHorizontal: 20, paddingTop: 20}}>
             <DiaryPage item={item} onDatePress={onDatePress} onImagePress={handleImagePress} />
         </View>
     );
