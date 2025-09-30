@@ -84,7 +84,7 @@ export const ASDateTimeButton = styled.TouchableOpacity<StyledProps>`
     flex: 1; /* 버튼이 사용 가능한 공간을 모두 차지하도록 하여, 1개일 땐 100%, 2개일 땐 50%씩 나눠 갖게 합니다. */
     border-radius: 8px;
     padding: 10px;
-    background-color: ${props => props.$colors?.card || 'lavender'};
+    background-color: ${props => props.theme.dark ? '575757FF' : 'lavender'};
     align-items: center;
 `;
 
