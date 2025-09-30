@@ -28,7 +28,6 @@ export const MainToDoCategoryWarp = styled.View<StyledProps>`
     align-items: flex-end;
     justify-content: center;
     height: 55px;
-    background-color: ${(props) => props.$colors?.card || '#F0F0F0'}; // 배경색 추가
 `;
 
 export const MainToDoCategory = styled.TouchableOpacity<CategoryTabProps>`

@@ -1,16 +1,17 @@
-import {TouchableOpacity} from "react-native";
+import {TouchableOpacity, Platform} from "react-native";
 import React, {useMemo, useState} from "react";
-import { useRouter } from "expo-router";
+import {useRouter} from "expo-router";
 import * as BS from "@/components/style/BottomSheetStyled";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import {MaterialCommunityIcons} from '@expo/vector-icons';
 import SortByPicker from "@/components/common/SortByPicker";
 import {format} from "date-fns";
 import {BottomSheetScrollView} from "@gorhom/bottom-sheet";
 import {TaggedSchedule} from "@/components/tag/TaggedSchedule";
 import {useSchedule} from "@/src/context/ScheduleContext";
 import EditTagModal from "@/components/editTagModal/EditTagModal";
-import { ThemeColors } from "@/types/theme";
-import { Schedule } from '@/components/calendar/scheduleTypes';
+import {ThemeColors} from "@/types/theme";
+import {Schedule} from '@/components/calendar/scheduleTypes';
+import {Shadow} from 'react-native-shadow-2';
 
 interface BottomSheetContentProps {
     activeTab: string;
@@ -19,10 +20,15 @@ interface BottomSheetContentProps {
     colors: ThemeColors;
 }
 
-export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab, selectedDate, onSchedulePress, colors}) => {
+export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({
+                                                                          activeTab,
+                                                                          selectedDate,
+                                                                          onSchedulePress,
+                                                                          colors
+                                                                      }) => {
     const router = useRouter();
     // [수정] Context에서 selectedDate를 제거하고 props에서 받은 selectedDate를 사용합니다.
-    const { events: schedules, tags } = useSchedule();
+    const {events: schedules, tags} = useSchedule();
     const [sortBy, setSortBy] = useState('latest');
     const [isEditTagModalVisible, setIsEditTagModalVisible] = useState(false);
 
@@ -62,13 +68,13 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
 
     // 1. 핸들러 함수 분리
     const handleAddSchedulePress = () => {
-        router.push({ pathname: '/add-schedule', params: { tags: JSON.stringify(tags) } });
+        router.push({pathname: '/add-schedule', params: {tags: JSON.stringify(tags)}});
     };
 
     const handleAddPress = () => {
         router.push({
             pathname: '/add-schedule',
-            params: { initialDate: selectedDate.toISOString() },
+            params: {initialDate: selectedDate.toISOString()},
         });
     };
 
@@ -90,14 +96,14 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({activeTab
                         <BS.ScheduleAddButton name="pluscircleo" size={20} $colors={colors}/>
                     </TouchableOpacity>
                     <BS.TagEditBTN onPress={() => setIsEditTagModalVisible(true)}>
-                        <MaterialCommunityIcons name="book-edit-outline" size={24} color={colors.primary} />
+                        <MaterialCommunityIcons name="book-edit-outline" size={24} color={colors.primary}/>
                     </BS.TagEditBTN>
                 </BS.HeaderRight>
             </BS.Header>
-            <BottomSheetScrollView style={{flex:1}}>
+            <BottomSheetScrollView style={{flex: 1}}>
                 <BS.ContentWrap>
                     {sortedSchedules.map(schedule => (
-                        <TaggedSchedule key={schedule.id} item={schedule} onPress={onSchedulePress} colors={colors} />
+                        <TaggedSchedule key={schedule.id} item={schedule} onPress={onSchedulePress} colors={colors}/>
                     ))}
                 </BS.ContentWrap>
             </BottomSheetScrollView>

@@ -116,9 +116,9 @@ export const MonthDayText = styled.Text.attrs({
 `;
 
 export const MonthDayCircle = styled.View<StyledProps & { $isCurrentMonth?: boolean }>`
-    width: 16px;
-    height: 16px;
-    background-color: ${props => props.$colors?.primary || 'mediumslateblue'};
+    width: 20px;
+    height: 20px;
+    background-color: ${props => props.$colors?.primary || '#9970FF'};
     border-radius: 15px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
     justify-content: center; /* 내부 텍스트를 세로 중앙에 정렬 */
     align-items: center; /* 내부 텍스트를 가로 중앙에 정렬 */
@@ -151,10 +151,10 @@ export const EventBar = styled.View<{
     top: ${props => props.$top}px;
     left: ${props => (props.$position === 'middle' || props.$position === 'end') ? '-6px' : '0px'};
     right: ${props => (props.$position === 'start' || props.$position === 'middle') ? '-6px' : '0px'};
-    border-top-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '4px' : '0px'};
-    border-bottom-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '4px' : '0px'};
-    border-top-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '4px' : '0px'};
-    border-bottom-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '4px' : '0px'};
+    border-top-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '2px' : '0px'};
+    border-bottom-left-radius: ${props => (props.$position === 'start' || props.$position === 'single') ? '2px' : '0px'};
+    border-top-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '2px' : '0px'};
+    border-bottom-right-radius: ${props => (props.$position === 'end' || props.$position === 'single') ? '2px' : '0px'};
 `;
 
 export const EventBarText = styled.Text.attrs({
@@ -192,7 +192,7 @@ export const ScheduleTitleText = styled.Text.attrs({
     font-size: 8px; /* Match EventBarText font size */
     text-align: center;
     width: 100%;
-    border-radius: 4px;
+    border-radius: 2px;
     padding: 0 3px; /* Match EventBar horizontal padding */
     background-color: ${props => props.color || 'gray'};
     color: #ffffff;
@@ -213,7 +213,7 @@ export const MonthSchedulesContainer = styled.View`
 export const TimetableWrapper = styled.View<StyledProps>`
     flex: 1;
     border-top-width: 1px;
-    border-top-color: ${props => props.$colors?.border || '#f0f0f0'};
+    border-top-color: ${props => props.theme.dark ? '#f0f0f0' : '#e4d9ff'};
 `;
 
 export const TimetableGrid = styled.View`
@@ -246,25 +246,25 @@ export const TimeTableDaysContainer = styled.View`
 export const TimeTableDayColumn = styled.View<StyledProps & { $isToday?: boolean }>`
     flex: 1;
     border-left-width: 1px;
-    border-left-color: ${props => props.$colors?.border || '#f0f0f0'};
+    border-left-color: ${props => props.theme.dark ? '#f0f0f0' : '#eee'};
     background-color: ${(props) => (props.$isToday ? (props.$colors?.card || '#f7f7f7') : 'transparent')};
 `;
 
 export const HourCell = styled.View<StyledProps>`
     height: 40px;
     border-bottom-width: 1px;
-    border-bottom-color: ${props => props.$colors?.border || '#f0f0f0'};
+    border-bottom-color:  ${props => props.theme.dark ? '#f0f0f0' : '#eee'};
 `;
 
 export const ScheduleBlock = styled.TouchableOpacity<{ top: number; height: number; color: string }>`
     position: absolute;
-    left: 5px;
-    right: 5px;
+    left: 0.1px;
+    right: 0.1px;
     top: ${(props) => props.top}px;
     height: ${(props) => props.height}px;
     background-color: ${(props) => props.color};
     padding: 4px;
-    border-radius: 4px;
+    border-radius: 2px;
     opacity: 0.85;
 `;
 
@@ -280,10 +280,12 @@ export const ScheduleBlockText = styled.Text`
 
 export const ViewModeButtonContainer = styled.View<StyledProps>`
     padding: 0px;
-    border-radius: 20px;
+    border-radius: 25px;
     flex-direction: row;
     justify-content: center;
     padding-vertical: 10px;
+    border: 1.5px solid #9970FF;
+    
     border-bottom-color: ${props => props.$colors?.border || '#eee'};
     background-color: ${props => props.$colors?.card || 'lavender'};
     elevation: 10;
@@ -297,19 +299,19 @@ export const ViewMonthButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
     border-top-left-radius: 20px;
     border-bottom-left-radius: 20px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || 'mediumslateblue') : (props.$colors?.card || 'lavender'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') : (props.theme.dark ? '#2C2C2E' : '#fff'))};
 `
 
 export const ViewWeekButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || 'mediumslateblue') : (props.$colors?.card || 'lavender'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') : (props.theme.dark ? '#2C2C2E' : '#fff'))};
 `
 
 export const ViewDayButton = styled.TouchableOpacity<ViewModeButtonProps>`
     padding: 8px 18px;
     border-top-right-radius: 20px;
     border-bottom-right-radius: 20px;
-    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || 'mediumslateblue') : (props.$colors?.card || 'lavender'))};
+    background-color: ${(props) => (props.$isActive ? (props.$colors?.primary || '#9970FF') : (props.theme.dark ? '#2C2C2E' : '#fff'))};
 `
 
 export const ViewModeButtonText = styled.Text<ViewModeButtonProps>`
