@@ -1,39 +1,52 @@
 import {useSession} from '@/hooks/useAuth';
 import React, {useState, useCallback} from 'react';
 import {
-    View,
-    Text,
     ActivityIndicator,
     Image,
     TouchableOpacity,
-    ScrollView,
     Modal,
-    SafeAreaView,
+    View,
+    Text
 } from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {router, useFocusEffect} from 'expo-router';
 import {useColorScheme} from '@/hooks/useColorScheme';
-import getProfileStylesAndTheme from '@/components/style/ProfileStyled';
+import {Colors} from '@/constants/Colors';
 import api from '@/src/lib/api';
 import DiaryScreen from "@/components/i-log/DiaryScreen";
-import {useTheme} from '@react-navigation/native';
 import {useILog} from '@/src/context/ILogContext';
 import * as I from "@/components/style/I-logStyled";
+import {
+    ProfileContainer,
+    LoadingContainer,
+    ProfileHeaderContainer,
+    Banner,
+    BannerImage,
+    MenuIcon,
+    ProfilePictureContainer,
+    ProfilePicture,
+    ProfilePicturePlaceholder,
+    ProfileInfo,
+    ProfileName,
+    Bio,
+    ModalOverlay,
+    ModalContent,
+    ModalItem,
+    ModalItemText
+} from "@/components/style/ProfileStyled";
 
-// API 응답에 대한 타입 정의 (필드 이름 수정)
 interface UserProfile {
     nickname: string;
     bio: string;
-    profileImage: string | null; // profileImageUrl -> profileImage
-    bannerImage: string | null;  // bannerImageUrl -> bannerImage
+    profileImage: string | null;
+    bannerImage: string | null;
 }
 
 export default function ProfileScreen(): React.JSX.Element {
     const {session} = useSession();
     const [menuVisible, setMenuVisible] = useState(false);
-    const {isDarkColorScheme} = useColorScheme();
-    const {styles, theme: profileTheme} = getProfileStylesAndTheme(isDarkColorScheme);
-    const theme = useTheme();
+    const { colorScheme } = useColorScheme();
+    const theme = Colors[colorScheme];
     const {ilogs} = useILog();
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -70,7 +83,7 @@ export default function ProfileScreen(): React.JSX.Element {
 
     const navigateToSettings = () => {
         setMenuVisible(false);
-        router.push('/settings-main');
+        router.push('/(settings)/settings-main');
     };
 
     const navigateToProfileEdit = () => {
@@ -81,7 +94,7 @@ export default function ProfileScreen(): React.JSX.Element {
     const handleAddPress = () => {
         const simplifiedIlogs = ilogs.map(log => ({
             id: log.id,
-            logDate: log.logDate.toISOString(), // Convert Date to ISO string for passing
+            logDate: log.logDate.toISOString(),
         }));
 
         router.push({
@@ -94,72 +107,68 @@ export default function ProfileScreen(): React.JSX.Element {
 
     if (isLoading) {
         return (
-            <View style={styles.loadingContainer}>
+            <LoadingContainer $colors={theme}>
                 <ActivityIndicator/>
-            </View>
+            </LoadingContainer>
         );
     }
 
-    // 표시할 이름, 프로필 사진, 자기소개를 결정합니다. (변수명 수정)
     const displayName = profile?.nickname ?? session?.user?.name ?? '(No Name)';
     const displayPhoto = profile?.profileImage ?? session?.user?.photo;
     const displayBio = profile?.bio || '자기소개를 작성해주세요.';
     const displayBanner = profile?.bannerImage;
 
     const ProfileHeader = () => (
-        <>
+        <ProfileHeaderContainer>
             <Modal
                 transparent={true}
                 animationType="fade"
                 visible={menuVisible}
                 onRequestClose={() => setMenuVisible(false)}
             >
-                <TouchableOpacity style={styles.modalOverlay} onPress={() => setMenuVisible(false)}>
-                    <View style={styles.modalContent}>
-                        <TouchableOpacity style={styles.modalItem} onPress={navigateToProfileEdit}>
-                            <Text style={styles.modalItemText}>Edit Profile</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.modalItem} onPress={navigateToSettings}>
-                            <Text style={styles.modalItemText}>Settings</Text>
-                        </TouchableOpacity>
-                    </View>
-                </TouchableOpacity>
+                <ModalOverlay onPress={() => setMenuVisible(false)}>
+                    <ModalContent $colors={theme}>
+                        <ModalItem onPress={navigateToProfileEdit}>
+                            <ModalItemText $colors={theme}>Edit Profile</ModalItemText>
+                        </ModalItem>
+                        <ModalItem onPress={navigateToSettings}>
+                            <ModalItemText $colors={theme}>Settings</ModalItemText>
+                        </ModalItem>
+                    </ModalContent>
+                </ModalOverlay>
             </Modal>
 
-            <View style={styles.profileHeader}>
-                <View style={styles.banner}>
-                    {displayBanner && <Image source={{uri: displayBanner}} style={styles.bannerImage}/>}
-                    <TouchableOpacity style={styles.menuIcon} onPress={() => setMenuVisible(true)}>
-                        <Ionicons name="menu" size={32} color={profileTheme.iconColor}/>
-                    </TouchableOpacity>
-                </View>
-                <TouchableOpacity onPress={navigateToProfileEdit} style={styles.profilePictureContainer}>
-                    {displayPhoto ? (
-                        <Image source={{uri: displayPhoto}} style={styles.profilePicture}/>
-                    ) : (
-                        <View style={styles.profilePicturePlaceholder}>
-                            <Ionicons name="person" size={60} color={profileTheme.iconColor}/>
-                        </View>
-                    )}
-                </TouchableOpacity>
-            </View>
+            <Banner $colors={theme}>
+                {displayBanner && <BannerImage source={{uri: displayBanner}}/>}
+                <MenuIcon onPress={() => setMenuVisible(true)}>
+                    <Ionicons name="menu" size={32} color={theme.icon}/>
+                </MenuIcon>
+            </Banner>
+            <ProfilePictureContainer $colors={theme} onPress={navigateToProfileEdit}>
+                {displayPhoto ? (
+                    <ProfilePicture source={{uri: displayPhoto}}/>
+                ) : (
+                    <ProfilePicturePlaceholder $colors={theme}>
+                        <Ionicons name="person" size={60} color={theme.icon}/>
+                    </ProfilePicturePlaceholder>
+                )}
+            </ProfilePictureContainer>
 
-
-            <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>{displayName}</Text>
-                <Text style={styles.bio}>
+            <ProfileInfo $colors={theme}>
+                <ProfileName $colors={theme}>{displayName}</ProfileName>
+                <Bio $colors={theme}>
                     {displayBio}
-                </Text>
-            </View>
-        </>
+                </Bio>
+            </ProfileInfo>
+        </ProfileHeaderContainer>
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <DiaryScreen ListHeader={ProfileHeader}/>
+        <ProfileContainer $colors={theme}>
+            <DiaryScreen ListHeader={ProfileHeader} theme={theme}/>
             <I.ButtonIconWrap onPress={handleAddPress}>
-                <I.ButtonIcon name="square-edit-outline" $colors={theme.colors}/>
+                <I.ButtonIcon name="square-edit-outline" $colors={theme}/>
             </I.ButtonIconWrap>
-        </SafeAreaView>
+        </ProfileContainer>
     );
 }

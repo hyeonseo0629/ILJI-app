@@ -174,11 +174,11 @@ function ThemedAppLayout() {
     const customDefaultTheme: Theme = {
         dark: false,
         colors: {
-            primary: Colors.light.tint,
+            primary: Colors.light.tabIconSelected,
             background: Colors.light.background,
-            card: Colors.light.card,
+            card: Colors.light.background,
             text: Colors.light.text,
-            border: Colors.light.border,
+            border: Colors.light.borderColor,
             notification: Colors.light.notification,
         },
         fonts: {
@@ -192,11 +192,11 @@ function ThemedAppLayout() {
     const customDarkTheme: Theme = {
         dark: true,
         colors: {
-            primary: Colors.dark.tint,
+            primary: Colors.dark.tabIconSelected,
             background: Colors.dark.background,
-            card: Colors.dark.card,
+            card: Colors.dark.background,
             text: Colors.dark.text,
-            border: Colors.dark.border,
+            border: Colors.dark.borderColor,
             notification: Colors.dark.notification,
         },
         fonts: {

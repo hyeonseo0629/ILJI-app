@@ -1,39 +1,22 @@
 import React from 'react';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-} from 'react-native';
-import { useTheme } from '@react-navigation/native';
+    SettingsContainer,
+    SettingsItem,
+    SettingsItemText
+} from '@/components/style/SettingStyled';
 
 export default function AccountSettingsScreen() {
-    const theme = useTheme();
+    const { colorScheme } = useColorScheme();
+    const theme = Colors[colorScheme];
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <SettingsContainer $colors={theme}>
             {/* Delete Account */}
-            <TouchableOpacity style={[styles.settingItem, { borderBottomColor: theme.colors.border }]}
-                onPress={() => console.log('계정 탈퇴 클릭')}>
-                <Text style={[styles.settingText, { color: theme.colors.text }]}>계정 탈퇴</Text>
-            </TouchableOpacity>
-        </View>
+            <SettingsItem $colors={theme} onPress={() => console.log('계정 탈퇴 클릭')}>
+                <SettingsItemText $colors={theme}>계정 탈퇴</SettingsItemText>
+            </SettingsItem>
+        </SettingsContainer>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-    },
-    settingItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 15,
-        borderBottomWidth: 1,
-    },
-    settingText: {
-        fontSize: 18,
-    },
-});

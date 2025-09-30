@@ -3,7 +3,6 @@ import { Modal, TouchableOpacity, View, Dimensions, ScrollView } from 'react-nat
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { LocaleConfig, DateData, Calendar } from 'react-native-calendars';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { useTheme } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Local imports
@@ -16,6 +15,7 @@ import ILogListView from "@/components/i-log/i-logListView";
 // Context and Types imports
 import { useILog } from '@/src/context/ILogContext';
 import { ILog, ILogCreateRequestFrontend, ILogUpdateRequest } from '@/src/types/ilog';
+import { ThemeColors } from '@/types/theme';
 
 // Set calendar locale to Korean
 LocaleConfig.locales['ko'] = {
@@ -38,7 +38,7 @@ interface PageViewCalendarModalProps {
     handleDateSelect: (day: DateData) => void;
     currentCalendarMonth: string;
     setCurrentCalendarMonth: (month: string) => void;
-    theme: any; // TODO: Define a proper theme type
+    theme: ThemeColors;
 }
 
 const PageViewCalendarModal: React.FC<PageViewCalendarModalProps> = ({
@@ -56,12 +56,11 @@ const PageViewCalendarModal: React.FC<PageViewCalendarModalProps> = ({
         visible={isCalendarVisible}
         onRequestClose={() => setCalendarVisible(false)}
     >
-        <TouchableOpacity
-            style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' }}
+        <I.CalendarModalOverlay
             activeOpacity={1}
             onPressOut={() => setCalendarVisible(false)}
         >
-            <View style={{ width: '90%', backgroundColor: theme.colors.card, borderRadius: 10, padding: 10 }} onStartShouldSetResponder={() => true}>
+            <I.CalendarModalContent $colors={theme} onStartShouldSetResponder={() => true}>
                 <Calendar
                     key={isCalendarVisible ? 'page-calendar-open' : 'page-calendar-closed'}
                     markedDates={markedDates}
@@ -71,20 +70,20 @@ const PageViewCalendarModal: React.FC<PageViewCalendarModalProps> = ({
                         setCurrentCalendarMonth(month.dateString);
                     }}
                     theme={{
-                        backgroundColor: theme.colors.card,
-                        calendarBackground: theme.colors.card,
-                        dayTextColor: theme.colors.text,
-                        textDisabledColor: theme.colors.border,
-                        monthTextColor: theme.colors.text,
-                        arrowColor: theme.colors.primary,
-                        selectedDayBackgroundColor: theme.colors.primary,
-                        selectedDayTextColor: 'white',
-                        todayTextColor: theme.colors.primary,
-                        dotColor: theme.colors.primary,
+                        backgroundColor: theme.background,
+                        calendarBackground: theme.background,
+                        dayTextColor: theme.text,
+                        textDisabledColor: theme.borderColor,
+                        monthTextColor: theme.text,
+                        arrowColor: theme.pointColors.purple,
+                        selectedDayBackgroundColor: theme.pointColors.purple,
+                        selectedDayTextColor: theme.pointColors.white,
+                        todayTextColor: theme.pointColors.purple,
+                        dotColor: theme.pointColors.purple,
                     }}
                 />
-            </View>
-        </TouchableOpacity>
+            </I.CalendarModalContent>
+        </I.CalendarModalOverlay>
     </Modal>
 );
 
@@ -121,8 +120,7 @@ const DeletionSuccessModal: React.FC<DeletionSuccessModalProps> = ({
 );
 
 
-export default function DiaryScreen({ListHeader}: { ListHeader?: React.ComponentType<any> | React.ReactElement | null | undefined; }) {
-    const theme = useTheme();
+export default function DiaryScreen({ListHeader, theme}: { ListHeader?: React.ComponentType<any> | React.ReactElement | null | undefined; theme: ThemeColors }) {
     const router = useRouter();
     const params = useLocalSearchParams();
 
@@ -217,13 +215,13 @@ export default function DiaryScreen({ListHeader}: { ListHeader?: React.Component
         daysInMonth.forEach(day => {
             const dateString = format(day, 'yyyy-MM-dd');
             if (logsByDate[dateString]) {
-                markings[dateString] = { marked: true, dotColor: theme.colors.primary };
+                markings[dateString] = { marked: true, dotColor: theme.pointColors.purple };
             } else {
                 markings[dateString] = { disabled: true, disableTouchEvent: true };
             }
         });
         return markings;
-    }, [ilogs, currentCalendarMonth, theme.colors.primary]);
+    }, [ilogs, currentCalendarMonth, theme.pointColors.purple]);
 
     // --- Memoized Values (Calendar Logic for List View) ---
     const markedDatesForListCalendar = useMemo(() => {
@@ -240,13 +238,13 @@ export default function DiaryScreen({ListHeader}: { ListHeader?: React.Component
         daysInMonth.forEach(day => {
             const dateString = format(day, 'yyyy-MM-dd');
             if (logsByDate[dateString]) {
-                markings[dateString] = { marked: true, dotColor: theme.colors.primary };
+                markings[dateString] = { marked: true, dotColor: theme.pointColors.purple };
             } else {
                 markings[dateString] = { disabled: true, disableTouchEvent: true };
             }
         });
         return markings;
-    }, [ilogs, currentListCalendarMonth, theme.colors.primary]);
+    }, [ilogs, currentListCalendarMonth, theme.pointColors.purple]);
 
     // Filter ilogs for List View based on type and value
     const filteredListIlogs = useMemo(() => {
@@ -346,12 +344,12 @@ export default function DiaryScreen({ListHeader}: { ListHeader?: React.Component
     const CombinedHeader = () => (
         <>
             {ListHeader && (React.isValidElement(ListHeader) ? ListHeader : React.createElement(ListHeader))}
-            <TabsContainer $colors={theme.colors}>
-                <TabsButton onPress={() => setViewMode('list')} $isActive={viewMode === 'list'} $colors={theme.colors}>
-                    <MaterialCommunityIcons name="format-list-bulleted" size={28} color={viewMode === 'list' ? theme.colors.primary : theme.colors.text} />
+            <TabsContainer $colors={theme}>
+                <TabsButton onPress={() => setViewMode('list')} $isActive={viewMode === 'list'} $colors={theme}>
+                    <MaterialCommunityIcons name="format-list-bulleted" size={28} color={viewMode === 'list' ? theme.pointColors.purple : theme.text} />
                 </TabsButton>
-                <TabsButton onPress={() => setViewMode('page')} $isActive={viewMode === 'page'} $colors={theme.colors}>
-                    <MaterialCommunityIcons name="book-open-page-variant-outline" size={28} color={viewMode === 'page' ? theme.colors.primary : theme.colors.text} />
+                <TabsButton onPress={() => setViewMode('page')} $isActive={viewMode === 'page'} $colors={theme}>
+                    <MaterialCommunityIcons name="book-open-page-variant-outline" size={28} color={viewMode === 'page' ? theme.pointColors.purple : theme.text} />
                 </TabsButton>
             </TabsContainer>
         </>

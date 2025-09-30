@@ -1,28 +1,37 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    TextInput,
     ActivityIndicator,
     Alert,
-    Image,
-    ScrollView,
     Platform,
 } from 'react-native';
-import { useTheme } from '@react-navigation/native';
 import debounce from 'lodash/debounce';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import api from '../../src/lib/api';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
+import {
+    ProfileEditScrollView,
+    ProfileLoadingContainer,
+    ImageSection,
+    ProfileImage,
+    ImageChangeButton,
+    ChangeButtonText,
+    NicknameSection,
+    Label,
+    StyledInput,
+    FeedbackContainer,
+    ErrorText,
+    SaveButton,
+    SaveButtonText
+} from '@/components/style/SettingStyled';
 
 type ManipulatedImageResult = Awaited<ReturnType<typeof ImageManipulator.manipulateAsync>>;
 
-console.log("--- AI DEBUG: File updated at " + new Date().toISOString() + " ---");
-
 export default function ProfileEditScreen() {
-    const theme = useTheme();
+    const { colorScheme } = useColorScheme();
+    const theme = Colors[colorScheme];
+
     const [nickname, setNickname] = useState('');
     const [newNickname, setNewNickname] = useState('');
     const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -168,114 +177,52 @@ export default function ProfileEditScreen() {
 
     if (isLoading) {
         return (
-            <View style={[styles.container, { justifyContent: 'center' }]}>
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-            </View>
+            <ProfileLoadingContainer $colors={theme}>
+                <ActivityIndicator size="large" color={theme.pointColors.purple} />
+            </ProfileLoadingContainer>
         );
     }
 
     const displayImageUri = newProfileImage?.uri || profileImage;
 
     return (
-        <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            <View style={styles.imageSection}>
-                <Image
+        <ProfileEditScrollView $colors={theme}>
+            <ImageSection>
+                <ProfileImage
+                    $colors={theme}
                     source={displayImageUri ? { uri: displayImageUri } : require('../../assets/images/logo.png')}
-                    style={styles.profileImage}
                 />
-                <TouchableOpacity onPress={pickImage} style={styles.imageChangeButton}>
-                    <Text style={[styles.changeButtonText, { color: theme.colors.primary }]}>사진 변경</Text>
-                </TouchableOpacity>
-            </View>
+                <ImageChangeButton onPress={pickImage}>
+                    <ChangeButtonText $colors={theme}>사진 변경</ChangeButtonText>
+                </ImageChangeButton>
+            </ImageSection>
 
-            <View style={styles.nicknameSection}>
-                <Text style={[styles.label, { color: theme.colors.text }]}>닉네임</Text>
-                <TextInput
-                    style={[
-                        styles.input,
-                        { color: theme.colors.text, borderColor: theme.colors.border },
-                        nicknameError ? { borderColor: theme.colors.notification } : {}
-                    ]}
+            <NicknameSection>
+                <Label $colors={theme}>닉네임</Label>
+                <StyledInput
+                    $colors={theme}
                     value={newNickname}
                     onChangeText={handleNicknameChange}
                     autoCapitalize="none"
                     maxLength={10}
+                    hasError={!!nicknameError}
                 />
-                <View style={styles.feedbackContainer}>
+                <FeedbackContainer>
                     {isChecking ? (
                         <ActivityIndicator size="small" />
                     ) : (
-                        nicknameError && <Text style={[styles.errorText, { color: theme.colors.notification }]}>{nicknameError}</Text>
+                        nicknameError && <ErrorText $colors={theme}>{nicknameError}</ErrorText>
                     )}
-                </View>
-            </View>
+                </FeedbackContainer>
+            </NicknameSection>
 
-            <TouchableOpacity
-                style={[styles.saveButton, { backgroundColor: theme.colors.primary }]}
-                onPress={handleSave}
-                disabled={isSaving}
-            >
+            <SaveButton $colors={theme} onPress={handleSave} disabled={isSaving}>
                 {isSaving ? (
                     <ActivityIndicator color="#fff" />
                 ) : (
-                    <Text style={styles.saveButtonText}>저장</Text>
+                    <SaveButtonText>저장</SaveButtonText>
                 )}
-            </TouchableOpacity>
-        </ScrollView>
+            </SaveButton>
+        </ProfileEditScrollView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-    },
-    imageSection: {
-        alignItems: 'center',
-        marginBottom: 30,
-    },
-    profileImage: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        backgroundColor: '#ccc',
-    },
-    imageChangeButton: {
-        marginTop: 10,
-    },
-    changeButtonText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    nicknameSection: {
-        marginBottom: 30,
-    },
-    label: {
-        fontSize: 18,
-        marginBottom: 10,
-    },
-    input: {
-        fontSize: 16,
-        borderWidth: 1,
-        borderRadius: 5,
-        padding: 10,
-    },
-    feedbackContainer: {
-        paddingVertical: 5,
-        height: 20,
-    },
-    errorText: {
-        fontSize: 12,
-    },
-    saveButton: {
-        padding: 15,
-        borderRadius: 5,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    saveButtonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-});

@@ -18,7 +18,7 @@ export const ModalContainer = styled.View<StyledProps>`
   border-radius: 15px;
   padding: 20px;
   align-items: center;
-  shadow-color: #000;
+  shadow-color: ${props => props.$colors.text};
   shadow-offset: {
     width: 0;
     height: 2px;
@@ -66,7 +66,7 @@ export const ConfirmButton = styled(ModalButton)`
 
 export const ButtonText = styled.Text<StyledProps>`
   font-size: 16px;
-  color: white;
+  color: ${props => props.$colors.card};
 `;
 
 export const CancelButtonText = styled(ButtonText)`

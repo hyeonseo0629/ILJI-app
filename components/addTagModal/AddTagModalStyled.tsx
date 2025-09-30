@@ -75,7 +75,7 @@ export const ActionButton = styled.TouchableOpacity<StyledProps & { primary?: bo
     padding: 15px;
     align-items: center;
     border-radius: 8px;
-    background-color: ${props => (props.primary ? (props.$colors?.primary || 'mediumslateblue') : (props.$colors?.card || '#f0f0f0'))};
+    background-color: ${props => (props.primary ? (props.$colors?.primary || '#9970FF') : (props.$colors?.card || '#f0f0f0'))};
     margin: 0 5px;
 `;
 
