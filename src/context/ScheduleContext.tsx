@@ -220,7 +220,6 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         try {
             const payload = {
                 ...newScheduleData,
-                userId: userId, // 동적 userId 사용
                 startTime: newScheduleData.isAllDay
                     ? format(newScheduleData.startTime, "yyyy-MM-dd'T'00:00:00")
                     : format(newScheduleData.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
