@@ -197,7 +197,11 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                                     <DS.DateTimeInfo>
                                         <DS.CalendarIcon name="event" size={40} color="#888" />
                                         <DS.DateTimeTexts>
-                                            <DS.DateText>{format(formData.startTime, 'yyyy. MM. dd')}</DS.DateText>
+                                            <DS.DateText>
+                                                {format(formData.startTime, 'yyyyMMdd') === format(formData.endTime, 'yyyyMMdd')
+                                                    ? format(formData.startTime, 'yyyy. MM. dd')
+                                                    : `${format(formData.startTime, 'yyyy. MM. dd')} ~ ${format(formData.endTime, 'yyyy. MM. dd')}`}
+                                            </DS.DateText>
                                             {formData.isAllDay ? (
                                                 <DS.TimeText>ALL DAY</DS.TimeText>
                                             ) : (

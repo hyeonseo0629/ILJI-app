@@ -61,7 +61,7 @@
     "extra": {
       "GOOGLE_WEB_CLIENT_ID": "292298493030-l45okif1kf6pjm7llngs94jvlv56hrus.apps.googleusercontent.com",
       "GOOGLE_IOS_CLIENT_ID": "292298493030-8pip95en3s86q8nl6ibnt04t76p4tsm7.apps.googleusercontent.com",
-      "API_BASE_URL": "http://localhost:8090",
+      "API_BASE_URL": "http://192.168.2.27:8090",
       "router": {},
       "eas": {
         "projectId": "bdcf405c-968d-4397-839b-f9f73495ebed"
