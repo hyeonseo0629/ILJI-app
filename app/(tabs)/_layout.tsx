@@ -12,7 +12,7 @@ import { StyledGestureHandlerRootView } from '@/components/style/MainStyled';
 export default function TabLayout() {
     const { colorScheme } = useColorScheme();
     const theme = Colors[colorScheme];
-
+  
     return (
         <StyledGestureHandlerRootView>
             <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'}/>

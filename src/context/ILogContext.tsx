@@ -16,7 +16,7 @@ interface ILogContextType {
     getILogByDate: (date: Date) => Promise<ILog | null>;
     getPreviousILog: (date: Date) => Promise<ILog | null>;
     getNextILog: (date: Date) => Promise<ILog | null>;
-    updateILog: (logId: number, request: ILogUpdateRequest, newImages?: any[] ) => Promise<ILog | null>;
+    updateILog: (logId: number, request: ILogUpdateRequest) => Promise<ILog | null>;
 }
 
 const ILogContext = createContext<ILogContextType | undefined>(undefined);
@@ -40,61 +40,44 @@ export function ILogProvider({ children }: ILogProviderProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
-    const formatRawILog = useCallback((raw: RawILog): ILog => {
-        console.log("formatRawILog 입력 raw:", raw);
-        return {
-            id: raw.id,
-            userId: raw.userId,
-            writerNickname: raw.writerNickname,
-            writerProfileImage: raw.writerProfileImage,
-            logDate: new Date(raw.logDate),
-            content: raw.content,
-            images: raw.images.map(url => {
-                // Regex to capture the object path between /o/ and ? or end of string
-                const regex = /\/o\/(.*?)(?:\?|$)/;
-                const match = url.match(regex);
-                if (match && match[1]) {
-                    const objectPath = match[1]; // e.g., ilog/image.jpeg
-                    // Replace all / with %2F within the object path
-                    const encodedObjectPath = objectPath.replace(/\//g, '%2F');
-                    return url.replace(objectPath, encodedObjectPath);
-                }
-                return url; // Return original URL if regex doesn't match
-            }),
-            visibility: Number(raw.visibility),
-            friendTags: raw.friendTags,
-            likeCount: raw.likeCount,
-            commentCount: raw.commentCount,
-            createdAt: new Date(raw.createdAt),
-        };
-    }, []);
+    const formatRawILog = useCallback((raw: RawILog): ILog => ({
+        id: raw.id,
+        userId: raw.userId,
+        writerNickname: raw.writerNickname,
+        writerProfileImage: raw.writerProfileImage,
+        logDate: new Date(raw.logDate),
+        content: raw.content,
+        images: raw.images.map(url => {
+            const regex = /\/o\/(.*?)(?:\?|$)/;
+            const match = url.match(regex);
+            if (match && match[1]) {
+                const objectPath = match[1];
+                const encodedObjectPath = objectPath.replace(/\//g, '%2F');
+                return url.replace(objectPath, encodedObjectPath);
+            }
+            return url;
+        }),
+        visibility: Number(raw.visibility),
+        friendTags: raw.friendTags,
+        likeCount: raw.likeCount,
+        commentCount: raw.commentCount,
+        createdAt: new Date(raw.createdAt),
+    }), []);
 
     const fetchILogs = useCallback(async () => {
-        console.log("--- fetchILogs 시작 ---");
-        if (!userId) {
-            console.log("userId가 없어 fetchILogs 실행 중단.");
-            return;
-        }
-        console.log("현재 userId:", userId);
+        if (!userId) return;
         setLoading(true);
         try {
             const response = await api.get<RawILog[]>('/mobile/i-log', {
                 timeout: 30000 // I-Log 목록 조회에만 30초 타임아웃 적용
             });
-            console.log("API 응답 데이터 (raw):", response.data);
-            const processedIlogs = response.data.map(item => {
-                console.log("map 함수에 전달된 item:", item);
-                return formatRawILog(item);
-            }).sort((a, b) => b.logDate.getTime() - a.logDate.getTime());
-            setIlogs(processedIlogs);
-            console.log("처리된 ilogs:", processedIlogs);
+            setIlogs(response.data.map(formatRawILog).sort((a, b) => b.logDate.getTime() - a.logDate.getTime()));
             setError(null);
         } catch (err) {
             console.error("i-log 목록 로딩 실패:", err);
             setError(err as Error);
         } finally {
             setLoading(false);
-            console.log("--- fetchILogs 종료 ---");
         }
     }, [userId, formatRawILog]);
 
@@ -104,58 +87,33 @@ export function ILogProvider({ children }: ILogProviderProps) {
 
     const createILog = useCallback(async (data: { request: ILogCreateRequestFrontend; images?: any[] }): Promise<ILog | null> => {
         if (!userId) return null;
-        console.log('--- Starting createILog process ---');
         setLoading(true);
-
         try {
             const formData = new FormData();
-
-            // JSON 데이터를 Blob으로 변환하여 FormData에 추가
             formData.append('request', JSON.stringify(data.request));
-            console.log('Appended request data:', data.request);
-
-            // 이미지 추가
             data.images?.forEach((image, idx) => {
-                console.log(`--- Processing image ${idx} ---`);
-                console.log('Image asset details:', JSON.stringify(image, null, 2));
                 formData.append('images', {
                     uri: image.path,
                     name: image.filename || `image-${Date.now()}-${idx}.jpg`,
                     type: image.mime || 'image/jpeg',
                 } as any);
             });
-
-            console.log('Final FormData object being sent:', JSON.stringify(formData, null, 2));
-            console.log('--- Sending request to /mobile/i-log ---');
-
             const response = await api.post<RawILog>('/mobile/i-log', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
             const newLog = formatRawILog(response.data);
             setIlogs(prev => [newLog, ...prev].sort((a, b) => b.logDate.getTime() - a.logDate.getTime()));
-
             return newLog;
         } catch (err) {
-            if (axios.isAxiosError(err)) {
-                console.error("--- Axios Error Details ---");
-                console.error("Message:", err.message);
-                console.error("Status:", err.status);
-                console.error("Request Config:", JSON.stringify(err.config, null, 2));
-                if (err.response) {
-                    console.error("Response Status:", err.response.status);
-                    console.error("Response Data:", JSON.stringify(err.response.data, null, 2));
-                }
+            if (axios.isAxiosError(err) && err.response) {
+                console.error("--- Axios Error Details ---", err.response.data);
             } else {
-                console.error("--- Non-Axios Error ---");
-                console.error(err);
+                console.error("--- Non-Axios Error ---", err);
             }
             Alert.alert("오류", "일기를 생성하는 데 실패했습니다.");
             return null;
         } finally {
             setLoading(false);
-            console.log('--- Finished createILog process ---');
         }
     }, [userId, formatRawILog]);
 
@@ -177,11 +135,6 @@ export function ILogProvider({ children }: ILogProviderProps) {
             const response = await api.get<RawILog>(`/mobile/i-log/date/${dateStr}`);
             return formatRawILog(response.data);
         } catch (err) {
-            if (axios.isAxiosError(err) && err.response?.status === 404) {
-                console.log(`No i-log found for date: ${dateStr}`);
-            } else {
-                console.error(`i-log (date: ${dateStr}) 조회 실패:`, err);
-            }
             return null;
         }
     }, [userId, formatRawILog]);
@@ -211,14 +164,19 @@ export function ILogProvider({ children }: ILogProviderProps) {
     const updateILog = useCallback(async (logId: number, request: ILogUpdateRequest): Promise<ILog | null> => {
         if (!userId) return null;
         setLoading(true);
-
         try {
             const formData = new FormData();
-            const { newImageAssets, removedImageUrls, ...requestData } = request;
 
+            // 1. DTO에 맞게 request JSON을 재구성합니다.
+            const requestData = {
+                content: request.content,
+                visibility: request.visibility,
+                existingImageUrls: request.existingImageUrls || []
+            };
             formData.append('request', JSON.stringify(requestData));
 
-            newImageAssets?.forEach((image, index) => {
+            // 2. 새로 추가된 파일만 images 파트에 추가합니다.
+            request.newImageAssets?.forEach((image, index) => {
                 formData.append('images', {
                     uri: image.uri,
                     name: image.fileName || `image-${Date.now()}-${index}.jpg`,
@@ -226,17 +184,17 @@ export function ILogProvider({ children }: ILogProviderProps) {
                 } as any);
             });
 
-            console.log('FormData being sent for updateILog:', formData);
-
             const response = await api.put<RawILog>(`/mobile/i-log/${logId}`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
+
             const updatedLog = formatRawILog(response.data);
             setIlogs(prev => prev.map(log => log.id === logId ? updatedLog : log).sort((a, b) => b.logDate.getTime() - a.logDate.getTime()));
             return updatedLog;
         } catch (err) {
+            if (axios.isAxiosError(err) && err.response) {
+                console.error("--- Axios Error Details for Update ---", err.response.data);
+            }
             console.error(`i-log (id: ${logId}) 업데이트 실패:`, err);
             Alert.alert("오류", "일기를 업데이트하는 데 실패했습니다.");
             return null;

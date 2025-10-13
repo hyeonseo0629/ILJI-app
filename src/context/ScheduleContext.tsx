@@ -272,7 +272,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const createTag = useCallback(async (tagData: { label: string, color: string }): Promise<Tag> => {
         if (!userId) throw new Error("User not logged in");
         try {
-            const payload = { ...tagData, userId: userId }; // 동적 userId 사용
+            const payload = { ...tagData }; // 동적 userId 사용
             const response = await api.post<Tag>('/tags', payload);
             const newTag = response.data;
 
@@ -292,7 +292,11 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const updateTag = useCallback(async (tagToUpdate: Tag) => {
         if (!userId) return;
         try {
-            const payload = { ...tagToUpdate, userId: userId }; // 동적 userId 사용
+            const payload = {
+                label: tagToUpdate.label,
+                color: tagToUpdate.color,
+                visibility: tagToUpdate.visibility
+            };
             const response = await api.put<Tag>(`/tags/${tagToUpdate.id}`, payload);
             const updatedTag = response.data;
             setTags(prevEvents =>
