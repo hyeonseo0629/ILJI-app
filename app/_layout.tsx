@@ -14,13 +14,9 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import api from '@/src/lib/api'; // Import the centralized API instance
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {ILogProvider} from "@/src/context/ILogContext";
-import {usePushNotifications} from "@/hooks/usePushNotifications";
 
 
 function Layout() {
-
-    usePushNotifications(); // Call the hook here
-
     const isnets = useSafeAreaInsets();
 
     const {session, isLoading, signOut} = useSession();

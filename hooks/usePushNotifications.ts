@@ -36,7 +36,7 @@ async function registerForPushNotificationsAsync() {
       finalStatus = status;
     }
     if (finalStatus !== 'granted') {
-      alert('Failed to get push token for push notification!');
+      console.error('Failed to get push token for push notification!');
       return;
     }
     // Learn more about projects: https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-project-id

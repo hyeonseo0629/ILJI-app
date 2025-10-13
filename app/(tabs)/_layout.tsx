@@ -8,10 +8,12 @@ import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { StatusBar } from "expo-status-bar";
 import { StyledGestureHandlerRootView } from '@/components/style/MainStyled';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export default function TabLayout() {
     const { colorScheme } = useColorScheme();
     const theme = Colors[colorScheme];
+    usePushNotifications();
   
     return (
         <StyledGestureHandlerRootView>

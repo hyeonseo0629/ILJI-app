@@ -14,11 +14,13 @@ import {AntDesign} from "@expo/vector-icons";
 import CreateTagModal from "@/components/addTagModal/Add-tagmodal";
 import {useTheme} from '@react-navigation/native'; // useTheme import 추가
 import TagSelectionModal from "@/components/tag/TagSelectionModal";
+import { useSession } from '@/hooks/useAuth';
 
 // 실제 앱에서는 이 화면으로 이동할 때 tags 목록을 prop으로 전달받거나
 // 전역 상태(global state)에서 가져와야 합니다. 여기서는 예시로 사용합니다.
 
 const AddScheduleScreen = () => {
+    const { session } = useSession();
     const theme = useTheme(); // useTheme 훅 사용
 
     const router = useRouter();
@@ -116,6 +118,11 @@ const AddScheduleScreen = () => {
     };
 
     const handleSave = async () => {
+        const userId = session?.user?.id;
+        if (!userId) {
+            Alert.alert('오류', '세션이 만료되었거나 사용자 정보가 없습니다. 다시 로그인해주세요.');
+            return;
+        }
         if (!title.trim()) {
             Alert.alert('오류', '제목은 필수 항목입니다.');
             return;
@@ -138,7 +145,7 @@ const AddScheduleScreen = () => {
             startTime: startTime,
             endTime: endTime,
             isAllDay: isAllDay,
-            calendarId: 1, // Assuming a default calendarId
+            calendarId: userId,
             reminderMinutesBefore: reminderMinutesBefore,
         };
 
