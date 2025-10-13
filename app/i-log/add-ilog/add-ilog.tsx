@@ -223,6 +223,13 @@ export default function AddILogScreen() {
         setModalContainerLayout(null);
     };
 
+    const handleCancelEditedImage = () => {
+        setEmojiEditorVisible(false);
+        setImageToEdit(null);
+        setEditingImageIndex(null);
+        setModalContainerLayout(null);
+    };
+
     useEffect(() => { if (captureQueue.length > 0) { setIsImageLoadedForCapture(false); } }, [captureQueue]);
 
     useEffect(() => {
@@ -379,7 +386,7 @@ export default function AddILogScreen() {
                         </ScrollView>
                     </I.EmojiContainer>
                     <I.EditorFooter $colors={theme}>
-                        <I.EditorFooterButton onPress={handleSaveEditedImage}><I.EditorFooterButtonText $colors={theme}>Cancel</I.EditorFooterButtonText></I.EditorFooterButton>
+                        <I.EditorFooterButton onPress={handleCancelEditedImage}><I.EditorFooterButtonText $colors={theme}>Cancel</I.EditorFooterButtonText></I.EditorFooterButton>
                         <I.EditorFooterButton onPress={handleSaveEditedImage}><I.EditorFooterButtonText $colors={theme} isPrimary={true}>Save</I.EditorFooterButtonText></I.EditorFooterButton>
                     </I.EditorFooter>
                 </Modal>

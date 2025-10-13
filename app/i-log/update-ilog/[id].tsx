@@ -134,7 +134,6 @@ export default function UpdateILogScreen() {
     const [originalImageUrls, setOriginalImageUrls] = useState<string[]>([]); // For tracking removed images
     const [textAreaHeight, setTextAreaHeight] = useState(200);
     const [selectedLogDate, setSelectedLogDate] = useState<Date | null>(new Date());
-    const [isCalendarVisible, setCalendarVisible] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [visibility, setVisibility] = useState(0);
 
@@ -166,7 +165,24 @@ export default function UpdateILogScreen() {
             setSelectedLogDate(new Date(log.logDate));
             setVisibility(Number(log.visibility));
             setOriginalImageUrls(log.images || []);
-            setImageAssets((log.images || []).map(uri => ({ path: uri, stickers: [], originalUrl: uri })));
+
+            const fetchImageDimensions = async () => {
+                const assetsWithDimensions = await Promise.all(
+                    (log.images || []).map(uri =>
+                        new Promise<ImageAsset>((resolve) => {
+                            Image.getSize(uri, (width, height) => {
+                                resolve({ path: uri, stickers: [], originalUrl: uri, width, height });
+                            }, (error) => {
+                                console.error(`Couldn't get size for image ${uri}`, error);
+                                resolve({ path: uri, stickers: [], originalUrl: uri });
+                            });
+                        })
+                    )
+                );
+                setImageAssets(assetsWithDimensions);
+            };
+
+            fetchImageDimensions();
         }
     }, [id, ilogs]);
 
@@ -243,6 +259,13 @@ export default function UpdateILogScreen() {
         setModalContainerLayout(null);
     };
 
+    const handleCancelEditedImage = () => {
+        setEmojiEditorVisible(false);
+        setImageToEdit(null);
+        setEditingImageIndex(null);
+        setModalContainerLayout(null);
+    };
+
     useEffect(() => { if (captureQueue.length > 0) { setIsImageLoadedForCapture(false); } }, [captureQueue]);
 
     useEffect(() => {
@@ -267,18 +290,30 @@ export default function UpdateILogScreen() {
     useEffect(() => {
         const finalizeSave = async () => {
             if (isSaving && captureQueue.length === 0 && processedImages.length === imageAssets.length) {
-                const newImageAssets = processedImages.filter(img => !img.originalUrl).map(img => ({ ...img, uri: img.path }));
-                const existingImageUrls = processedImages.filter(img => img.originalUrl).map(img => img.originalUrl!);
+                const newImageAssets: any[] = [];
+                const existingImageUrls: string[] = [];
+                let removedImageUrls = originalImageUrls.filter(url => 
+                    !imageAssets.some(asset => asset.originalUrl === url)
+                );
 
-                const currentImageUrls = imageAssets.map(asset => asset.originalUrl).filter(Boolean) as string[];
-                const removedImageUrls = originalImageUrls.filter(url => !currentImageUrls.includes(url));
+                processedImages.forEach(img => {
+                    if (img.filename) {
+                        newImageAssets.push({ ...img, uri: img.path });
+                        if (img.originalUrl) {
+                            removedImageUrls.push(img.originalUrl);
+                        }
+                    } 
+                    else if (img.originalUrl) {
+                        existingImageUrls.push(img.originalUrl);
+                    }
+                });
 
                 const updateRequest: ILogUpdateRequest = {
                     content: content,
                     visibility: visibility,
                     existingImageUrls: existingImageUrls,
                     newImageAssets: newImageAssets,
-                    removedImageUrls: removedImageUrls,
+                    removedImageUrls: [...new Set(removedImageUrls)],
                 };
 
                 try {
@@ -339,7 +374,7 @@ export default function UpdateILogScreen() {
                 <View style={{flex: 1}}>
                     <I.Container>
                         <I.AddWrap contentContainerStyle={{paddingBottom: 40 + keyboardHeight}} stickyHeaderIndices={[0]}>
-                            <I.AddHeader onPress={() => setCalendarVisible(true)} $colors={theme}>
+                            <I.AddHeader $colors={theme}>
                                 <I.AddIconWrap><AntDesign name="calendar" size={30} color={theme.pointColors.purple}/></I.AddIconWrap>
                                 <I.AddHeaderText $colors={theme}>{selectedLogDate && !doesLogExistForSelectedDate ? format(selectedLogDate, 'yyyy년 MM월 dd일') : '날짜를 선택해주세요.'}</I.AddHeaderText>
                             </I.AddHeader>
@@ -395,13 +430,6 @@ export default function UpdateILogScreen() {
                     </I.AddSuggestionContainer>
                 </View>
 
-                <Modal animationType="fade" transparent={true} visible={isCalendarVisible} onRequestClose={() => setCalendarVisible(false)}>
-                    <I.CalendarModalOverlay activeOpacity={1} onPressOut={() => setCalendarVisible(false)}>
-                        <I.CalendarModalContent $colors={theme} onStartShouldSetResponder={() => true}>
-                            <Calendar onDayPress={(day) => { if (calendarMarkedDates[day.dateString]?.disabled) { Alert.alert("알림", "이미 일기가 작성된 날짜입니다."); return; } setSelectedLogDate(new Date(day.dateString)); setCalendarVisible(false); }} markedDates={calendarMarkedDates} maxDate={format(new Date(), 'yyyy-MM-dd')} theme={{ backgroundColor: theme.background, calendarBackground: theme.background, dayTextColor: theme.text, textDisabledColor: theme.borderColor, monthTextColor: theme.text, textSectionTitleColor: theme.text, selectedDayBackgroundColor: theme.pointColors.purple, selectedDayTextColor: theme.pointColors.white, todayTextColor: theme.pointColors.purple, arrowColor: theme.pointColors.purple }}/>
-                        </I.CalendarModalContent>
-                    </I.CalendarModalOverlay>
-                </Modal>
 
                 <Modal animationType={"slide"} transparent={false} visible={isEmojiEditorVisible} onRequestClose={handleSaveEditedImage}>
                     <I.EmojiEditorContainer $colors={theme}>
@@ -416,7 +444,7 @@ export default function UpdateILogScreen() {
                         </ScrollView>
                     </I.EmojiContainer>
                     <I.EditorFooter $colors={theme}>
-                        <I.EditorFooterButton onPress={handleSaveEditedImage}><I.EditorFooterButtonText $colors={theme}>Cancel</I.EditorFooterButtonText></I.EditorFooterButton>
+                        <I.EditorFooterButton onPress={handleCancelEditedImage}><I.EditorFooterButtonText $colors={theme}>Cancel</I.EditorFooterButtonText></I.EditorFooterButton>
                         <I.EditorFooterButton onPress={handleSaveEditedImage}><I.EditorFooterButtonText $colors={theme} isPrimary={true}>Save</I.EditorFooterButtonText></I.EditorFooterButton>
                     </I.EditorFooter>
                 </Modal>

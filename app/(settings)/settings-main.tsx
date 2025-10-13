@@ -56,7 +56,7 @@ export default function SettingsScreen() {
                         value={isDarkColorScheme}
                         onValueChange={toggleColorScheme}
                         trackColor={{ false: theme.icon, true: theme.pointColors.blue }}
-                        thumbColor={isDarkColorScheme ? theme.pointColors.yellow : '#f4f3f4'}
+                        thumbColor={isDarkColorScheme ? theme.pointColors.yellow : theme.background}
                     />
                 </SettingsItemView>
             </View>
