@@ -167,7 +167,7 @@ export default function ProfileScreen(): React.JSX.Element {
         <ProfileContainer $colors={theme}>
             <DiaryScreen ListHeader={ProfileHeader} theme={theme}/>
             <I.ButtonIconWrap onPress={handleAddPress}>
-                <I.ButtonIcon name="square-edit-outline" $colors={theme}/>
+                <I.ButtonIcon name="square-edit-outline" $colors={theme} color='#7B68EE'/>
             </I.ButtonIconWrap>
         </ProfileContainer>
     );

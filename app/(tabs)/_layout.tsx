@@ -15,7 +15,7 @@ export default function TabLayout() {
   
     return (
         <StyledGestureHandlerRootView>
-            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'}/>
+            <StatusBar style="dark"/>
             <Tabs
                 screenOptions={{
                     tabBarActiveTintColor: theme.tabIconSelected,

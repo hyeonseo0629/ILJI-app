@@ -57,14 +57,14 @@ export const IconWrap = styled.View`
 
 export const IconBell = styled(Octicons).attrs({})<StyledProps>`
     padding: 5px;
-    color: ${props => props.$colors?.primary || '#9970FF'};
+    color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
 `
 export const IconMail = styled(Octicons).attrs({})<StyledProps>`
     padding: 5px;
-    color: ${props => props.$colors?.primary || '#9970FF'};
+    color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
 `
 
 export const IconShare = styled(Octicons).attrs({})<StyledProps>`
     padding: 5px;
-    color: ${props => props.$colors?.primary || '#9970FF'};
+    color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
 `

@@ -12,7 +12,7 @@ export const Container = styled.View<StyledProps>`
     height: 100%;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    border: 3px solid ${props => props.$colors?.primary || 'lavender'};
+    border: 3px solid lavender;
 `
 
 // ------ //
@@ -53,7 +53,7 @@ export const TodayText = styled.Text<StyledProps>`
 export const ScheduleAddButton = styled(AntDesign).attrs({})<StyledProps>`
     margin-left: 10px;
     padding: 10px 0; /* 터치 영역 확보 및 수직 정렬 */
-    color: ${props => props.$colors?.primary || '#9970FF'};
+    color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
 `
 
 // ------- //
@@ -70,7 +70,7 @@ export const ContentWrap = styled.View`
 export const VerticalBar = styled.View<StyledProps & { color: string }>`
     width: 4px;
     height: 100%;
-    background-color: ${props => props.color || props.$colors?.border || 'gray'};
+    background-color: ${props => props.color || props.$colors?.borderColor || 'gray'};
     margin-right: 12px; // A bit more space
     border-radius: 2px;
 `;

@@ -221,6 +221,7 @@ export default function HomeScreen() {
                 visible={selectedSchedule !== null}
                 schedule={selectedSchedule}
                 onClose={handleCloseModal}
+                colors={theme}
             />
         </StyledSafeAreaView>
     );

@@ -17,9 +17,11 @@ export const ModalOverlay = styled.View`
 export const ModalContainer = styled.View<StyledProps>`
     width: 90%;
     max-height: 80%;
-    background-color: ${props => props.$colors?.card || 'white'};
+    background-color: ${props => props.$colors?.background || 'white'};
     border-radius: 10px;
     padding: 20px;
+    border-width: 5px;
+    border-color: ${props => props.$colors?.borderColor || 'white'};
 `;
 
 export const ModalHeader = styled.Text<StyledProps>`
@@ -40,7 +42,7 @@ export const TagItem = styled.TouchableOpacity<StyledProps>`
     justify-content: space-between;
     padding: 15px 10px;
     border-bottom-width: 1px;
-    border-bottom-color: ${props => props.$colors?.border || '#eee'};
+    border-bottom-color: ${props => props.$colors?.borderColor || '#eee'};
 `;
 
 export const TagInfo = styled.View`
@@ -61,7 +63,7 @@ export const DeleteButton = styled.TouchableOpacity`
 `;
 
 export const CloseButton = styled.TouchableOpacity<StyledProps>`
-    background-color: ${props => props.$colors?.border || '#f0f0f0'};
+    background-color: ${props => props.$colors?.borderColor || '#f0f0f0'};
     padding: 12px 20px;
     border-radius: 5px;
     align-self: center;
@@ -84,7 +86,7 @@ export const StyledInput = styled.TextInput.attrs<StyledProps>(props => ({
     placeholderTextColor: props.$colors?.text,
 }))<StyledProps>`
     border-width: 1px;
-    border-color: ${props => props.$colors?.border || '#ccc'};
+    border-color: ${props => props.$colors?.borderColor || '#ccc'};
     border-radius: 5px;
     padding: 10px;
     font-size: 16px;
@@ -106,7 +108,7 @@ export const ColorPreview = styled.View<StyledProps & { color: string }>`
     border-radius: 12px;
     background-color: ${(props) => props.color};
     border-width: 1px;
-    border-color: ${props => props.$colors?.border || '#ddd'};
+    border-color: ${props => props.$colors?.borderColor || '#ddd'};
 `;
 
 export const ColorPickerWrapper = styled.View`
@@ -123,7 +125,7 @@ export const ActionButton = styled.TouchableOpacity<StyledProps & { primary?: bo
     flex: 1;
     padding: 12px;
     border-radius: 5px;
-    background-color: ${(props) => (props.primary ? (props.$colors?.primary || '#9970FF') : (props.$colors?.card || '#f0f0f0'))};
+    background-color: ${(props) => (props.primary ? (props.$colors?.pointColors.purple || '#9970FF') : (props.$colors?.background || '#f0f0f0'))};
     align-items: center;
     margin: 0 5px;
 `;
@@ -131,5 +133,5 @@ export const ActionButton = styled.TouchableOpacity<StyledProps & { primary?: bo
 export const ButtonText = styled.Text<StyledProps & { primary?: boolean }>`
     font-size: 16px;
     font-weight: bold;
-    color: ${(props) => (props.primary ? (props.$colors?.card || 'white') : (props.$colors?.text || '#333'))};
+    color: ${(props) => (props.primary ? (props.$colors?.background || 'white') : (props.$colors?.text || '#333'))};
 `;

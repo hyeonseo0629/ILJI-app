@@ -129,6 +129,7 @@ function Layout() {
                                 backgroundColor: theme.colors.background,
                             },
                             headerTintColor: theme.colors.text,
+                            headerShown: false
                         }}
                     />
                     <Stack.Screen
@@ -218,7 +219,7 @@ function ThemedAppLayout() {
                     </ILogProvider>
                 </ScheduleProvider>
             </AuthProvider>
-            <StatusBar style={isDarkColorScheme ? 'light' : 'dark'}/>
+            <StatusBar style="dark"/>
         </ThemeProvider>
     );
 }

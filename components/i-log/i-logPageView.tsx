@@ -19,10 +19,14 @@ import {format} from 'date-fns';
 import {AntDesign, EvilIcons} from '@expo/vector-icons';
 import {useRouter} from "expo-router";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
+import {useColorScheme} from "@/hooks/useColorScheme";
+import {Colors} from "@/constants/Colors";
 
 const {width} = Dimensions.get("window");
 
 const DiaryPage = ({item, onDatePress, onImagePress}: { item: ILog, onDatePress: () => void, onImagePress: (url: string) => void }) => {
+    const { colorScheme } = useColorScheme();
+    const theme = Colors[colorScheme];
     const router = useRouter();
     const [activeSlide, setActiveSlide] = React.useState(0);
     const scrollViewRef = React.useRef<ScrollView>(null);
@@ -47,15 +51,15 @@ const DiaryPage = ({item, onDatePress, onImagePress}: { item: ILog, onDatePress:
     const usableScreenHeight = windowHeight - statusBarHeight - navigationBarHeight;
 
     return (
-        <I.PageWrap style={{ height: usableScreenHeight }}>
+        <I.PageWrap style={{ height: usableScreenHeight }} $colors={theme}>
             <I.PageScrollView showsVerticalScrollIndicator={false}>
                 <I.PageHeader>
                     <I.PageDateInfo>
-                        <I.PageDateButton onPress={onDatePress}>
-                            <EvilIcons name="search" size={35} style={{marginBottom: 5}}/>
-                            <I.PageDateText>{format(item.logDate, 'yyyy.MM.dd')}</I.PageDateText>
+                        <I.PageDateButton onPress={onDatePress} $colors={theme}>
+                            <EvilIcons name="search" size={35} style={{marginBottom: 5, color: theme.text}}/>
+                            <I.PageDateText $colors={theme}>{format(item.logDate, 'yyyy.MM.dd')}</I.PageDateText>
                         </I.PageDateButton>
-                        <I.PageTimeText>{format(item.createdAt, 'HH:mm:ss')}</I.PageTimeText>
+                        <I.PageTimeText $colors={theme}>{format(item.createdAt, 'HH:mm:ss')}</I.PageTimeText>
                     </I.PageDateInfo>
                 </I.PageHeader>
 
@@ -78,8 +82,9 @@ const DiaryPage = ({item, onDatePress, onImagePress}: { item: ILog, onDatePress:
                                 <TouchableOpacity key={index} onPress={() => onImagePress(imageUri)}>
                                     <I.CarouselItemWrapper
                                         isLast={index === item.images.length - 1}
+                                        $colors={theme}
                                     >
-                                        <I.PageImage source={{uri: imageUri}}/>
+                                        <I.PageImage source={{uri: imageUri}} $colors={theme}/>
                                         <I.PageStatsContainer>
                                             <I.PageStatItem>
                                                 <AntDesign name="heart" size={14} color="white"/>
@@ -115,7 +120,7 @@ const DiaryPage = ({item, onDatePress, onImagePress}: { item: ILog, onDatePress:
                                     >
                                         <Text style={{
                                             fontSize: 24,
-                                            color: activeSlide === index ? 'black' : 'gray',
+                                            color: activeSlide === index ? theme.text : theme.borderColor,
                                             marginHorizontal: 4
                                         }}>•</Text>
                                     </TouchableOpacity>
@@ -128,14 +133,14 @@ const DiaryPage = ({item, onDatePress, onImagePress}: { item: ILog, onDatePress:
                     {parsedFriendTags.length > 0 && (
                         <I.PageFriendTagsContainer>
                             {parsedFriendTags.map(tag => (
-                                <I.PageFriendTag key={tag.id}>
-                                    <I.PageFriendTagText>@{tag.name}</I.PageFriendTagText>
+                                <I.PageFriendTag key={tag.id} $colors={theme}>
+                                    <I.PageFriendTagText $colors={theme}>@{tag.name}</I.PageFriendTagText>
                                 </I.PageFriendTag>
                             ))}
                         </I.PageFriendTagsContainer>
                     )}
 
-                    <I.PageContent>{item.content}</I.PageContent>
+                    <I.PageContent $colors={theme}>{item.content}</I.PageContent>
                 </TouchableOpacity>
             </I.PageScrollView>
         </I.PageWrap>
@@ -155,6 +160,8 @@ const ILogPageView = ({
     onPageChange: (index: number) => void;
     ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null | undefined; // New prop type
 }) => {
+    const { colorScheme } = useColorScheme();
+    const theme = Colors[colorScheme];
     const flatListRef = useRef<FlatList<ILog>>(null);
     const [isImageModalVisible, setImageModalVisible] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState('');
@@ -225,9 +232,9 @@ const ILogPageView = ({
 
     if (!ilogs || ilogs.length === 0) {
         return (
-            <I.PageNoContentWrap style={{ height: usableScreenHeight }}>
+            <I.PageNoContentWrap style={{ height: usableScreenHeight }} $colors={theme}>
                 {ListHeaderComponent && (React.isValidElement(ListHeaderComponent) ? ListHeaderComponent : React.createElement(ListHeaderComponent))}
-                <I.PageNoContentText>작성된 일지가 없습니다.</I.PageNoContentText>
+                <I.PageNoContentText $colors={theme}>작성된 일지가 없습니다.</I.PageNoContentText>
             </I.PageNoContentWrap>
         );
     }
@@ -239,7 +246,7 @@ const ILogPageView = ({
     );
 
     return (
-        <I.Container>
+        <I.Container $colors={theme}>
             {ListHeaderComponent && (React.isValidElement(ListHeaderComponent) ? ListHeaderComponent : React.createElement(ListHeaderComponent))}
             <FlatList
                 ref={flatListRef}

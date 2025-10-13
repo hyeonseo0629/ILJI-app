@@ -38,17 +38,18 @@ export const ModalBackdrop = styled.TouchableOpacity`
 `;
 
 export const OptionsContainer = styled.View<StyledProps>`
-    background-color: ${props => props.$colors?.card || 'white'};
+    background-color: ${props => props.$colors?.background || 'white'};
     border-radius: 10px;
     width: 80%;
     max-height: 50%;
     overflow: hidden;
+    border: 3px solid ${props => props.$colors?.borderColor || '#f0f0f0'};
 `;
 
 export const OptionItem = styled.TouchableOpacity<StyledProps>`
     padding: 15px 20px;
     border-bottom-width: 1px;
-    border-bottom-color: ${props => props.$colors?.border || '#f0f0f0'};
+    border-bottom-color: ${props => props.$colors?.borderColor || '#f0f0f0'};
 `;
 
 export const OptionText = styled.Text<StyledProps>`

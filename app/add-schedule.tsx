@@ -2,7 +2,6 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Alert, Switch, Platform, Text, View,ActivityIndicator} from 'react-native';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import * as S from '@/components/schedule/AddScheduleStyle';
-import {Picker} from '@react-native-picker/picker';
 import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import {format} from 'date-fns';
 import {ASButtonWrap, ASCancelButtonText, ASHeader} from "@/components/schedule/AddScheduleStyle";
@@ -13,13 +12,15 @@ import {StatusBar} from "expo-status-bar";
 import {AntDesign} from "@expo/vector-icons";
 import CreateTagModal from "@/components/addTagModal/Add-tagmodal";
 import {useTheme} from '@react-navigation/native'; // useTheme import 추가
+import { Colors } from '@/constants/Colors'; // 앱 자체 색상 정의 import
 import TagSelectionModal from "@/components/tag/TagSelectionModal";
 
 // 실제 앱에서는 이 화면으로 이동할 때 tags 목록을 prop으로 전달받거나
 // 전역 상태(global state)에서 가져와야 합니다. 여기서는 예시로 사용합니다.
 
 const AddScheduleScreen = () => {
-    const theme = useTheme(); // useTheme 훅 사용
+    const navigationTheme = useTheme(); // 기존 useTheme의 이름을 변경
+    const theme = navigationTheme.dark ? Colors.dark : Colors.light; // 우리 앱의 올바른 테마 객체
 
     const router = useRouter();
     // [추가] 라우터 파라미터에서 initialDate를 가져옵니다.
@@ -173,71 +174,71 @@ const AddScheduleScreen = () => {
     return (
         <GestureHandlerRootView>
             <StatusBar style="dark"/>
-            <S.ASContainer contentContainerStyle={{paddingBottom: 120}} $colors={theme.colors}>
-                <ASHeader $colors={theme.colors}>New Schedule</ASHeader>
+            <S.ASContainer contentContainerStyle={{paddingBottom: 120}} $colors={theme}>
+                <ASHeader $colors={theme}>New Schedule</ASHeader>
                 <S.ASContentWrap>
 
-                    <S.ASLabel $colors={theme.colors}>Title</S.ASLabel>
+                    <S.ASLabel $colors={theme}>Title</S.ASLabel>
                     <S.ASInput
                         value={title}
                         onChangeText={setTitle}
                         placeholder="제목"
-                        $colors={theme.colors}
-                        placeholderTextColor={theme.colors.text}
+                        $colors={theme}
+                        placeholderTextColor={theme.text}
                     />
 
-                    <S.ASLabel $colors={theme.colors}>Memo</S.ASLabel>
+                    <S.ASLabel $colors={theme}>Memo</S.ASLabel>
                     <S.ASInput value={description} onChangeText={setDescription} placeholder="메모" multiline
                                style={{height: 100, textAlignVertical: 'top'}}
-                               $colors={theme.colors}
-                               placeholderTextColor={theme.colors.text}
+                               $colors={theme}
+                               placeholderTextColor={theme.text}
                     />
 
                     <S.ASSwitchRow>
-                        <S.ASLabel style={{marginTop: 0, marginBottom: 0}} $colors={theme.colors}>All Day</S.ASLabel>
+                        <S.ASLabel style={{marginTop: 0, marginBottom: 0}} $colors={theme}>All Day</S.ASLabel>
                         <Switch
-                            trackColor={{false: theme.colors.border, true: theme.dark ? '#575757' : 'lavender'}}
-                            thumbColor={theme.colors.primary}
-                            ios_backgroundColor={theme.colors.border}
+                            trackColor={{false: theme.borderColor, true: navigationTheme.dark ? '#575757' : 'lavender'}}
+                            thumbColor={theme.pointColors.purple}
+                            ios_backgroundColor={theme.borderColor}
                             onValueChange={setIsAllDay}
                             value={isAllDay}
                         />
                     </S.ASSwitchRow>
 
-                    <S.ASLabel $colors={theme.colors}>Start</S.ASLabel>
+                    <S.ASLabel $colors={theme}>Start</S.ASLabel>
                     <S.ASDateTimeRow>
-                        <S.ASDateTimeButton onPress={() => showMode('start', 'date')} $colors={theme.colors}>
-                            <S.ASDateTimeButtonText $colors={theme.colors}>{format(startTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
+                        <S.ASDateTimeButton onPress={() => showMode('start', 'date')} $colors={theme}>
+                            <S.ASDateTimeButtonText $colors={theme}>{format(startTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
                         </S.ASDateTimeButton>
                         {!isAllDay && (
-                            <S.ASDateTimeButton onPress={() => showMode('start', 'time')} $colors={theme.colors}>
-                                <S.ASDateTimeButtonText $colors={theme.colors}>{format(startTime, 'HH:mm')}</S.ASDateTimeButtonText>
+                            <S.ASDateTimeButton onPress={() => showMode('start', 'time')} $colors={theme}>
+                                <S.ASDateTimeButtonText $colors={theme}>{format(startTime, 'HH:mm')}</S.ASDateTimeButtonText>
                             </S.ASDateTimeButton>
                         )}
                     </S.ASDateTimeRow>
 
-                    <S.ASLabel $colors={theme.colors}>End</S.ASLabel>
+                    <S.ASLabel $colors={theme}>End</S.ASLabel>
                     <S.ASDateTimeRow>
-                        <S.ASDateTimeButton onPress={() => showMode('end', 'date')} $colors={theme.colors}>
-                            <S.ASDateTimeButtonText $colors={theme.colors}>{format(endTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
+                        <S.ASDateTimeButton onPress={() => showMode('end', 'date')} $colors={theme}>
+                            <S.ASDateTimeButtonText $colors={theme}>{format(endTime, 'yyyy. MM. dd')}</S.ASDateTimeButtonText>
                         </S.ASDateTimeButton>
                         {!isAllDay && (
-                            <S.ASDateTimeButton onPress={() => showMode('end', 'time')} $colors={theme.colors}>
-                                <S.ASDateTimeButtonText $colors={theme.colors}>{format(endTime, 'HH:mm')}</S.ASDateTimeButtonText>
+                            <S.ASDateTimeButton onPress={() => showMode('end', 'time')} $colors={theme}>
+                                <S.ASDateTimeButtonText $colors={theme}>{format(endTime, 'HH:mm')}</S.ASDateTimeButtonText>
                             </S.ASDateTimeButton>
                         )}
                     </S.ASDateTimeRow>
 
-                    <S.ASLabel $colors={theme.colors}>Location</S.ASLabel>
+                    <S.ASLabel $colors={theme}>Location</S.ASLabel>
                     <S.ASInput value={location} onChangeText={setLocation} placeholder="장소"
-                               $colors={theme.colors}
-                               placeholderTextColor={theme.colors.text}
+                               $colors={theme}
+                               placeholderTextColor={theme.text}
                     />
 
                     <S.ASTagHeaderRow>
-                        <S.ASLabel $colors={theme.colors}>Tag</S.ASLabel>
-                        <S.ASAddButton onPress={() => setIsTagModalVisible(true)} $colors={theme.colors}>
-                            <AntDesign name="pluscircleo" size={24} color={theme.colors.primary} />
+                        <S.ASLabel $colors={theme}>Tag</S.ASLabel>
+                        <S.ASAddButton onPress={() => setIsTagModalVisible(true)} $colors={theme}>
+                            <AntDesign name="pluscircleo" size={24} color={theme.pointColors.purple} />
                         </S.ASAddButton>
                     </S.ASTagHeaderRow>
                     <S.ASDateTimeButton onPress={() => setIsTagSelectionModalVisible(true)}>
@@ -249,8 +250,8 @@ const AddScheduleScreen = () => {
 
                     {selectedTag && (
                         <S.ASSelectedTagWrap>
-                            <S.ASSelectedTag color={selectedTag.color || theme.colors.border} $colors={theme.colors}>
-                                <S.ASSelectedTagText $colors={theme.colors}>#{selectedTag.label}</S.ASSelectedTagText>
+                            <S.ASSelectedTag color={selectedTag.color || theme.borderColor} $colors={theme}>
+                                <S.ASSelectedTagText $colors={theme}>#{selectedTag.label}</S.ASSelectedTagText>
                             </S.ASSelectedTag>
                         </S.ASSelectedTagWrap>
                     )}
@@ -264,7 +265,7 @@ const AddScheduleScreen = () => {
                         is24Hour={true}
                         display="default"
                         onChange={onDateTimeChange}
-                        textColor={theme.colors.text}
+                        textColor={theme.text}
                     />
                 )}
 
@@ -272,7 +273,7 @@ const AddScheduleScreen = () => {
                     visible={isTagModalVisible}
                     onClose={() => setIsTagModalVisible(false)}
                     onSave={handleSaveTag}
-                    colors={theme.colors}
+                    colors={theme}
                 />
 
                 <TagSelectionModal
@@ -286,12 +287,12 @@ const AddScheduleScreen = () => {
                 />
 
             </S.ASContainer>
-            <ASButtonWrap $colors={theme.colors}>
-                <S.ASCancelButton onPress={() => router.back()} $colors={theme.colors}>
-                    <ASCancelButtonText $colors={theme.colors}>Cancel</ASCancelButtonText>
+            <ASButtonWrap $colors={theme}>
+                <S.ASCancelButton onPress={() => router.back()} $colors={theme}>
+                    <ASCancelButtonText $colors={theme}>Cancel</ASCancelButtonText>
                 </S.ASCancelButton>
-                <S.ASSaveButton onPress={handleSave} disabled={loading} $colors={theme.colors}>
-                    <S.ASSaveButtonText $colors={theme.colors}>Save</S.ASSaveButtonText>
+                <S.ASSaveButton onPress={handleSave} disabled={loading} $colors={theme}>
+                    <S.ASSaveButtonText $colors={theme}>Save</S.ASSaveButtonText>
                 </S.ASSaveButton>
             </ASButtonWrap>
         </GestureHandlerRootView>

@@ -21,16 +21,16 @@ interface ToDoMainContentProps {
     colors: ThemeColors;
 }
 
-export const TaggedSchedule: React.FC<TaggedScheduleProps> = ({ item, onPress }) => {
+export const TaggedSchedule: React.FC<TaggedScheduleProps> = ({ item, colors, onPress }) => {
     const { tags } = useSchedule();
     const tagColor = tags.find(tag => tag.id === item.tagId)?.color || 'gray';
 
     return (
         <TouchableOpacity onPress={() => onPress(item)}>
-            <BS.ScheduleWrap>
+            <BS.ScheduleWrap $colors={colors}>
                 <BS.VerticalBar color={tagColor} />
                 <BS.ScheduleTextWrap>
-                    <BS.ScheduleTitle>{item.title}</BS.ScheduleTitle>
+                    <BS.ScheduleTitle  $colors={colors}>{item.title}</BS.ScheduleTitle>
                     <BS.ScheduleDateTime>
                         {format(item.startTime, "yyyy-MM-dd HH:mm")}
                     </BS.ScheduleDateTime>

@@ -14,7 +14,7 @@ export const ModalOverlay = styled.View`
 
 export const ModalContainer = styled.View<StyledProps>`
     width: 90%;
-    background-color: ${props => props.$colors?.card || 'white'};
+    background-color: ${props => props.$colors?.background || 'white'};
     border-radius: 15px;
     padding: 25px;
     align-items: stretch;
@@ -36,7 +36,7 @@ export const InputLabel = styled.Text<StyledProps>`
 `;
 
 export const StyledInput = styled.TextInput<StyledProps>`
-    border: 1px solid ${props => props.$colors?.border || '#ddd'};
+    border: 1px solid ${props => props.$colors?.borderColor || '#ddd'};
     border-radius: 8px;
     padding: 12px;
     font-size: 16px;
@@ -56,7 +56,7 @@ export const ColorPreview = styled.View<StyledProps & { color: string }>`
     height: 30px;
     border-radius: 8px;
     background-color: ${props => props.color};
-    border: 1px solid ${props => props.$colors?.border || '#ddd'};
+    border: 1px solid ${props => props.$colors?.borderColor || '#ddd'};
 `;
 
 export const ColorPickerWrapper = styled.View`
@@ -75,7 +75,7 @@ export const ActionButton = styled.TouchableOpacity<StyledProps & { primary?: bo
     padding: 15px;
     align-items: center;
     border-radius: 8px;
-    background-color: ${props => (props.primary ? (props.$colors?.primary || '#9970FF') : (props.$colors?.card || '#f0f0f0'))};
+    background-color: ${props => (props.primary ? (props.$colors?.pointColors.purple || '#9970FF') : (props.$colors?.background || '#f0f0f0'))};
     margin: 0 5px;
 `;
 

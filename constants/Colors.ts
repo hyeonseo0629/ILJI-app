@@ -85,7 +85,7 @@ export const Colors = {
     }
   },
   dark: {
-    text: palette.almostWhite_1,
+    text: palette.white,
     background: palette.black,
     icon: palette.gray_350,
     tabIconDefault: palette.gray_350,
