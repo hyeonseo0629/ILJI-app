@@ -218,7 +218,7 @@ export default function ProfileEditScreen() {
 
             <SaveButton $colors={theme} onPress={handleSave} disabled={isSaving}>
                 {isSaving ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={theme.pointColors.white} />
                 ) : (
                     <SaveButtonText>저장</SaveButtonText>
                 )}
