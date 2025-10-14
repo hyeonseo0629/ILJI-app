@@ -90,11 +90,13 @@ const PageViewCalendarModal: React.FC<PageViewCalendarModalProps> = ({
 interface DeletionSuccessModalProps {
     isSuccessModalVisible: boolean;
     setSuccessModalVisible: (visible: boolean) => void;
+    theme: ThemeColors;
 }
 
 const DeletionSuccessModal: React.FC<DeletionSuccessModalProps> = ({
     isSuccessModalVisible,
     setSuccessModalVisible,
+    theme,
 }) => (
     <Modal
         animationType="fade"
@@ -106,12 +108,12 @@ const DeletionSuccessModal: React.FC<DeletionSuccessModalProps> = ({
             activeOpacity={1}
             onPressOut={() => setSuccessModalVisible(false)}
         >
-            <I.DetailModalContainer>
-                <I.DetailModalTitle>삭제 완료</I.DetailModalTitle>
-                <I.DetailModalText>일기가 성공적으로 삭제되었습니다.</I.DetailModalText>
+            <I.DetailModalContainer $colors={theme}>
+                <I.DetailModalTitle $colors={theme}>삭제 완료</I.DetailModalTitle>
+                <I.DetailModalText $colors={theme}>일기가 성공적으로 삭제되었습니다.</I.DetailModalText>
                 <I.DetailModalButtonContainer>
-                    <I.DetailModalDeleteButton onPress={() => setSuccessModalVisible(false)}>
-                        <I.DetailModalButtonText color="white">확인</I.DetailModalButtonText>
+                    <I.DetailModalDeleteButton onPress={() => setSuccessModalVisible(false)} $colors={theme}>
+                        <I.DetailModalButtonText color={theme.pointColors.white}>확인</I.DetailModalButtonText>
                     </I.DetailModalDeleteButton>
                 </I.DetailModalButtonContainer>
             </I.DetailModalContainer>
@@ -405,6 +407,7 @@ export default function DiaryScreen({ListHeader, theme}: { ListHeader?: React.Co
             <DeletionSuccessModal
                 isSuccessModalVisible={isSuccessModalVisible}
                 setSuccessModalVisible={setSuccessModalVisible}
+                theme={theme}
             />
         </>
     );

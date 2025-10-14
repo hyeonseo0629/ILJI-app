@@ -545,6 +545,7 @@ export const DetailModalBackdrop = styled.TouchableOpacity`
 export const DetailModalContainer = styled.View<StyledProps>`
     background-color: ${props => props.$colors?.background || 'white'};
     padding: 20px;
+    border: 3px solid ${props => props.$colors?.borderColor || '#ccc'};
     border-radius: 10px;
     width: 80%;
 `;
