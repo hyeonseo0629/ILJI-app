@@ -1,5 +1,5 @@
 import {useSession} from '@/hooks/useAuth';
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {
     ActivityIndicator,
     Image,
@@ -9,7 +9,7 @@ import {
     Text
 } from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
-import {router, useFocusEffect} from 'expo-router';
+import {router, useFocusEffect, useLocalSearchParams} from 'expo-router';
 import {useColorScheme} from '@/hooks/useColorScheme';
 import {Colors} from '@/constants/Colors';
 import api from '@/src/lib/api';
@@ -47,10 +47,18 @@ export default function ProfileScreen(): React.JSX.Element {
     const [menuVisible, setMenuVisible] = useState(false);
     const { colorScheme } = useColorScheme();
     const theme = Colors[colorScheme];
-    const {ilogs} = useILog();
+    const {ilogs, fetchILogs} = useILog(); // fetchILogs 추가
+    const params = useLocalSearchParams(); // params 추가
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    // 삭제 후 목록 새로고침을 위한 useEffect
+    useEffect(() => {
+        if (params.lastAction === 'deleted') {
+            fetchILogs();
+        }
+    }, [params.lastAction]);
 
     const fetchProfile = async () => {
         if (!session) {
