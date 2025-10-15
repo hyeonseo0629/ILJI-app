@@ -16,6 +16,7 @@ import {emogeStickers} from '@/assets/images/emoge';
 import {useColorScheme} from '@/hooks/useColorScheme';
 import {Colors} from '@/constants/Colors';
 import ViewShot from "react-native-view-shot";
+import {UpdateHeader} from "@/components/style/I-logStyled";
 
 const EMOJI_ASSETS = Object.keys(emogeStickers).map(key => ({ id: key, source: emogeStickers[key] }));
 const PREVIEW_SIZE = 375;
@@ -371,13 +372,13 @@ export default function UpdateILogScreen() {
             )}
 
             <I.ScreenContainer $colors={theme}>
-                <View style={{flex: 1}}>
-                    <I.Container>
+                <I.Container $colors={theme}>
+                    <I.Container $colors={theme}>
                         <I.AddWrap contentContainerStyle={{paddingBottom: 40 + keyboardHeight}} stickyHeaderIndices={[0]}>
-                            <I.AddHeader $colors={theme}>
+                            <I.UpdateHeader $colors={theme}>
                                 <I.AddIconWrap><AntDesign name="calendar" size={30} color={theme.pointColors.purple}/></I.AddIconWrap>
                                 <I.AddHeaderText $colors={theme}>{selectedLogDate && !doesLogExistForSelectedDate ? format(selectedLogDate, 'yyyy년 MM월 dd일') : '날짜를 선택해주세요.'}</I.AddHeaderText>
-                            </I.AddHeader>
+                            </I.UpdateHeader>
                             <I.AddContentContainer>
                                 {imageAssets.length > 0 ? (
                                     <I.ImagePreviewContainer>
@@ -428,7 +429,7 @@ export default function UpdateILogScreen() {
                             <I.AddSaveButton onPress={handleSave} $colors={theme}><I.AddButtonText $colors={theme}>Save</I.AddButtonText></I.AddSaveButton>
                         </I.AddButtonWrap>
                     </I.AddSuggestionContainer>
-                </View>
+                </I.Container>
 
 
                 <Modal animationType={"slide"} transparent={false} visible={isEmojiEditorVisible} onRequestClose={handleSaveEditedImage}>

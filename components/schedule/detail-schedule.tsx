@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Modal, Pressable, View, Switch, Platform } from 'react-native';
+import { Modal, Pressable, View, Switch, Platform, Text } from 'react-native';
 import { format, set } from 'date-fns';
 import { Feather } from '@expo/vector-icons';
 import * as DS from '../style/DetailScheduleStyled';
@@ -8,16 +8,16 @@ import { Tag } from '@/components/tag/TagTypes';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSchedule } from '@/src/context/ScheduleContext';
 import ConfirmModal from '@/components/confirmModal/ConfirmModal'; // [추가] 커스텀 확인 모달 import
-import { useTheme } from '@react-navigation/native';
+import { ThemeColors } from "@/types/theme";
 
 interface DetailScheduleProps {
     schedule: Schedule | null;
     visible: boolean;
     onClose: () => void;
+    colors: ThemeColors;
 }
 
-const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onClose }) => {
-    const { colors } = useTheme();
+const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onClose, colors }) => {
     const [isEditMode, setIsEditMode] = useState(false);
     const { updateSchedule, deleteSchedule, tags } = useSchedule();
     const [formData, setFormData] = useState<Schedule | null>(schedule);
@@ -151,80 +151,85 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
             visible={visible}
             onRequestClose={onClose}
         >
-            <DS.ModalOverlay onPress={onClose}>
+            <DS.ModalOverlay onPress={onClose} $colors={colors}>
                 {/* Pressable로 감싸서 모달 내부 클릭 시 닫히는 것을 방지 */}
                 <Pressable>
-                    <DS.Container>
+                    <DS.Container $colors={colors}>
                         {isEditMode ? (
-                            <DS.HeaderInput value={formData.title} onChangeText={(text) => handleInputChange('title', text)} />
+                            <DS.HeaderInput value={formData.title} onChangeText={(text) => handleInputChange('title', text)} $colors={colors} />
                         ) : (
-                            <DS.Header>{formData.title}</DS.Header>
+                            <DS.Header $colors={colors}>{formData.title}</DS.Header>
                         )}
-                        <DS.ContentWrap>
+                        <DS.ContentWrap $colors={colors}>
                             {isEditMode ? (
                                 <>
-                                    <DS.AllDayRow>
-                                        <DS.Label>All Day</DS.Label>
+                                    <DS.AllDayRow $colors={colors}>
+                                        <DS.Label $colors={colors}>All Day</DS.Label>
                                         <Switch
-                                            trackColor={{ false: "#767577", true: "#9970FF" }}
-                                            thumbColor={"#f4f3f4"}
+                                            trackColor={{ false: colors.borderColor, true: colors.pointColors.purple }}
+                                            thumbColor={colors.icon}
                                             onValueChange={(value) => handleInputChange('isAllDay', value)}
                                             value={formData.isAllDay}
                                         />
                                     </DS.AllDayRow>
-                                    <DS.Label>Start Date</DS.Label>
-                                    <DS.DateTimePickerButton onPress={() => { setPickerTarget('start'); setShowDatePicker(true); }}>
-                                        <DS.DateTimePickerButtonText>{format(formData.startTime, 'yyyy. MM. dd')}</DS.DateTimePickerButtonText>
+                                    <DS.Label $colors={colors}>Start Date</DS.Label>
+                                    <DS.DateTimePickerButton onPress={() => { setPickerTarget('start'); setShowDatePicker(true); }} $colors={colors}>
+                                        <DS.DateTimePickerButtonText $colors={colors}>{format(formData.startTime, 'yyyy. MM. dd')}</DS.DateTimePickerButtonText>
                                     </DS.DateTimePickerButton>
 
-                                    <DS.Label>End Date</DS.Label>
-                                    <DS.DateTimePickerButton onPress={() => { setPickerTarget('end'); setShowDatePicker(true); }}>
-                                        <DS.DateTimePickerButtonText>{format(formData.endTime, 'yyyy. MM. dd')}</DS.DateTimePickerButtonText>
+                                    <DS.Label $colors={colors}>End Date</DS.Label>
+                                    <DS.DateTimePickerButton onPress={() => { setPickerTarget('end'); setShowDatePicker(true); }} $colors={colors}>
+                                        <DS.DateTimePickerButtonText $colors={colors}>{format(formData.endTime, 'yyyy. MM. dd')}</DS.DateTimePickerButtonText>
                                     </DS.DateTimePickerButton>
                                     {!formData.isAllDay && (
-                                        <DS.DateTimePickersRow style={{ marginTop: 15 }}>
-                                            <DS.DateTimePickerButton onPress={() => setShowStartTimePicker(true)} style={{ marginRight: 10 }}>
-                                                <DS.DateTimePickerButtonText>{format(formData.startTime, 'HH:mm')}</DS.DateTimePickerButtonText>
+                                        <DS.DateTimePickersRow style={{ marginTop: 15 }} $colors={colors}>
+                                            <DS.DateTimePickerButton onPress={() => setShowStartTimePicker(true)} style={{ marginRight: 10 }} $colors={colors}>
+                                                <DS.DateTimePickerButtonText $colors={colors}>{format(formData.startTime, 'HH:mm')}</DS.DateTimePickerButtonText>
                                             </DS.DateTimePickerButton>
-                                            <DS.DateTimePickerButton onPress={() => setShowEndTimePicker(true)}>
-                                                <DS.DateTimePickerButtonText>{format(formData.endTime, 'HH:mm')}</DS.DateTimePickerButtonText>
+                                            <DS.DateTimePickerButton onPress={() => setShowEndTimePicker(true)} $colors={colors}>
+                                                <DS.DateTimePickerButtonText $colors={colors}>{format(formData.endTime, 'HH:mm')}</DS.DateTimePickerButtonText>
                                             </DS.DateTimePickerButton>
                                         </DS.DateTimePickersRow>
                                     )}
                                 </>
                             ) : (
-                                <DS.DateTimeInfoRow>
-                                    <DS.DateTimeInfo>
-                                        <DS.CalendarIcon name="event" size={40} color="#888" />
-                                        <DS.DateTimeTexts>
-                                            <DS.DateText>{format(formData.startTime, 'yyyy. MM. dd')}</DS.DateText>
+                                <DS.DateTimeInfoRow $colors={colors}>
+                                    <DS.DateTimeInfo $colors={colors}>
+                                        <DS.CalendarIcon name="event" size={40} color={colors.icon} $colors={colors} />
+                                        <DS.DateTimeTexts $colors={colors}>
+                                            <DS.DateText $colors={colors}>
+                                                {format(formData.startTime, 'yyyyMMdd') === format(formData.endTime, 'yyyyMMdd')
+                                                    ? format(formData.startTime, 'yyyy. MM. dd')
+                                                    : `${format(formData.startTime, 'yyyy. MM. dd')} ~ ${format(formData.endTime, 'yyyy. MM. dd')}`}
+                                            </DS.DateText>
                                             {formData.isAllDay ? (
-                                                <DS.TimeText>ALL DAY</DS.TimeText>
+                                                <DS.TimeText $colors={colors}>ALL DAY</DS.TimeText>
                                             ) : (
-                                                <DS.TimeText>
+                                                <DS.TimeText $colors={colors}>
                                                     {format(formData.startTime, 'HH:mm')} ~ {format(formData.endTime, 'HH:mm')}
                                                 </DS.TimeText>
                                             )}
                                         </DS.DateTimeTexts>
                                     </DS.DateTimeInfo>
-                                    <DS.DeleteButton onPress={handleDeletePress}>
-                                        <Feather name="trash-2" size={30} color="#D25A5A" />
+                                    <DS.DeleteButton onPress={handleDeletePress} $colors={colors}>
+                                        <Feather name="trash-2" size={30} color={colors.notification} />
                                     </DS.DeleteButton>
                                 </DS.DateTimeInfoRow>
                             )}
 
                             {isEditMode ? (
                                 <>
-                                    <DS.Label>Tag</DS.Label>
-                                    <DS.TagSelectorContainer>
+                                    <DS.Label $colors={colors}>Tag</DS.Label>
+                                    <DS.TagSelectorContainer $colors={colors}>
                                         {sortedTags.map(tag => (
                                             <DS.TagSelectorItem
                                                 key={tag.id}
                                                 color={tag.color}
                                                 selected={formData.tagId === tag.id}
                                                 onPress={() => handleInputChange('tagId', tag.id)}
+                                                $colors={colors}
                                             >
-                                                <DS.TagSelectorText selected={formData.tagId === tag.id}>
+                                                <DS.TagSelectorText selected={formData.tagId === tag.id} $colors={colors}>
                                                     #{tag.label}
                                                 </DS.TagSelectorText>
                                             </DS.TagSelectorItem>
@@ -232,53 +237,55 @@ const DetailSchedule: React.FC<DetailScheduleProps> = ({ schedule, visible, onCl
                                     </DS.TagSelectorContainer>
                                 </>
                             ) : selectedTag && (
-                                <DS.SelectedTagWrap>
-                                    <DS.SelectedTag color={selectedTag.color || 'gray'}>
-                                        <DS.SelectedTagText>#{selectedTag.label}</DS.SelectedTagText>
+                                <DS.SelectedTagWrap $colors={colors}>
+                                    <DS.SelectedTag color={selectedTag.color || 'gray'} $colors={colors}>
+                                        <DS.SelectedTagText $colors={colors}>#{selectedTag.label}</DS.SelectedTagText>
                                     </DS.SelectedTag>
                                 </DS.SelectedTagWrap>
                             )}
 
-                            <DS.Label>Memo</DS.Label>
+                            <DS.Label $colors={colors}>Memo</DS.Label>
                             {isEditMode ? (
                                 <DS.ValueInput
                                     value={formData.description || ''}
                                     onChangeText={(text) => handleInputChange('description', text)}
                                     multiline
+                                    $colors={colors}
                                 />
                             ) : (
-                                <DS.ValueText>{formData.description || '메모 없음'}</DS.ValueText>
+                                <DS.ValueText $colors={colors}>{formData.description || '메모 없음'}</DS.ValueText>
                             )}
 
-                            <DS.Label>Location</DS.Label>
+                            <DS.Label $colors={colors}>Location</DS.Label>
                             {isEditMode ? (
                                 <DS.ValueInput
                                     value={formData.location || ''}
                                     onChangeText={(text) => handleInputChange('location', text)}
+                                    $colors={colors}
                                 />
                             ) : (
-                                <DS.ValueText>{formData.location || '장소 없음'}</DS.ValueText>
+                                <DS.ValueText $colors={colors}>{formData.location || '장소 없음'}</DS.ValueText>
                             )}
 
                         </DS.ContentWrap>
                         {isEditMode ? (
-                            <DS.ButtonArea>
-                                <DS.ActionButton onPress={() => { setIsEditMode(false); setFormData(schedule); }}>
-                                    <DS.ActionButtonText>Cancel</DS.ActionButtonText>
+                            <DS.ButtonArea $colors={colors}>
+                                <DS.ActionButton onPress={() => { setIsEditMode(false); setFormData(schedule); }} $colors={colors}>
+                                    <DS.ActionButtonText $colors={colors}>Cancel</DS.ActionButtonText>
                                 </DS.ActionButton>
-                                <DS.ButtonSeparator />
-                                <DS.ActionButton primary onPress={handleUpdatePress}>
-                                    <DS.ActionButtonText primary>Save</DS.ActionButtonText>
+                                <DS.ButtonSeparator $colors={colors} />
+                                <DS.ActionButton primary onPress={handleUpdatePress} $colors={colors}>
+                                    <DS.ActionButtonText primary $colors={colors}>Save</DS.ActionButtonText>
                                 </DS.ActionButton>
                             </DS.ButtonArea>
                         ) : (
-                            <DS.ButtonArea>
-                                <DS.ActionButton onPress={onClose}>
-                                    <DS.ActionButtonText>Close</DS.ActionButtonText>
+                            <DS.ButtonArea $colors={colors}>
+                                <DS.ActionButton onPress={onClose} $colors={colors}>
+                                    <DS.ActionButtonText $colors={colors}>Close</DS.ActionButtonText>
                                 </DS.ActionButton>
-                                <DS.ButtonSeparator />
-                                <DS.ActionButton primary onPress={() => setIsEditMode(true)}>
-                                    <DS.ActionButtonText primary>Edit</DS.ActionButtonText>
+                                <DS.ButtonSeparator $colors={colors} />
+                                <DS.ActionButton primary onPress={() => setIsEditMode(true)} $colors={colors}>
+                                    <DS.ActionButtonText primary $colors={colors}>Edit</DS.ActionButtonText>
                                 </DS.ActionButton>
                             </DS.ButtonArea>
                         )}

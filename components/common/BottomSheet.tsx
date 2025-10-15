@@ -96,7 +96,7 @@ export const BottomSheetContent: React.FC<BottomSheetContentProps> = ({
                         <BS.ScheduleAddButton name="pluscircleo" size={20} $colors={colors}/>
                     </TouchableOpacity>
                     <BS.TagEditBTN onPress={() => setIsEditTagModalVisible(true)}>
-                        <MaterialCommunityIcons name="book-edit-outline" size={24} color={colors.primary}/>
+                        <MaterialCommunityIcons name="book-edit-outline" size={24} color={colors.text}/>
                     </BS.TagEditBTN>
                 </BS.HeaderRight>
             </BS.Header>

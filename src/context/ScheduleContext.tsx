@@ -294,8 +294,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         try {
             const payload = {
                 label: tagToUpdate.label,
-                color: tagToUpdate.color,
-                visibility: tagToUpdate.visibility
+                color: tagToUpdate.color
             };
             const response = await api.put<Tag>(`/tags/${tagToUpdate.id}`, payload);
             const updatedTag = response.data;

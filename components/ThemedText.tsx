@@ -15,7 +15,9 @@ export function ThemedText({
   type = 'default',
   ...rest
 }: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const colorValue = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  // useThemeColor가 객체를 반환하는 경우를 대비해, 문자열일 때만 color로 사용
+  const color = typeof colorValue === 'string' ? colorValue : undefined;
 
   return (
     <Text

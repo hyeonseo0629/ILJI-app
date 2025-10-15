@@ -4,6 +4,7 @@ import React from 'react';
 import { ScrollView, ScrollViewProps } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeColors } from "@/types/theme";
+import {AntDesign} from "@expo/vector-icons";
 
 interface StyledProps {
   $colors?: ThemeColors;
@@ -32,7 +33,7 @@ export const ButtonIconWrap = styled.TouchableOpacity`
  `
 
  export const ButtonIcon = styled(MaterialCommunityIcons).attrs({
-     size: 40
+     size: 40,
  })<StyledProps>`
      background-color: ${props => props.$colors?.background ? `${props.$colors.background}B3` : 'rgba(230, 230, 250, 0.7)'};
      border-radius: 50px;
@@ -197,12 +198,13 @@ export const PageNoContentWrap = styled.View<StyledProps>`
     background-color: ${props => props.$colors?.background || 'transparent'};
 `
 
-export const PageNoContentText = styled.Text`
+export const PageNoContentText = styled.Text<StyledProps>`
     width: 100%;
     margin: auto;
     text-align: center;
     justify-content: center;
     font-size: 15px;
+    color: ${props => props.$colors?.text || 'black'};
 `
 
 export const PageWrap = styled.View<StyledProps>`
@@ -301,7 +303,9 @@ export const PageFriendTagText = styled.Text<StyledProps>`
     font-weight: bold;
 `;
 
-export const PageScrollView = styled.ScrollView``;
+export const PageScrollView = styled.ScrollView`
+    flex: 1;
+`;
 
 interface CarouselItemWrapperProps extends StyledProps {
   isLast?: boolean;
@@ -541,6 +545,7 @@ export const DetailModalBackdrop = styled.TouchableOpacity`
 export const DetailModalContainer = styled.View<StyledProps>`
     background-color: ${props => props.$colors?.background || 'white'};
     padding: 20px;
+    border: 3px solid ${props => props.$colors?.borderColor || '#ccc'};
     border-radius: 10px;
     width: 80%;
 `;
@@ -595,6 +600,16 @@ export const DetailLoadingContainer = styled.View`
 // ----------------- //
 // Add I-Log View  //
 // ----------------- //
+
+export const SwipeGuideWrapper = styled.View`
+    align-items: flex-end;
+    margin-bottom: 8px;
+`;
+
+export const ImagePreviewScrollView = styled.ScrollView`
+    height: 375px;
+    margin-bottom: 10px;
+`;
 
 // --- AddWrap 정의 변경 ---
 const AddWrapComponent = (props: ScrollViewProps, ref: React.Ref<ScrollView>) => (
@@ -652,8 +667,8 @@ export const AddTextArea = styled(AddInput)<StyledProps & { height?: number }>`
     border-top-width: 2px;
     border-bottom-width: 2px;
     width: 100%;
-    margin-top: 5px;
-    margin-bottom: 75px;
+    margin-top: 20px;
+    margin-bottom: 15px;
     position: relative;
 `;
 
@@ -697,7 +712,7 @@ export const AddImagePlaceholder = styled.TouchableOpacity<StyledProps>`
 
 export const AddImageRemoveButton = styled.TouchableOpacity`
     position: absolute;
-    top: 30px;
+    top: 10px;
     right: 10px;
     z-index: 1;
     border-radius: 15px;
@@ -710,6 +725,12 @@ export const AddImageRemoveButton = styled.TouchableOpacity`
     shadow-offset: 0px 2px;
     shadow-opacity: 0.25;
 `;
+
+export const AddImageRemoveIcon = styled(AntDesign).attrs<StyledProps>(props => ({
+    name: "closecircle",
+    size: 35,
+    color: props.$colors?.notification
+}))``;
 
 export const AddSuggestionContainer = styled.View<StyledProps & { $bottom?: number }>`
     position: absolute; /* 절대 위치로 변경 */
@@ -763,6 +784,33 @@ export const AddButtonText = styled.Text<StyledProps>`
 // -------------------------------- //
 // Add/Update I-Log Specifics     //
 // -------------------------------- //
+export const UpdateHeader = styled.View<StyledProps>`
+    position: sticky;
+    flex-direction: row;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: ${props => props.$colors?.background || '#fff'};
+    justify-content: start;
+    border-color: ${props => props.$colors?.borderColor || '#9f9ff0'};
+    border-bottom-width: 2px;
+`;
+
+export const OffscreenCaptureContainer = styled.View`
+    width: 375px; /* PREVIEW_SIZE */
+    height: 375px; /* PREVIEW_SIZE */
+    background-color: transparent;
+`;
+
+export const FullSizeImage = styled.Image`
+    width: 100%;
+    height: 100%;
+`;
+
+export const StickerPreviewImage = styled.Image`
+    width: 100px; /* STICKER_BASE_SIZE */
+    height: 100px; /* STICKER_BASE_SIZE */
+    resize-mode: contain;
+`;
 
 export const SavingOverlay = styled.View`
     position: absolute;
@@ -796,11 +844,11 @@ export const DraggableStickerImage = styled.Image<StyledProps & { isSelected?: b
     border-radius: 10px;
 `;
 
-export const StickerDeleteButton = styled.TouchableOpacity`
+export const StickerDeleteButton = styled.TouchableOpacity<StyledProps>`
     position: absolute;
     top: -10px;
     right: -10px;
-    background-color: red;
+    background-color: ${props => props.$colors?.notification || 'red'};
     border-radius: 15px;
     width: 30px;
     height: 30px;
@@ -808,6 +856,12 @@ export const StickerDeleteButton = styled.TouchableOpacity`
     align-items: center;
     z-index: 100;
 `;
+
+export const StickerDeleteIcon = styled(AntDesign).attrs<StyledProps>(props => ({
+    name: "close",
+    size: 20,
+    color: props.$colors?.pointColors.white || 'white'
+}))``;
 
 export const SwipeHintContainer = styled.View<StyledProps>`
     background-color: ${props => props.$colors?.borderColor};
@@ -838,13 +892,19 @@ export const ImageContainer = styled.View<StyledProps>`
 
 export const ImageEditButton = styled.TouchableOpacity`
     position: absolute;
-    top: 5px;
-    left: 5px;
+    top: 10px;
+    left: 10px;
     background-color: rgba(0,0,0,0.5);
-    border-radius: 12px;
-    padding: 2px;
+    border-radius: 50px;
+    padding: 10px;
     z-index: 1;
 `;
+
+export const ImageEditIcon = styled(AntDesign).attrs<StyledProps>(props => ({
+    name: "edit",
+    size: 20,
+    color: props.$colors?.pointColors.white || 'white'
+}))``;
 
 export const AddMoreButton = styled.TouchableOpacity<StyledProps>`
     width: 375px;
@@ -861,8 +921,8 @@ export const AddMoreButton = styled.TouchableOpacity<StyledProps>`
 export const CharacterCountText = styled.Text<StyledProps>`
     color: ${props => props.$colors?.text};
     align-self: flex-end;
-    margin-top: 4px;
     margin-right: 10px;
+    margin-bottom: 100px;
 `;
 
 export const CalendarModalOverlay = styled.TouchableOpacity`

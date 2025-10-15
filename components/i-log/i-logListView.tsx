@@ -7,6 +7,8 @@ import React, {useState} from "react";
 import {Calendar, DateData} from 'react-native-calendars';
 import {useRouter} from 'expo-router';
 import {useSafeAreaInsets} from "react-native-safe-area-context";
+import {useColorScheme} from "@/hooks/useColorScheme";
+import {Colors} from "@/constants/Colors";
 
 // Month/Year Picker Modal Component
 const MonthYearPickerModal = ({
@@ -15,12 +17,14 @@ const MonthYearPickerModal = ({
                                   data,
                                   onSelect,
                                   title,
+                                  theme,
                               }: {
     isVisible: boolean;
     onClose: () => void;
     data: { label: string; value: string }[];
     onSelect: (value: string) => void;
     title: string;
+    theme: any; // 테마 prop 추가
 }) => {
     return (
         <Modal
@@ -34,19 +38,18 @@ const MonthYearPickerModal = ({
                 activeOpacity={1}
                 onPressOut={onClose}
             >
-                {/* The onStartShouldSetResponder is removed from this View */}
-                <View style={{width: '80%', maxHeight: '70%', backgroundColor: 'white', borderRadius: 10, padding: 10}}>
+                <View style={{width: '80%', maxHeight: '70%', backgroundColor: theme.background, borderRadius: 10, padding: 10}}>
                     <Text
-                        style={{fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center'}}>{title}</Text>
+                        style={{fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center', color: theme.text}}>{title}</Text>
                     <FlatList
                         data={data}
                         keyExtractor={(item) => item.value}
                         renderItem={({item}) => (
                             <TouchableOpacity
                                 onPress={() => onSelect(item.value)}
-                                style={{padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee'}}
+                                style={{padding: 15, borderBottomWidth: 1, borderBottomColor: theme.borderColor}}
                             >
-                                <Text style={{fontSize: 16}}>{item.label}</Text>
+                                <Text style={{fontSize: 16, color: theme.text}}>{item.label}</Text>
                             </TouchableOpacity>
                         )}
                     />
@@ -57,7 +60,7 @@ const MonthYearPickerModal = ({
 };
 
 // FlatList의 각 아이템을 렌더링하는 컴포넌트
-const ListItem = ({item}: { item: ILog }) => {
+const ListItem = ({item, theme}: { item: ILog, theme: any }) => {
     const router = useRouter();
     const maxLength = 50; // 내용 글자 수 제한
 
@@ -76,11 +79,11 @@ const ListItem = ({item}: { item: ILog }) => {
                 )}
                 <I.ListMainContent>
                     <I.ListHeader>
-                        <I.ListDateText>{format(item.logDate, 'yyyy.MM.dd')}</I.ListDateText>
-                        <I.ListTimeText>{format(item.createdAt, 'HH:mm:ss')}</I.ListTimeText>
+                        <I.ListDateText $colors={theme}>{format(item.logDate, 'yyyy.MM.dd')}</I.ListDateText>
+                        <I.ListTimeText $colors={theme}>{format(item.createdAt, 'HH:mm:ss')}</I.ListTimeText>
                     </I.ListHeader>
 
-                    <I.ListContent>
+                    <I.ListContent $colors={theme}>
                         {`${previewText}${singleLineContent.length > maxLength ? "..." : ""}`}
                     </I.ListContent>
 
@@ -146,6 +149,8 @@ const ILogListView = ({
     handleSelectMonth: (month: string) => void;
     handleSelectYear: (year: string) => void;
 }) => {
+    const { colorScheme } = useColorScheme();
+    const theme = Colors[colorScheme];
     const [isDropdownVisible, setDropdownVisible] = useState(false);
 
     const getFilterDisplayText = () => {
@@ -219,10 +224,11 @@ const ILogListView = ({
             <I.ListSearchWrap>
                 <I.ListSearchButton
                     onPress={() => setDropdownVisible(!isDropdownVisible)}
+                    $colors={theme}
                 >
-                    <I.ListSearchButtonTextWrap>
-                        <EvilIcons name="search" size={30} style={{paddingRight: 5}}/>
-                        <I.ListSearchButtonText>{getFilterDisplayText()}</I.ListSearchButtonText>
+                    <I.ListSearchButtonTextWrap $colors={theme}>
+                        <EvilIcons name="search" size={30} style={{paddingRight: 5, color: theme.text}}/>
+                        <I.ListSearchButtonText $colors={theme}>{getFilterDisplayText()}</I.ListSearchButtonText>
                     </I.ListSearchButtonTextWrap>
                 </I.ListSearchButton>
 
@@ -237,7 +243,7 @@ const ILogListView = ({
                             <I.ListDropDownWrap>
                                 <View
                                     onStartShouldSetResponder={() => true}> {/* Prevents touch from propagating to outer TouchableWithoutFeedback */}
-                                    <I.ListDropDownMenuWrap>
+                                    <I.ListDropDownMenuWrap $colors={theme}>
                                         {dropdownOptions.map((option, index) => (
                                             <TouchableOpacity
                                                 key={index}
@@ -248,12 +254,12 @@ const ILogListView = ({
                                                 style={{
                                                     padding: 15,
                                                     borderBottomWidth: index === dropdownOptions.length - 1 ? 0 : 1,
-                                                    borderBottomColor: '#eee',
+                                                    borderBottomColor: theme.borderColor,
                                                     width: '100%', // Ensure option takes full width of dropdown
                                                     alignItems: 'center', // Center text within option
                                                 }}
                                             >
-                                                <Text>{option.label}</Text>
+                                                <Text style={{color: theme.text}}>{option.label}</Text>
                                             </TouchableOpacity>
                                         ))}
                                     </I.ListDropDownMenuWrap>
@@ -272,7 +278,7 @@ const ILogListView = ({
                 ListHeaderComponent={Header}
                 data={ilogs.slice(0, 31)}
                 renderItem={({item}) =>
-                    <ListItem item={item}/>
+                    <ListItem item={item} theme={theme}/>
                 }
                 keyExtractor={(item) => item.id.toString()}
                 contentContainerStyle={{flexGrow: 1}}
@@ -301,7 +307,7 @@ const ILogListView = ({
                     activeOpacity={1}
                     onPressOut={() => setListCalendarVisible(false)}
                 >
-                    <View style={{width: '90%', backgroundColor: 'white', borderRadius: 10, padding: 10}}
+                    <View style={{width: '90%', backgroundColor: theme.background, borderRadius: 10, padding: 10}}
                           onStartShouldSetResponder={() => true}>
                         <Calendar
                             key={isListCalendarVisible ? 'list-calendar-open' : 'list-calendar-closed'}
@@ -310,6 +316,18 @@ const ILogListView = ({
                             current={currentListCalendarMonth}
                             onMonthChange={(month) => {
                                 setCurrentListCalendarMonth(month.dateString);
+                            }}
+                            theme={{
+                                backgroundColor: theme.background,
+                                calendarBackground: theme.background,
+                                dayTextColor: theme.text,
+                                textDisabledColor: theme.borderColor,
+                                monthTextColor: theme.text,
+                                textSectionTitleColor: theme.text,
+                                selectedDayBackgroundColor: theme.pointColors.purple,
+                                selectedDayTextColor: theme.pointColors.white,
+                                todayTextColor: theme.pointColors.purple,
+                                arrowColor: theme.pointColors.purple,
                             }}
                         />
                     </View>
@@ -322,6 +340,7 @@ const ILogListView = ({
                 data={months}
                 onSelect={handleSelectMonth}
                 title="월 선택"
+                theme={theme}
             />
 
             <MonthYearPickerModal
@@ -330,6 +349,7 @@ const ILogListView = ({
                 data={years}
                 onSelect={handleSelectYear}
                 title="연도 선택"
+                theme={theme}
             />
         </>
     );

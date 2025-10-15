@@ -110,8 +110,8 @@ const DraggableSticker = ({sticker, onUpdate, onDelete, onSelect, isSelected, im
             <Animated.View style={animatedStyle}>
                 <I.DraggableStickerImage $colors={theme} isSelected={isSelected} source={sticker.source} />
                 {isSelected && (
-                    <I.StickerDeleteButton onPress={onDelete}>
-                        <AntDesign name="close" size={20} color="white"/>
+                    <I.StickerDeleteButton $colors={theme} onPress={onDelete}>
+                        <AntDesign name="close" size={20} color={theme.pointColors.white} />
                     </I.StickerDeleteButton>
                 )}
             </Animated.View>
@@ -277,7 +277,7 @@ export default function AddILogScreen() {
     };
 
     return (
-        <View style={{flex: 1}}>
+        <I.Container $colors={theme}>
             {isSaving && (
                 <I.SavingOverlay>
                     <ActivityIndicator size="large" color={theme.pointColors.white}/>
@@ -287,8 +287,8 @@ export default function AddILogScreen() {
             {isSaving && captureQueue.length > 0 && (
                 <I.OffscreenContainer>
                     <ViewShot ref={offscreenViewShotRef} options={{format: "png", quality: 0.9}}>
-                        <View style={{width: PREVIEW_SIZE, height: PREVIEW_SIZE, backgroundColor: 'transparent'}}>
-                            {captureQueue.length > 0 && <Image source={{uri: captureQueue[0].path}} style={{width: '100%', height: '100%'}} onLoadEnd={() => setIsImageLoadedForCapture(true)} />}
+                        <I.OffscreenCaptureContainer>
+                            {captureQueue.length > 0 && <I.FullSizeImage source={{uri: captureQueue[0].path}} onLoadEnd={() => setIsImageLoadedForCapture(true)} />}
                             {captureQueue.length > 0 && captureQueue[0].stickers.map(sticker => {
                                 const scale = (sticker.normalizedScale || 0) * PREVIEW_SIZE;
                                 const stickerHalfSize = (STICKER_BASE_SIZE * scale) / 2;
@@ -296,18 +296,17 @@ export default function AddILogScreen() {
                                 const y = (sticker.normalizedY || 0.5) * PREVIEW_SIZE - stickerHalfSize;
                                 return (
                                     <Animated.View key={sticker.id} style={{ position: 'absolute', top: 0, left: 0, transform: [ {translateX: x}, {translateY: y}, {scale: scale}, {rotate: `${((sticker.rotate || 0) * 180) / Math.PI}deg`}, ] }}>
-                                        <Image source={sticker.source} style={{ width: STICKER_BASE_SIZE, height: STICKER_BASE_SIZE, resizeMode: 'contain' }}/>
+                                        <I.StickerPreviewImage source={sticker.source} />
                                     </Animated.View>
                                 );
                             })}
-                        </View>
+                        </I.OffscreenCaptureContainer>
                     </ViewShot>
                 </I.OffscreenContainer>
             )}
 
             <I.ScreenContainer $colors={theme}>
-                <View style={{flex: 1}}>
-                    <I.Container>
+                    <I.Container $colors={theme}>
                         <I.AddWrap contentContainerStyle={{paddingBottom: 40 + keyboardHeight}} stickyHeaderIndices={[0]}>
                             <I.AddHeader onPress={() => setCalendarVisible(true)} $colors={theme}>
                                 <I.AddIconWrap><AntDesign name="calendar" size={30} color={theme.pointColors.purple}/></I.AddIconWrap>
@@ -316,19 +315,19 @@ export default function AddILogScreen() {
                             <I.AddContentContainer>
                                 {imageAssets.length > 0 ? (
                                     <I.ImagePreviewContainer>
-                                        <View style={{alignItems: 'flex-end', marginBottom: 8}}>
+                                        <I.SwipeGuideWrapper>
                                             <Animated.View style={swipeHintAnimatedStyle}>
                                                 <I.SwipeHintContainer $colors={theme}><I.SwipeHintText $colors={theme}>Add More Picture... →</I.SwipeHintText></I.SwipeHintContainer>
                                             </Animated.View>
-                                        </View>
-                                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{height: 375, marginBottom: 10}}>
+                                        </I.SwipeGuideWrapper>
+                                        <I.ImagePreviewScrollView horizontal showsHorizontalScrollIndicator={false}>
                                             {imageAssets.map((asset, index) => {
                                                 const imageRatio = (asset.height || 1) / (asset.width || 1); const previewRatio = 1; let contentWidth, contentHeight, contentX, contentY;
                                                 if (imageRatio < previewRatio) { contentHeight = PREVIEW_SIZE; contentWidth = PREVIEW_SIZE / imageRatio; contentY = 0; contentX = -(contentWidth - PREVIEW_SIZE) / 2; } else { contentWidth = PREVIEW_SIZE; contentHeight = PREVIEW_SIZE * imageRatio; contentX = 0; contentY = -(contentHeight - PREVIEW_SIZE) / 2; }
                                                 return (
                                                     <I.ImageContainer key={asset.path} $colors={theme}>
                                                         <View style={{ width: contentWidth, height: contentHeight, top: contentY, left: contentX }}>
-                                                            <Image source={{uri: asset.path}} style={{width: '100%', height: '100%'}}/>
+                                                            <I.FullSizeImage source={{uri: asset.path}}/>
                                                             {asset.stickers && asset.stickers.map(sticker => {
                                                                 const previewScale = (sticker.normalizedScale || 0) * contentWidth;
                                                                 const stickerHalfSize = (STICKER_BASE_SIZE * previewScale) / 2;
@@ -336,18 +335,18 @@ export default function AddILogScreen() {
                                                                 const previewY = (sticker.normalizedY || 0.5) * contentHeight - stickerHalfSize;
                                                                 return (
                                                                     <Animated.View key={sticker.id} style={{ position: 'absolute', top: 0, left: 0, transform: [ {translateX: previewX}, {translateY: previewY}, {scale: previewScale}, {rotate: `${((sticker.rotate || 0) * 180) / Math.PI}deg`}, ] }}>
-                                                                        <Image source={sticker.source} style={{ width: STICKER_BASE_SIZE, height: STICKER_BASE_SIZE, resizeMode: 'contain' }}/>
+                                                                        <I.StickerPreviewImage source={sticker.source} />
                                                                     </Animated.View>
                                                                 );
                                                             })}
                                                         </View>
                                                         <I.ImageEditButton onPress={() => handleEditImageWithEmojis(asset, index)}><AntDesign name="edit" size={20} color="white"/></I.ImageEditButton>
-                                                        <I.AddImageRemoveButton style={{position: 'absolute', top: 5, right: 5, zIndex: 1}} onPress={() => removeImage(index)}><AntDesign name="closecircle" size={24} color="red"/></I.AddImageRemoveButton>
+                                                        <I.AddImageRemoveButton onPress={() => removeImage(index)}><AntDesign name="closecircle" size={35} color={theme.notification} /></I.AddImageRemoveButton>
                                                     </I.ImageContainer>
                                                 )
                                             })}
                                             <I.AddMoreButton $colors={theme} onPress={pickImage}><AntDesign name="pluscircleo" size={50} color={theme.borderColor}/><I.AddImagePickerText $colors={theme}>Add More</I.AddImagePickerText></I.AddMoreButton>
-                                        </ScrollView>
+                                        </I.ImagePreviewScrollView>
                                     </I.ImagePreviewContainer>
                                 ) : (
                                     <I.AddImagePlaceholder onPress={pickImage} $colors={theme}><SimpleLineIcons name="picture" size={150} color={theme.borderColor}/><I.AddImagePickerText $colors={theme}>Add a picture...</I.AddImagePickerText></I.AddImagePlaceholder>
@@ -363,7 +362,6 @@ export default function AddILogScreen() {
                             <I.AddSaveButton onPress={handleSave} $colors={theme}><I.AddButtonText $colors={theme}>Save</I.AddButtonText></I.AddSaveButton>
                         </I.AddButtonWrap>
                     </I.AddSuggestionContainer>
-                </View>
 
                 <Modal animationType="fade" transparent={true} visible={isCalendarVisible} onRequestClose={() => setCalendarVisible(false)}>
                     <I.CalendarModalOverlay activeOpacity={1} onPressOut={() => setCalendarVisible(false)}>
@@ -391,6 +389,6 @@ export default function AddILogScreen() {
                     </I.EditorFooter>
                 </Modal>
             </I.ScreenContainer>
-        </View>
+        </I.Container>
     );
 }

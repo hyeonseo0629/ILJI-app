@@ -8,7 +8,9 @@ export type ThemedViewProps = ViewProps & {
 };
 
 export function ThemedView({ style, lightColor, darkColor, ...otherProps }: ThemedViewProps) {
-  const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
+  const backgroundColorValue = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
+  // useThemeColor가 객체를 반환하는 경우를 대비해, 문자열일 때만 backgroundColor로 사용
+  const backgroundColor = typeof backgroundColorValue === 'string' ? backgroundColorValue : undefined;
 
   return <View style={[{ backgroundColor }, style]} {...otherProps} />;
 }
