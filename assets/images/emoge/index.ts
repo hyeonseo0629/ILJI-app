@@ -3,6 +3,13 @@ interface EmogeStickersMap {
 }
 
 export const emogeStickers: EmogeStickersMap = {
+  20250602_102501: require('./20250602_102501.png'),
+  20250602_102920: require('./20250602_102920.png'),
+  20250602_122918: require('./20250602_122918.png'),
+  20250602_123523: require('./20250602_123523.png'),
+  20250602_124417: require('./20250602_124417.png'),
+  20250602_143452: require('./20250602_143452.png'),
+  20250602_143752: require('./20250602_143752.png'),
   sticker0: require('./sticker0.png'),
   sticker1: require('./sticker1.png'),
   sticker10: require('./sticker10.png'),
