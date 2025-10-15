@@ -9,7 +9,7 @@ interface StyledProps {
 export const Container = styled.View<StyledProps>`
     background-color: ${props => props.$colors?.background || '#fff'};
     width: 99%;
-    height: 100%;
+    flex: 1;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     border: 3px solid lavender;
