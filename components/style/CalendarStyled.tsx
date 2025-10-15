@@ -116,8 +116,8 @@ export const MonthDayText = styled.Text.attrs({
 `;
 
 export const MonthDayCircle = styled.View<StyledProps & { $isCurrentMonth?: boolean }>`
-    width: 20px;
-    height: 20px;
+    width: 16.5px;
+    height: 16.5px;
     background-color: ${props => props.$colors?.pointColors.purple || '#9970FF'};
     border-radius: 15px; /* 완벽한 원을 위해 너비/높이의 절반 값 사용 */
     justify-content: center; /* 내부 텍스트를 세로 중앙에 정렬 */
