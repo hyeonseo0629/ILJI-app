@@ -120,7 +120,7 @@ export function ILogProvider({ children }: ILogProviderProps) {
     const deleteILog = useCallback(async (logId: number) => {
         if (!userId) return;
         try {
-            await api.delete(`/mobile/i-log/${logId}`);
+            await api.delete(`/mobile/i-log/${logId}`, {});
             setIlogs(prev => prev.filter(log => log.id !== logId));
         } catch (err) {
             console.error(`i-log (id: ${logId}) 삭제 실패:`, err);

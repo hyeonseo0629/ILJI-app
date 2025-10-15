@@ -116,7 +116,6 @@ export const StyledInput = styled.TextInput.attrs<StyledProps>(props => ({
 
 export const FeedbackContainer = styled.View`
     padding-vertical: 5px;
-    height: 20px;
 `;
 
 export const ErrorText = styled.Text<StyledProps>`

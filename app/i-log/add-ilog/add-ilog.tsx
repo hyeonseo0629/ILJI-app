@@ -351,7 +351,7 @@ export default function AddILogScreen() {
                                 ) : (
                                     <I.AddImagePlaceholder onPress={pickImage} $colors={theme}><SimpleLineIcons name="picture" size={150} color={theme.borderColor}/><I.AddImagePickerText $colors={theme}>Add a picture...</I.AddImagePickerText></I.AddImagePlaceholder>
                                 )}
-                                <I.AddTextArea placeholder={`오늘의 이야기를 #해시태그 와 함께 들려주세요...`} value={content} onChangeText={setContent} multiline height={textAreaHeight} onContentSizeChange={(e) => setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height))} autoFocus={true} $colors={theme} placeholderTextColor={theme.text} maxLength={3000} />
+                                <I.AddTextArea placeholder={`오늘의 이야기를 들려주세요...`} value={content} onChangeText={setContent} multiline height={textAreaHeight} onContentSizeChange={(e) => setTextAreaHeight(Math.max(200, e.nativeEvent.contentSize.height))} autoFocus={true} $colors={theme} placeholderTextColor={theme.text} maxLength={3000} />
                                 <I.CharacterCountText $colors={theme}>{content.length} / 3000</I.CharacterCountText>
                             </I.AddContentContainer>
                         </I.AddWrap>
