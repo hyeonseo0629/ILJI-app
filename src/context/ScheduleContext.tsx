@@ -181,9 +181,10 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const updateSchedule = useCallback(async (scheduleToUpdate: Schedule) => {
         if (!userId) return;
         try {
+            const { id, createdAt, updatedAt, userId, isAllDay, ...rest } = scheduleToUpdate;
             const payload = {
-                ...scheduleToUpdate,
-                userId: userId, // 동적 userId 사용
+                ...rest,
+                allDay: isAllDay,
                 startTime: scheduleToUpdate.isAllDay
                     ? format(scheduleToUpdate.startTime, "yyyy-MM-dd'T'00:00:00")
                     : format(scheduleToUpdate.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
@@ -294,7 +295,8 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
         try {
             const payload = {
                 label: tagToUpdate.label,
-                color: tagToUpdate.color
+                color: tagToUpdate.color,
+                visibility: tagToUpdate.visibility || 'PRIVATE',
             };
             const response = await api.put<Tag>(`/tags/${tagToUpdate.id}`, payload);
             const updatedTag = response.data;
@@ -311,7 +313,7 @@ export function ScheduleProvider({ children }: ScheduleProviderProps) {
     const deleteTag = useCallback(async (tagId: number) => {
         if (!userId) return;
         try {
-            await api.delete(`/tags/${tagId}`, { data: { userId: userId } }); // 동적 userId 사용
+            await api.delete(`/tags/${tagId}`); // 동적 userId 사용
             await fetchSchedules();
         } catch (err) {
             console.error("태그 삭제 실패:", err);
