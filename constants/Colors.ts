@@ -69,7 +69,7 @@ export const Colors = {
     icon: palette.gray_450,
     tabIconDefault: palette.gray_450,
     tabIconSelected: palette.purple_400,
-    borderColor: palette.gray_250,
+    borderColor: palette.lavender,
     notification: palette.red_500,
     // Point colors can be accessed like: Colors.light.pointColors.purple
     pointColors: {
@@ -86,7 +86,7 @@ export const Colors = {
   },
   dark: {
     text: palette.white,
-    background: palette.black,
+    background: palette.gray_900,
     icon: palette.gray_350,
     tabIconDefault: palette.gray_350,
     tabIconSelected: palette.white,

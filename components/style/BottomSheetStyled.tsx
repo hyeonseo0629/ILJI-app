@@ -12,7 +12,7 @@ export const Container = styled.View<StyledProps>`
     flex: 1;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    border: 3px solid lavender;
+    border: 3px solid ${props => props.$colors?.borderColor || '#eee'};
 `
 
 // ------ //
